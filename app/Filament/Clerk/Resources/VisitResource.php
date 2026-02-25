@@ -1,0 +1,67 @@
+<?php
+namespace App\Filament\Clerk\Resources;
+
+use App\Models\Visit;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+
+class VisitResource extends Resource
+{
+    protected static ?string $model = Visit::class;
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static ?string $navigationLabel = 'Today\'s Patients';
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->query(Visit::with('patient')->whereDate('registered_at', today()))
+            ->columns([
+                Tables\Columns\TextColumn::make('patient.case_no')->label('Case No')->searchable(),
+                Tables\Columns\TextColumn::make('patient.full_name')->label('Patient')->searchable(),
+                Tables\Columns\TextColumn::make('patient.age_display')->label('Age'),
+                Tables\Columns\TextColumn::make('visit_type')->badge()
+                    ->color(fn($state) => $state === 'ER' ? 'danger' : 'primary'),
+                Tables\Columns\TextColumn::make('chief_complaint')->limit(40),
+                Tables\Columns\TextColumn::make('status')->badge()
+                    ->color(fn($state) => match($state) {
+                        'registered'    => 'warning',
+                        'vitals_done'   => 'info',
+                        'assessed'      => 'success',
+                        'discharged'    => 'gray',
+                        'admitted'      => 'purple',
+                        default         => 'gray',
+                    }),
+                Tables\Columns\TextColumn::make('registered_at')->time('H:i')->label('Time'),
+            ])
+            ->defaultSort('registered_at', 'desc')
+            ->filters([
+                Tables\Filters\SelectFilter::make('visit_type')
+                    ->options(['OPD'=>'OPD','ER'=>'ER']),
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'registered'  => 'Registered',
+                        'vitals_done' => 'Vitals Done',
+                        'assessed'    => 'Assessed',
+                        'discharged'  => 'Discharged',
+                    ]),
+            ])
+            ->actions([
+                Tables\Actions\Action::make('vitals')
+                    ->label('Add Vitals')
+                    ->icon('heroicon-o-heart')
+                    ->url(fn($record) => \App\Filament\Clerk\Pages\RecordVitals::getUrl(['visit' => $record->id]))
+                    ->visible(fn($record) => $record->status === 'registered'),
+                Tables\Actions\ViewAction::make(),
+            ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => VisitResource\Pages\ListVisits::route('/'),
+            'view'  => VisitResource\Pages\ViewVisit::route('/{record}'),
+        ];
+    }
+    public static function canCreate(): bool { return false; } // create via Register Patient
+}
