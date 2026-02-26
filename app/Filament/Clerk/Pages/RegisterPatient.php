@@ -46,6 +46,7 @@ class RegisterPatient extends Page
         'brought_by'           => null,
         'condition_on_arrival' => null,
         'chief_complaint'      => '',
+        'payment_class' => 'Charity',
     ];
 
     public function mount(): void
@@ -166,6 +167,7 @@ class RegisterPatient extends Page
             'condition_on_arrival' => $this->formData['condition_on_arrival'] ?? null,
             'status'               => 'registered',
             'registered_at'        => now(),
+            'payment_class'        => $this->formData['payment_class'],
         ]);
 
         ActivityLog::create([

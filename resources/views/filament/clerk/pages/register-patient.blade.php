@@ -29,7 +29,7 @@
                     📋 Out-Patient Registration
                 @endif
             </div>
-        </div>
+                    </div>
         <div class="flex-shrink-0">
             @if(file_exists(public_path('images/ph-flag.png')))
                 <img src="{{ asset('images/ph-flag.png') }}" alt="Philippine Flag" class="h-16 w-16 object-contain">
@@ -197,6 +197,30 @@
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
                 <input type="radio" wire:model.live="formData.registration_type" value="ER" style="accent-color:#dc2626;width:16px;height:16px;">
                 <span style="font-weight:700;" class="text-red-700 dark:text-red-400">🚑 ER (Emergency Room)</span>
+            </label>
+        </div>
+    </div>
+
+     {{-- Payment Classification --}}
+    <div style="border-radius:8px;padding:12px;margin-bottom:20px;border:1px solid #e5e7eb;"
+        class="bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+        <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:8px;" class="text-gray-700 dark:text-gray-200">
+            Payment Classification *
+        </label>
+        <div style="display:flex;gap:24px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <input type="radio" wire:model.live="formData.payment_class" value="Charity"
+                    style="accent-color:#16a34a;width:16px;height:16px;">
+                <span style="font-weight:700;" class="text-green-800 dark:text-green-300">
+                    🏥 Charity (PhilHealth / Indigent / 4Ps / Malasakit)
+                </span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <input type="radio" wire:model.live="formData.payment_class" value="Private"
+                    style="accent-color:#7c3aed;width:16px;height:16px;">
+                <span style="font-weight:700;" class="text-purple-800 dark:text-purple-300">
+                    💳 Private Pay
+                </span>
             </label>
         </div>
     </div>

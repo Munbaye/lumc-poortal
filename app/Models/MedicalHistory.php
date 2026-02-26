@@ -7,10 +7,40 @@ class MedicalHistory extends Model
 {
     protected $fillable = [
         'visit_id', 'patient_id', 'doctor_id',
-        'chief_complaint', 'history_of_present_illness', 'past_medical_history',
-        'family_history', 'social_history', 'allergies', 'current_medications',
-        'physical_exam', 'diagnosis', 'differential_diagnosis',
-        'disposition', 'admitted_ward', 'service', 'payment_type', 'plan'
+        // NUR-006 History
+        'chief_complaint',
+        'history_of_present_illness',
+        'past_medical_history',
+        'family_history',
+        'occupation_environment',
+        'drug_allergies',
+        'drug_therapy',
+        'other_allergies',
+        'current_medications',
+        // NUR-005 Physical Exam (exact LUMC form fields)
+        'pe_skin',
+        'pe_head_eent',
+        'pe_lymph_nodes',
+        'pe_chest',
+        'pe_lungs',
+        'pe_cardiovascular',
+        'pe_breast',
+        'pe_abdomen',
+        'pe_rectum',
+        'pe_genitalia',
+        'pe_musculoskeletal',
+        'pe_extremities',
+        'pe_neurology',
+        // Kept for backward compat
+        'physical_exam',
+        // Assessment
+        'diagnosis',
+        'differential_diagnosis',
+        'disposition',
+        'admitted_ward',
+        'service',
+        'payment_type',
+        'plan',
     ];
 
     public function visit()   { return $this->belongsTo(Visit::class); }
