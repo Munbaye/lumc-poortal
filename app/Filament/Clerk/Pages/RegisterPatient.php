@@ -5,76 +5,59 @@ use App\Models\Patient;
 use App\Models\Visit;
 use App\Models\ActivityLog;
 use App\Services\PatientSearchService;
-use Filament\Actions\Action;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Checkbox;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Livewire\Attributes\On;
 
 class RegisterPatient extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-user-plus';
-    protected static string $view = 'filament.clerk.pages.register-patient';
-    protected static ?string $title = 'Register Patient';
-    protected static ?int $navigationSort = 1;
+    protected static string  $view           = 'filament.clerk.pages.register-patient';
+    protected static ?string $title          = 'Register Patient';
+    protected static ?int    $navigationSort = 1;
 
-    // Search fields (bound to form)
+    // Search fields
     public string  $searchFamilyName = '';
     public string  $searchFirstName  = '';
     public ?string $searchSex        = null;
     public ?string $searchBirthday   = null;
 
-    // Search results
-    public array $searchResults = [];
-    public bool  $hasSearched   = false;
-
-    // Flow control
+    // Search results & state
+    public array $searchResults     = [];
+    public bool  $hasSearched       = false;
     public ?int  $selectedPatientId = null;
     public bool  $showCreateForm    = false;
     public bool  $confirmNoMatch    = false;
 
     // Registration form data
     public array $formData = [
-        'family_name'        => '',
-        'first_name'         => '',
-        'middle_name'        => '',
-        'birthday'           => null,
-        'sex'                => null,
-        'address'            => '',
-        'contact_number'     => '',
-        'occupation'         => '',
-        'civil_status'       => null,
-        'spouse_name'        => '',
-        'father_name'        => '',
-        'mother_name'        => '',
-        'registration_type'  => 'OPD',
-        'brought_by'         => null,
+        'family_name'          => '',
+        'first_name'           => '',
+        'middle_name'          => '',
+        'birthday'             => null,
+        'sex'                  => null,
+        'address'              => '',
+        'contact_number'       => '',
+        'occupation'           => '',
+        'civil_status'         => null,
+        'spouse_name'          => '',
+        'father_name'          => '',
+        'mother_name'          => '',
+        'registration_type'    => 'OPD',
+        'brought_by'           => null,
         'condition_on_arrival' => null,
-        'chief_complaint'    => '',
+        'chief_complaint'      => '',
     ];
 
-    // When searchFamilyName changes, run search automatically
-    public function updatedSearchFamilyName(): void
+    public function mount(): void
     {
-        $this->runSearch();
+        if (auth()->user()->hasRole('clerk-er')) {
+            $this->formData['registration_type'] = 'ER';
+        }
     }
 
-    public function updatedSearchFirstName(): void
-    {
-        if (strlen($this->searchFamilyName) >= 3) $this->runSearch();
-    }
-
-    public function updatedSearchSex(): void
-    {
-        if (strlen($this->searchFamilyName) >= 3) $this->runSearch();
-    }
+    public function updatedSearchFamilyName(): void { $this->runSearch(); }
+    public function updatedSearchFirstName(): void   { if (strlen($this->searchFamilyName) >= 3) $this->runSearch(); }
+    public function updatedSearchSex(): void         { if (strlen($this->searchFamilyName) >= 3) $this->runSearch(); }
 
     public function runSearch(): void
     {
@@ -84,41 +67,38 @@ class RegisterPatient extends Page
             return;
         }
 
-        $service = new PatientSearchService();
-        $results = $service->search(
+        $results = (new PatientSearchService())->search(
             $this->searchFamilyName,
             $this->searchFirstName ?: null,
             $this->searchSex,
             $this->searchBirthday
         );
 
-        $this->searchResults = $results->map(fn($p) => [
-            'id'           => $p->id,
-            'case_no'      => $p->case_no,
-            'full_name'    => $p->full_name,
-            'age_display'  => $p->age_display,
-            'sex'          => $p->sex,
-            'birthday'     => $p->birthday?->format('M d, Y'),
-            'address'      => substr($p->address, 0, 50),
-            'last_visit'   => $p->latestVisit?->registered_at?->format('M d, Y'),
+        $this->searchResults = $results->map(fn ($p) => [
+            'id'          => $p->id,
+            'case_no'     => $p->case_no,
+            'full_name'   => $p->full_name,
+            'age_display' => $p->age_display,
+            'sex'         => $p->sex,
+            'birthday'    => $p->birthday?->format('M d, Y'),
+            'address'     => substr($p->address ?? '', 0, 50),
+            'last_visit'  => $p->latestVisit?->registered_at?->format('M d, Y'),
         ])->toArray();
 
-        $this->hasSearched   = true;
-        $this->showCreateForm = false;
+        $this->hasSearched       = true;
+        $this->showCreateForm    = false;
         $this->selectedPatientId = null;
     }
 
-    // Clerk selects an existing patient
     public function selectPatient(int $patientId): void
     {
-        $patient = Patient::findOrFail($patientId);
+        $patient                 = Patient::findOrFail($patientId);
         $this->selectedPatientId = $patientId;
 
-        // Pre-fill form with existing data
         $this->formData = array_merge($this->formData, $patient->only([
-            'family_name','first_name','middle_name','birthday',
-            'sex','address','contact_number','occupation',
-            'civil_status','spouse_name','father_name','mother_name',
+            'family_name', 'first_name', 'middle_name', 'birthday',
+            'sex', 'address', 'contact_number', 'occupation',
+            'civil_status', 'spouse_name', 'father_name', 'mother_name',
         ]));
 
         if ($patient->birthday) {
@@ -128,83 +108,72 @@ class RegisterPatient extends Page
         $this->showCreateForm = true;
     }
 
-    // Show the new patient creation form
     public function showNewPatientForm(): void
     {
         if (!$this->confirmNoMatch) {
-            Notification::make()
-                ->title('Please confirm that no match was found')
-                ->warning()
-                ->send();
+            Notification::make()->title('Please tick the confirmation checkbox first.')->warning()->send();
             return;
         }
 
-        // Pre-fill from search inputs
         $this->formData['family_name'] = $this->searchFamilyName;
         $this->formData['first_name']  = $this->searchFirstName;
         $this->formData['sex']         = $this->searchSex;
         $this->formData['birthday']    = $this->searchBirthday;
-        $this->showCreateForm = true;
+        $this->showCreateForm          = true;
     }
 
-    // Save — create or update patient, then create visit
     public function save(): void
     {
-        // Basic validation
         $this->validate([
-            'formData.family_name'      => 'required|string|max:100',
-            'formData.first_name'       => 'required|string|max:100',
-            'formData.sex'              => 'required|in:Male,Female',
-            'formData.address'          => 'required|string',
-            'formData.chief_complaint'  => 'required|string',
+            'formData.family_name'     => 'required|string|max:100',
+            'formData.first_name'      => 'required|string|max:100',
+            'formData.sex'             => 'required|in:Male,Female',
+            'formData.address'         => 'required|string|min:5',
+            'formData.chief_complaint' => 'required|string|min:3',
         ], [
             'formData.family_name.required'     => 'Family name is required.',
             'formData.first_name.required'      => 'First name is required.',
             'formData.sex.required'             => 'Sex is required.',
             'formData.address.required'         => 'Address is required.',
+            'formData.address.min'              => 'Please enter a complete address.',
             'formData.chief_complaint.required' => 'Chief complaint is required.',
+            'formData.chief_complaint.min'      => 'Please describe the chief complaint.',
         ]);
+
+        $patientFields = array_filter(
+            $this->formData,
+            fn ($v, $k) => !in_array($k, [
+                'registration_type', 'brought_by', 'condition_on_arrival', 'chief_complaint',
+            ]) && $v !== null && $v !== '',
+            ARRAY_FILTER_USE_BOTH
+        );
 
         if ($this->selectedPatientId) {
-            // UPDATE existing patient
             $patient = Patient::findOrFail($this->selectedPatientId);
-            $oldValues = $patient->toArray();
-            $patient->update(array_filter($this->formData, fn($v, $k) =>
-                !in_array($k, ['registration_type','brought_by','condition_on_arrival','chief_complaint'])
-                && $v !== null && $v !== '',
-                ARRAY_FILTER_USE_BOTH
-            ));
-            $action = 'updated_patient';
+            $patient->update($patientFields);
+            $action  = 'updated_patient';
         } else {
-            // CREATE new patient
-            $patient = Patient::create(array_filter(
-                $this->formData,
-                fn($v, $k) => !in_array($k, ['registration_type','brought_by','condition_on_arrival','chief_complaint'])
-                && $v !== null && $v !== '',
-                ARRAY_FILTER_USE_BOTH
-            ));
-            $action = 'created_patient';
+            $patient = Patient::create($patientFields);
+            $action  = 'created_patient';
         }
 
-        // Create visit
         $visit = Visit::create([
-            'patient_id'         => $patient->id,
-            'clerk_id'           => auth()->id(),
-            'visit_type'         => $this->formData['registration_type'],
-            'chief_complaint'    => $this->formData['chief_complaint'],
-            'brought_by'         => $this->formData['brought_by'] ?? null,
-            'condition_on_arrival'=> $this->formData['condition_on_arrival'] ?? null,
-            'status'             => 'registered',
-            'registered_at'      => now(),
+            'patient_id'           => $patient->id,
+            'clerk_id'             => auth()->id(),
+            'visit_type'           => $this->formData['registration_type'],
+            'chief_complaint'      => $this->formData['chief_complaint'],
+            'brought_by'           => $this->formData['brought_by']           ?? null,
+            'condition_on_arrival' => $this->formData['condition_on_arrival'] ?? null,
+            'status'               => 'registered',
+            'registered_at'        => now(),
         ]);
 
-        // Log
         ActivityLog::create([
             'user_id'      => auth()->id(),
             'action'       => $action,
             'subject_type' => 'Patient',
             'subject_id'   => $patient->id,
-            'new_values'   => $patient->toArray(),
+            'new_values'   => $patient->fresh()->toArray(),
             'ip_address'   => request()->ip(),
         ]);
 
@@ -213,16 +182,9 @@ class RegisterPatient extends Page
             ->success()
             ->send();
 
-    $this->redirect(
-        \App\Filament\Clerk\Pages\RecordVitals::getUrl(['visit' => $visit->id])
-    );
-    }
-
-    public function mount(): void
-    {
-        // Set default registration type based on clerk role
-        if (auth()->user()->hasRole('clerk-er')) {
-            $this->formData['registration_type'] = 'ER';
-        }
+        // ✅ Correct: use 'visitId' to match #[Url] property name in RecordVitals
+        $this->redirect(
+            RecordVitals::getUrl(['visitId' => $visit->id])
+        );
     }
 }

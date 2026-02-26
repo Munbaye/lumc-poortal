@@ -6,22 +6,26 @@ use App\Models\Vital;
 use App\Models\ActivityLog;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Livewire\Attributes\Url;
+use Livewire\Attributes\Computed;
 
 class RecordVitals extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-heart';
-    protected static string  $view = 'filament.clerk.pages.record-vitals';
-    protected static ?string $title = 'Record Vital Signs';
+    protected static ?string $navigationIcon        = 'heroicon-o-heart';
+    protected static string  $view                  = 'filament.clerk.pages.record-vitals';
+    protected static ?string $title                 = 'Record Vital Signs';
+    protected static bool    $shouldRegisterNavigation = false;
 
-    // Hide from sidebar — only accessible via redirect from registration
-    protected static bool $shouldRegisterNavigation = false;
+    // Binds to ?visitId= in the URL query string
+    #[Url]
+    public ?int $visitId = null;
 
-    public ?int   $visitId = null;
-    public ?Visit $visit   = null;
+    public ?Visit $visit = null;
 
+    // Vital sign fields
     public string  $nurseName       = '';
     public ?float  $temperature     = null;
-    public ?string $temperatureSite = 'Axilla';
+    public string  $temperatureSite = 'Axilla';
     public ?int    $pulseRate       = null;
     public ?int    $respiratoryRate = null;
     public ?string $bloodPressure   = null;
@@ -31,25 +35,32 @@ class RecordVitals extends Page
     public ?string $painScale       = null;
     public string  $notes           = '';
 
-    // ✅ Filament passes query params to mount() automatically
-    // URL will be: /clerk/pages/record-vitals?visit=123
-    public function mount(?int $visit = null): void
+    public function mount(): void
     {
-        if (!$visit) {
+        if (!$this->visitId) {
             Notification::make()->title('No visit specified.')->danger()->send();
-            $this->redirect(\App\Filament\Clerk\Pages\RegisterPatient::getUrl());
+            $this->redirect(RegisterPatient::getUrl());
             return;
         }
 
-        $this->visitId = $visit;
-        $this->visit   = Visit::with('patient')->findOrFail($visit);
+        $this->visit = Visit::with('patient')->find($this->visitId);
+
+        if (!$this->visit) {
+            Notification::make()->title('Visit not found.')->danger()->send();
+            $this->redirect(RegisterPatient::getUrl());
+        }
     }
 
-    // Computed property — hide BP for pedia patients
-    public function getShowBpAttribute(): bool
+    /**
+     * ✅ #[Computed] is Livewire 3's way to expose computed values to the blade.
+     *    getShowBpAttribute() is Eloquent magic — it does NOT work on Livewire components.
+     *    In blade, reference as: $this->showBp
+     */
+    #[Computed]
+    public function showBp(): bool
     {
         if ($this->weightKg && $this->weightKg < 10) return false;
-        if ($this->visit?->patient?->is_pedia) return false;
+        if ($this->visit?->patient?->is_pedia)        return false;
         return true;
     }
 
@@ -67,6 +78,14 @@ class RecordVitals extends Page
             'temperature'     => 'required|numeric|between:30,45',
             'pulseRate'       => 'required|integer|between:20,300',
             'respiratoryRate' => 'required|integer|between:0,80',
+        ], [
+            'nurseName.required'       => 'Please enter the name of the nurse or person who took vitals.',
+            'temperature.required'     => 'Temperature is required.',
+            'temperature.between'      => 'Temperature must be between 30°C and 45°C.',
+            'pulseRate.required'       => 'Pulse rate is required.',
+            'pulseRate.between'        => 'Pulse rate must be between 20 and 300 bpm.',
+            'respiratoryRate.required' => 'Respiratory rate is required.',
+            'respiratoryRate.between'  => 'Respiratory rate must be between 0 and 80 breaths/min.',
         ]);
 
         Vital::create([
@@ -102,8 +121,8 @@ class RecordVitals extends Page
             'ip_address' => request()->ip(),
         ]);
 
-        Notification::make()->title('Vital signs recorded!')->success()->send();
+        Notification::make()->title('Vital signs saved successfully!')->success()->send();
 
-        $this->redirect('/clerk');
+        $this->redirect(\App\Filament\Clerk\Resources\VisitResource::getUrl('index'));
     }
 }
