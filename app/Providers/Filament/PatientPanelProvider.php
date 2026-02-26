@@ -13,12 +13,18 @@ class PatientPanelProvider extends PanelProvider
             ->id('patient')
             ->path('patient')
             ->login()
-            ->homeUrl('/patient')
+            // ✅ NO ->homeUrl() — prevents redirect loops
             ->colors(['primary' => Color::Green])
             ->brandName('LUMC — Patient Portal')
             ->favicon(asset('images/favicon.ico'))
-            ->discoverPages(in: app_path('Filament/Patient/Pages'), for: 'App\Filament\Patient\Pages')
-            ->discoverWidgets(in: app_path('Filament/Patient/Widgets'), for: 'App\Filament\Patient\Widgets')
+            ->discoverPages(
+                in: app_path('Filament/Patient/Pages'),
+                for: 'App\Filament\Patient\Pages'
+            )
+            ->discoverWidgets(
+                in: app_path('Filament/Patient/Widgets'),
+                for: 'App\Filament\Patient\Widgets'
+            )
             ->middleware([
                 \Illuminate\Cookie\Middleware\EncryptCookies::class,
                 \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,

@@ -4,6 +4,8 @@ namespace App\Providers\Filament;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use App\Filament\Doctor\Resources\PatientQueueResource;
+use App\Filament\Doctor\Pages\PatientAssessment;
 
 class DoctorPanelProvider extends PanelProvider
 {
@@ -13,25 +15,18 @@ class DoctorPanelProvider extends PanelProvider
             ->id('doctor')
             ->path('doctor')
             ->login()
-            // ✅ REMOVED ->homeUrl('/doctor')
-            // That was causing the "too many redirects" loop:
-            //   login → redirect to /doctor → Filament redirects again → loop
-            // Without homeUrl, Filament uses its own internal dashboard redirect which works correctly.
             ->colors(['primary' => Color::Teal])
             ->brandName('LUMC — Doctor Portal')
             ->favicon(asset('images/favicon.ico'))
-            ->discoverPages(
-                in: app_path('Filament/Doctor/Pages'),
-                for: 'App\Filament\Doctor\Pages'
-            )
-            ->discoverResources(
-                in: app_path('Filament/Doctor/Resources'),
-                for: 'App\Filament\Doctor\Resources'
-            )
-            ->discoverWidgets(
-                in: app_path('Filament/Doctor/Widgets'),
-                for: 'App\Filament\Doctor\Widgets'
-            )
+            // ✅ Register explicitly instead of discoverResources
+            ->resources([
+                PatientQueueResource::class,
+            ])
+            // ✅ Register explicitly instead of discoverPages
+            ->pages([
+                PatientAssessment::class,
+            ])
+            ->widgets([])
             ->middleware([
                 \Illuminate\Cookie\Middleware\EncryptCookies::class,
                 \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,

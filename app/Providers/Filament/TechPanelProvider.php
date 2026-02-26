@@ -13,13 +13,22 @@ class TechPanelProvider extends PanelProvider
             ->id('tech')
             ->path('tech')
             ->login()
-            ->homeUrl('/tech')
+            // ✅ NO ->homeUrl() — prevents redirect loops
             ->colors(['primary' => Color::Orange])
             ->brandName('LUMC — Tech Portal')
             ->favicon(asset('images/favicon.ico'))
-            ->discoverPages(in: app_path('Filament/Tech/Pages'), for: 'App\Filament\Tech\Pages')
-            ->discoverResources(in: app_path('Filament/Tech/Resources'), for: 'App\Filament\Tech\Resources')
-            ->discoverWidgets(in: app_path('Filament/Tech/Widgets'), for: 'App\Filament\Tech\Widgets')
+            ->discoverPages(
+                in: app_path('Filament/Tech/Pages'),
+                for: 'App\Filament\Tech\Pages'
+            )
+            ->discoverResources(
+                in: app_path('Filament/Tech/Resources'),
+                for: 'App\Filament\Tech\Resources'
+            )
+            ->discoverWidgets(
+                in: app_path('Filament/Tech/Widgets'),
+                for: 'App\Filament\Tech\Widgets'
+            )
             ->middleware([
                 \Illuminate\Cookie\Middleware\EncryptCookies::class,
                 \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,

@@ -13,17 +13,14 @@ class ClerkPanelProvider extends PanelProvider
             ->id('clerk')
             ->path('clerk')
             ->login()
-            ->homeUrl('/clerk')
+            // ✅ NO ->homeUrl() — prevents redirect loops
             ->colors(['primary' => Color::Amber])
             ->brandName('LUMC — Clerk Portal')
             ->favicon(asset('images/favicon.ico'))
-
-            // ✅ Use discoverPages ONLY — do NOT also call ->pages([...])
             ->discoverPages(
                 in: app_path('Filament/Clerk/Pages'),
                 for: 'App\Filament\Clerk\Pages'
             )
-            // ✅ Use discoverResources ONLY — do NOT also call ->resources([...])
             ->discoverResources(
                 in: app_path('Filament/Clerk/Resources'),
                 for: 'App\Filament\Clerk\Resources'
@@ -43,8 +40,6 @@ class ClerkPanelProvider extends PanelProvider
                 \Filament\Http\Middleware\DisableBladeIconComponents::class,
                 \Filament\Http\Middleware\DispatchServingFilamentEvent::class,
             ])
-            ->authMiddleware([
-                \Filament\Http\Middleware\Authenticate::class,
-            ]);
+            ->authMiddleware([\Filament\Http\Middleware\Authenticate::class]);
     }
 }

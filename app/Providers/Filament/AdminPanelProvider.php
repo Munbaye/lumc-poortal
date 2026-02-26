@@ -14,11 +14,10 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->homeUrl('/admin')
+            // ✅ NO ->homeUrl() — letting Filament decide where to land prevents redirect loops
             ->colors(['primary' => Color::Blue])
             ->brandName('LUMC Admin Panel')
             ->favicon(asset('images/favicon.ico'))
-            // discoverPages already picks up Dashboard automatically
             ->discoverPages(
                 in: app_path('Filament/Admin/Pages'),
                 for: 'App\Filament\Admin\Pages'

@@ -13,13 +13,22 @@ class NursePanelProvider extends PanelProvider
             ->id('nurse')
             ->path('nurse')
             ->login()
-            ->homeUrl('/nurse')
+            // ✅ NO ->homeUrl() — prevents redirect loops
             ->colors(['primary' => Color::Rose])
             ->brandName('LUMC — Nurse Portal')
             ->favicon(asset('images/favicon.ico'))
-            ->discoverPages(in: app_path('Filament/Nurse/Pages'), for: 'App\Filament\Nurse\Pages')
-            ->discoverResources(in: app_path('Filament/Nurse/Resources'), for: 'App\Filament\Nurse\Resources')
-            ->discoverWidgets(in: app_path('Filament/Nurse/Widgets'), for: 'App\Filament\Nurse\Widgets')
+            ->discoverPages(
+                in: app_path('Filament/Nurse/Pages'),
+                for: 'App\Filament\Nurse\Pages'
+            )
+            ->discoverResources(
+                in: app_path('Filament/Nurse/Resources'),
+                for: 'App\Filament\Nurse\Resources'
+            )
+            ->discoverWidgets(
+                in: app_path('Filament/Nurse/Widgets'),
+                for: 'App\Filament\Nurse\Widgets'
+            )
             ->middleware([
                 \Illuminate\Cookie\Middleware\EncryptCookies::class,
                 \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,

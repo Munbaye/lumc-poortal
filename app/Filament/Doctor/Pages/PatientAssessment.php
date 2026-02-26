@@ -7,53 +7,62 @@ use App\Models\DoctorsOrder;
 use App\Models\ActivityLog;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Livewire\Attributes\Url;
 
 class PatientAssessment extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document';
-    protected static string  $view = 'filament.doctor.pages.patient-assessment';
-    protected static ?string $title = 'Patient Assessment';
+    protected static string  $view           = 'filament.doctor.pages.patient-assessment';
+    protected static ?string $title          = 'Patient Assessment';
     protected static bool    $shouldRegisterNavigation = false;
 
+    #[Url]
+    public ?int $visitId = null;
+
     public ?Visit $visit = null;
-    public int    $visitId;
 
-    // Assessment form
-    public string $chiefComplaint          = '';
-    public string $historyOfPresentIllness = '';
-    public string $pastMedicalHistory      = '';
-    public string $familyHistory           = '';
-    public string $socialHistory           = '';
-    public string $allergies               = '';
-    public string $currentMedications      = '';
-    public string $physicalExam            = '';
-    public string $diagnosis               = '';
-    public string $differentialDiagnosis   = '';
-    public ?string $disposition            = null;
-    public string  $admittedWard           = '';
-    public string  $service                = '';
-    public string  $paymentType            = '';
-    public string  $plan                   = '';
+    public string  $chiefComplaint          = '';
+    public string  $historyOfPresentIllness = '';
+    public string  $pastMedicalHistory      = '';
+    public string  $familyHistory           = '';
+    public string  $socialHistory           = '';
+    public string  $allergies               = '';
+    public string  $currentMedications      = '';
+    public string  $physicalExam            = '';
+    public string  $diagnosis               = '';
+    public string  $differentialDiagnosis   = '';
+    public ?string $disposition             = null;
+    public string  $admittedWard            = '';
+    public string  $service                 = '';
+    public string  $paymentType             = '';
+    public string  $plan                    = '';
+    public string  $newOrder                = '';
+    public array   $orders                  = [];
 
-    // Doctor's Orders
-    public string $newOrder = '';
-    public array  $orders   = [];
-
-    public function mount(int $visit): void
+    public function mount(): void
     {
-        $this->visitId = $visit;
-        $this->visit   = Visit::with(['patient','vitals','medicalHistory','doctorsOrders'])->findOrFail($visit);
+        if (!$this->visitId) {
+            $this->redirect('/doctor');
+            return;
+        }
 
-        // Pre-fill chief complaint from visit
-        $this->chiefComplaint = $this->visit->chief_complaint;
+        $this->visit = Visit::with(['patient', 'vitals', 'medicalHistory', 'doctorsOrders'])
+            ->find($this->visitId);
 
-        // Load existing assessment if any
+        if (!$this->visit) {
+            Notification::make()->title('Visit not found.')->danger()->send();
+            $this->redirect('/doctor');
+            return;
+        }
+
+        $this->chiefComplaint = $this->visit->chief_complaint ?? '';
+
         if ($history = $this->visit->medicalHistory) {
             foreach ([
-                'chiefComplaint','historyOfPresentIllness','pastMedicalHistory',
-                'familyHistory','socialHistory','allergies','currentMedications',
-                'physicalExam','diagnosis','differentialDiagnosis','disposition',
-                'admittedWard','service','paymentType','plan'
+                'chiefComplaint', 'historyOfPresentIllness', 'pastMedicalHistory',
+                'familyHistory', 'socialHistory', 'allergies', 'currentMedications',
+                'physicalExam', 'diagnosis', 'differentialDiagnosis', 'disposition',
+                'admittedWard', 'service', 'paymentType', 'plan',
             ] as $field) {
                 $col = \Illuminate\Support\Str::snake($field);
                 if ($history->$col) $this->$field = $history->$col;
@@ -103,7 +112,10 @@ class PatientAssessment extends Page
             ]
         );
 
-        $this->visit->update(['status' => 'assessed', 'disposition' => $this->disposition]);
+        $this->visit->update([
+            'status'      => 'assessed',
+            'disposition' => $this->disposition,
+        ]);
 
         ActivityLog::create([
             'user_id'      => auth()->id(),
@@ -114,5 +126,7 @@ class PatientAssessment extends Page
         ]);
 
         Notification::make()->title('Assessment saved!')->success()->send();
+
+        $this->redirect(\App\Filament\Doctor\Resources\PatientQueueResource::getUrl('index'));
     }
 }

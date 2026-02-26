@@ -1,21 +1,35 @@
 <?php
-// routes/web.php
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
     if (!auth()->check()) {
-        // Show a central landing/login selector page
         return view('welcome');
     }
+    $panelRoutes = [
+        'admin'   => '/admin',
+        'doctor'  => '/doctor/patient-queues',   // ← direct to resource, not panel root
+        'nurse'   => '/nurse',
+        'clerk'   => '/clerk',
+        'tech'    => '/tech',
+        'patient' => '/patient',
+    ];
+    $target = $panelRoutes[auth()->user()->panel ?? 'admin'] ?? '/admin/login';
+    return redirect($target);
+});
 
-    // Redirect logged-in users to their correct panel
-    return match(auth()->user()->panel) {
-        'admin'  => redirect('/admin'),
-        'doctor' => redirect('/doctor'),
-        'nurse'  => redirect('/nurse'),
-        'clerk'  => redirect('/clerk'),
-        'tech'   => redirect('/tech'),
-        'patient'=> redirect('/patient'),
-        default  => redirect('/admin/login'),
-    };
+Route::get('/logout', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect('/');
+});
+
+Route::get('/switch/{panel}', function (string $panel) {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    $validPanels = ['admin', 'doctor', 'nurse', 'clerk', 'tech', 'patient'];
+    $target = in_array($panel, $validPanels) ? "/{$panel}/login" : '/';
+    return redirect($target);
 });
