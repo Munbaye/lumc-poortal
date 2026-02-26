@@ -9,11 +9,13 @@ class Visit extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'patient_id', 'clerk_id', 'visit_type', 'payment_class', 'chief_complaint',
-        'status', 'disposition', 'admitted_ward', 'referral_notes',
-        'brought_by', 'condition_on_arrival',
-        'registered_at', 'discharged_at'
+        'patient_id', 'clerk_id', 'assigned_doctor_id', 'visit_type', 'payment_class',
+        'chief_complaint', 'status', 'disposition', 'admitted_ward', 'referral_notes',
+        'brought_by', 'condition_on_arrival', 'registered_at', 'discharged_at'
     ];
+
+    // Add this relationship:
+    public function assignedDoctor() { return $this->belongsTo(User::class, 'assigned_doctor_id'); }
 
     protected $casts = [
         'registered_at' => 'datetime',

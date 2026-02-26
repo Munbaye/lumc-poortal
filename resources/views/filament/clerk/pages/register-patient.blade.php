@@ -225,6 +225,36 @@
         </div>
     </div>
 
+    {{-- Doctor Assignment (Private only) --}}
+    @if(($formData['payment_class'] ?? 'Charity') === 'Private')
+    <div style="border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:20px;"
+        class="bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+        <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:8px;"
+            class="{{ $errors->has('formData.assigned_doctor_id') ? 'text-red-600' : 'text-gray-700 dark:text-gray-200' }}">
+            Assigned Physician *
+        </label>
+        <select wire:model="formData.assigned_doctor_id"
+                class="w-full rounded-lg px-3 py-2 text-sm border border-gray-300 bg-white text-gray-900
+                    dark:border-gray-600 dark:bg-gray-800 dark:text-white
+                    focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">— Select physician —</option>
+            @php
+                $grouped = collect($availableDoctors)->groupBy('specialty');
+            @endphp
+            @foreach($grouped as $specialty => $doctors)
+            <optgroup label="{{ $specialty }}">
+                @foreach($doctors as $doc)
+                <option value="{{ $doc['id'] }}">Dr. {{ $doc['name'] }}</option>
+                @endforeach
+            </optgroup>
+            @endforeach
+        </select>
+        @error('formData.assigned_doctor_id')
+            <p style="color:#ef4444;font-size:.73rem;margin-top:4px;">{{ $message }}</p>
+        @enderror
+    </div>
+    @endif
+    
     {{-- Required label + input helper --}}
     @php
         function fieldLabel($field, $label, $required = false) {

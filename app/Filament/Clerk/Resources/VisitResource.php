@@ -8,8 +8,8 @@ use Filament\Tables\Table;
 
 class VisitResource extends Resource
 {
-    protected static ?string $model          = Visit::class;
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static ?string $model           = Visit::class;
+    protected static ?string $navigationIcon  = 'heroicon-o-clipboard-document-list';
     protected static ?string $navigationLabel = "Today's Patients";
     protected static ?int    $navigationSort  = 2;
 
@@ -42,18 +42,33 @@ class VisitResource extends Resource
                     ->badge()
                     ->color(fn ($state) => $state === 'ER' ? 'danger' : 'primary'),
 
+                Tables\Columns\TextColumn::make('payment_class')
+                    ->label('Class')
+                    ->formatStateUsing(fn ($state) => $state ?? 'Charity')
+                    ->badge()
+                    ->color(fn ($state) => $state === 'Private' ? 'gray' : 'success'),
+
                 Tables\Columns\TextColumn::make('chief_complaint')
-                    ->limit(40)
+                    ->limit(35)
                     ->tooltip(fn ($record) => $record->chief_complaint),
 
                 Tables\Columns\TextColumn::make('status')
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        'registered'  => 'Registered',
+                        'vitals_done' => 'Vitals Done',
+                        'assessed'    => 'Assessed',
+                        'discharged'  => 'Discharged',
+                        'admitted'    => 'Admitted',
+                        'referred'    => 'Referred',
+                        default       => ucfirst(str_replace('_', ' ', $state)),
+                    })
                     ->badge()
                     ->color(fn ($state) => match ($state) {
                         'registered'  => 'warning',
                         'vitals_done' => 'info',
                         'assessed'    => 'success',
                         'discharged'  => 'gray',
-                        'admitted'    => 'purple',
+                        'admitted'    => 'primary',
                         default       => 'gray',
                     }),
 
@@ -67,7 +82,6 @@ class VisitResource extends Resource
                 Tables\Filters\SelectFilter::make('visit_type')
                     ->label('Type')
                     ->options(['OPD' => 'OPD', 'ER' => 'ER']),
-
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'registered'  => 'Registered',
@@ -77,7 +91,6 @@ class VisitResource extends Resource
                     ]),
             ])
             ->actions([
-                // ✅ Key fix: use 'visitId' (matches the #[Url] property name in RecordVitals)
                 Tables\Actions\Action::make('add_vitals')
                     ->label('Add Vitals')
                     ->icon('heroicon-o-heart')

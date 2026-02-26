@@ -12,7 +12,7 @@ class User extends Authenticatable implements FilamentUser
     use Notifiable, HasRoles;
 
     protected $fillable = [
-        'name', 'email', 'password', 'employee_id', 'panel', 'is_active'
+        'name', 'email', 'password', 'specialty', 'employee_id', 'panel', 'is_active'
     ];
 
     protected $hidden = ['password', 'remember_token'];
