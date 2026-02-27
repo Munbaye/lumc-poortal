@@ -16,7 +16,6 @@ class RecordVitals extends Page
     protected static ?string $title                 = 'Record Vital Signs';
     protected static bool    $shouldRegisterNavigation = false;
 
-    // Binds to ?visitId= in the URL query string
     #[Url]
     public ?int $visitId = null;
 
@@ -103,18 +102,28 @@ class RecordVitals extends Page
 
         $this->visit->update(['status' => 'vitals_done']);
 
-        ActivityLog::create([
-            'user_id'      => auth()->id(),
-            'action'       => 'recorded_vitals',
-            'subject_type' => 'Visit',
-            'subject_id'   => $this->visitId,
-            'new_values'   => [
-                'nurse_name'  => $this->nurseName,
-                'temperature' => $this->temperature,
-                'pulse_rate'  => $this->pulseRate,
-            ],
-            'ip_address' => request()->ip(),
-        ]);
+        // ── Activity log ──────────────────────────────────────────────────────
+        ActivityLog::record(
+            action:       ActivityLog::ACT_RECORDED_VITALS,
+            category:     ActivityLog::CAT_VITALS,
+            subject:      $this->visit,
+            subjectLabel: $this->visit->patient->full_name
+                          . ' (' . $this->visit->patient->case_no . ')'
+                          . ' — ' . $this->visit->visit_type,
+            newValues: array_filter([
+                'recorded_by'      => $this->nurseName,
+                'temperature'      => $this->temperature . ' °C (' . $this->temperatureSite . ')',
+                'pulse_rate'       => $this->pulseRate . ' bpm',
+                'respiratory_rate' => $this->respiratoryRate . ' /min',
+                'blood_pressure'   => $this->showBp ? ($this->bloodPressure ?? 'not taken') : 'N/A (pedia/low weight)',
+                'o2_saturation'    => $this->o2Saturation ? $this->o2Saturation . '%' : null,
+                'weight_kg'        => $this->weightKg ? $this->weightKg . ' kg' : null,
+                'height_cm'        => $this->heightCm ? $this->heightCm . ' cm' : null,
+                'pain_scale'       => $this->painScale ? $this->painScale . '/10' : null,
+                'notes'            => $this->notes ?: null,
+            ]),
+            panel: 'clerk',
+        );
 
         Notification::make()->title('Vital signs saved successfully!')->success()->send();
 

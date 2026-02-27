@@ -16,19 +16,19 @@ class RegisterPatient extends Page
     protected static ?int    $navigationSort = 1;
 
     // ── Search ─────────────────────────────────────────────────────────────────
-    public string  $searchFamilyName = '';
-    public string  $searchFirstName  = '';
-    public ?string $searchSex        = null;
-    public ?string $searchBirthday   = null;
+    public string  $searchFamilyName  = '';
+    public string  $searchFirstName   = '';
+    public ?string $searchSex         = null;
+    public ?string $searchBirthday    = null;
 
-    public array $searchResults    = [];
-    public bool  $hasSearched      = false;
-    public ?int  $selectedPatientId = null;
-    public bool  $showCreateForm   = false;
-    public bool  $confirmNoMatch   = false;
+    public array $searchResults      = [];
+    public bool  $hasSearched        = false;
+    public ?int  $selectedPatientId  = null;
+    public bool  $showCreateForm     = false;
+    public bool  $confirmNoMatch     = false;
 
     // ── Registration form ──────────────────────────────────────────────────────
-    // payment_class is intentionally NOT here — doctor sets it during assessment.
+    // payment_class intentionally NOT here — doctor sets it during assessment.
     public array $formData = [
         'family_name'          => '',
         'first_name'           => '',
@@ -87,8 +87,8 @@ class RegisterPatient extends Page
             'last_visit'  => $p->latestVisit?->registered_at?->format('M d, Y'),
         ])->toArray();
 
-        $this->hasSearched    = true;
-        $this->showCreateForm = false;
+        $this->hasSearched       = true;
+        $this->showCreateForm    = false;
         $this->selectedPatientId = null;
     }
 
@@ -152,15 +152,16 @@ class RegisterPatient extends Page
         );
 
         if ($this->selectedPatientId) {
-            $patient = Patient::findOrFail($this->selectedPatientId);
+            $patient   = Patient::findOrFail($this->selectedPatientId);
+            $oldValues = $patient->toArray();   // snapshot BEFORE update
             $patient->update($patientFields);
-            $action = 'updated_patient';
+            $action    = ActivityLog::ACT_UPDATED_PATIENT;
         } else {
-            $patient = Patient::create($patientFields);
-            $action  = 'created_patient';
+            $oldValues = [];
+            $patient   = Patient::create($patientFields);
+            $action    = ActivityLog::ACT_CREATED_PATIENT;
         }
 
-        // Create visit — payment_class is NULL; doctor sets it on admission
         $visit = Visit::create([
             'patient_id'           => $patient->id,
             'clerk_id'             => auth()->id(),
@@ -169,26 +170,35 @@ class RegisterPatient extends Page
             'brought_by'           => $this->formData['brought_by'] ?? null,
             'condition_on_arrival' => $this->formData['condition_on_arrival'] ?? null,
             'status'               => 'registered',
-            'payment_class'        => null,   // ← doctor sets this during assessment
+            'payment_class'        => null,
             'registered_at'        => now(),
         ]);
 
-        ActivityLog::create([
-            'user_id'      => auth()->id(),
-            'action'       => $action,
-            'subject_type' => 'Patient',
-            'subject_id'   => $patient->id,
-            'new_values'   => $patient->fresh()->toArray(),
-            'ip_address'   => request()->ip(),
-        ]);
+        // ── Activity log ──────────────────────────────────────────────────────
+        ActivityLog::record(
+            action:       $action,
+            category:     ActivityLog::CAT_PATIENT,
+            subject:      $patient,
+            subjectLabel: $patient->full_name . ' (' . $patient->case_no . ')',
+            oldValues:    $oldValues,
+            newValues:    array_filter([
+                'family_name'    => $patient->family_name,
+                'first_name'     => $patient->first_name,
+                'sex'            => $patient->sex,
+                'birthday'       => $patient->birthday?->format('Y-m-d'),
+                'address'        => $patient->address,
+                'contact_number' => $patient->contact_number,
+                'visit_type'     => $this->formData['registration_type'],
+                'chief_complaint'=> $this->formData['chief_complaint'],
+            ]),
+            panel: 'clerk',
+        );
 
         Notification::make()
             ->title('Patient registered! Case No: ' . $patient->case_no)
             ->success()
             ->send();
 
-        $this->redirect(
-            RecordVitals::getUrl(['visitId' => $visit->id])
-        );
+        $this->redirect(RecordVitals::getUrl(['visitId' => $visit->id]));
     }
 }

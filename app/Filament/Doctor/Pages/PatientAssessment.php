@@ -57,16 +57,16 @@ class PatientAssessment extends Page
 
     // ── Disposition — two-step ────────────────────────────────────────────────
     // Step 1: null = not decided, true = admit, false = not admitting
-    public ?bool $willAdmit = null;
+    public ?bool   $willAdmit            = null;
 
     // Step 2a (not admitting): Discharged | Referred | HAMA | Expired
     public ?string $outpatientDisposition = null;
 
     // Step 2b (admitting): ward, service, payment, doctor
-    public string  $admittedWard     = '';
-    public string  $admittedService  = '';
-    public string  $paymentClass     = 'Charity'; // default Charity
-    public ?int    $assignedDoctorId = null;
+    public string  $admittedWard         = '';
+    public string  $admittedService      = '';
+    public string  $paymentClass         = 'Charity';
+    public ?int    $assignedDoctorId     = null;
 
     public function mount(): void
     {
@@ -97,14 +97,14 @@ class PatientAssessment extends Page
 
         // Restore willAdmit state from saved disposition
         if ($this->visit->disposition === 'Admitted') {
-            $this->willAdmit      = true;
-            $this->admittedWard   = $this->visit->admitted_ward    ?? '';
-            $this->admittedService= $this->visit->admitted_service ?? '';
-            $this->paymentClass   = $this->visit->payment_class    ?? 'Charity';
+            $this->willAdmit       = true;
+            $this->admittedWard    = $this->visit->admitted_ward    ?? '';
+            $this->admittedService = $this->visit->admitted_service ?? '';
+            $this->paymentClass    = $this->visit->payment_class    ?? 'Charity';
             $this->assignedDoctorId = $this->visit->assigned_doctor_id;
         } elseif ($this->visit->disposition !== null) {
-            $this->willAdmit              = false;
-            $this->outpatientDisposition  = $this->visit->disposition;
+            $this->willAdmit             = false;
+            $this->outpatientDisposition = $this->visit->disposition;
         }
 
         // Pre-fill from existing medical history record
@@ -166,6 +166,7 @@ class PatientAssessment extends Page
 
         // Guard: must have a specific outcome
         $disposition = $this->willAdmit ? 'Admitted' : $this->outpatientDisposition;
+
         if (!$disposition) {
             Notification::make()->title('Please select a specific disposition outcome.')->warning()->send();
             return;
@@ -177,7 +178,16 @@ class PatientAssessment extends Page
             return;
         }
 
-        // Save medical history
+        // ── Capture old state for diff in the log ─────────────────────────────
+        $oldVisitSnapshot = array_filter([
+            'status'          => $this->visit->status,
+            'disposition'     => $this->visit->disposition,
+            'payment_class'   => $this->visit->payment_class,
+            'admitted_ward'   => $this->visit->admitted_ward,
+            'admitted_service'=> $this->visit->admitted_service,
+            'diagnosis'       => $this->visit->medicalHistory?->diagnosis,
+        ]);
+
         MedicalHistory::updateOrCreate(
             ['visit_id' => $this->visitId],
             [
@@ -245,14 +255,42 @@ class PatientAssessment extends Page
 
         $this->visit->update($visitUpdate);
 
-        ActivityLog::create([
-            'user_id'      => auth()->id(),
-            'action'       => 'assessed_patient',
-            'subject_type' => 'Visit',
-            'subject_id'   => $this->visitId,
-            'new_values'   => ['disposition' => $disposition, 'status' => $status],
-            'ip_address'   => request()->ip(),
-        ]);
+        // ── Activity log ──────────────────────────────────────────────────────
+        // Determine the most specific action for this event
+        $logAction = match (true) {
+            $disposition === 'Admitted'   => ActivityLog::ACT_ADMITTED_PATIENT,
+            $disposition === 'Discharged' => ActivityLog::ACT_DISCHARGED_PATIENT,
+            default                       => ActivityLog::ACT_ASSESSED_PATIENT,
+        };
+
+        // Assigned doctor name (for Private admissions — human-readable in log)
+        $assignedDoctorName = null;
+        if ($this->willAdmit && $this->paymentClass === 'Private' && $this->assignedDoctorId) {
+            $assignedDoctorName = collect($this->availableDoctors)
+                ->firstWhere('id', $this->assignedDoctorId)['name'] ?? null;
+        }
+
+        ActivityLog::record(
+            action:       $logAction,
+            category:     ActivityLog::CAT_CLINICAL,
+            subject:      $this->visit,
+            subjectLabel: $this->visit->patient->full_name
+                          . ' (' . $this->visit->patient->case_no . ')'
+                          . ' — ' . $this->visit->visit_type,
+            oldValues: $oldVisitSnapshot,
+            newValues: array_filter([
+                'status'           => $status,
+                'disposition'      => $disposition,
+                'diagnosis'        => $this->diagnosis        ?: null,
+                'plan'             => $this->plan             ?: null,
+                'admitted_ward'    => $this->willAdmit ? ($this->admittedWard    ?: null) : null,
+                'admitted_service' => $this->willAdmit ? ($this->admittedService ?: null) : null,
+                'payment_class'    => $this->willAdmit ? $this->paymentClass     : null,
+                'assigned_doctor'  => $assignedDoctorName,
+                'drug_allergies'   => $this->drugAllergies ?: null,
+            ]),
+            panel: 'doctor',
+        );
 
         Notification::make()->title('Assessment saved successfully!')->success()->send();
         $this->redirect(\App\Filament\Doctor\Resources\PatientQueueResource::getUrl('index'));

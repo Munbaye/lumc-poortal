@@ -14,7 +14,7 @@ use App\Models\DoctorsOrder;
 class DoctorsOrderResource extends Resource
 {
     protected static ?string $model = DoctorsOrder::class;
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-list';
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     public static function table(Table $table): Table
     {
