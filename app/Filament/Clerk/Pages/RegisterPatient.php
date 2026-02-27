@@ -1,11 +1,9 @@
 <?php
-
 namespace App\Filament\Clerk\Pages;
 
 use App\Models\Patient;
 use App\Models\Visit;
 use App\Models\ActivityLog;
-use App\Models\User;
 use App\Services\PatientSearchService;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -13,73 +11,61 @@ use Filament\Pages\Page;
 class RegisterPatient extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-user-plus';
-    protected static string $view = 'filament.clerk.pages.register-patient';
-    protected static ?string $title = 'Register Patient';
-    protected static ?int $navigationSort = 1;
+    protected static string  $view           = 'filament.clerk.pages.register-patient';
+    protected static ?string $title          = 'Register Patient';
+    protected static ?int    $navigationSort = 1;
 
-    // Search fields
-    public string $searchFamilyName = '';
-    public string $searchFirstName = '';
-    public ?string $searchSex = null;
-    public ?string $searchBirthday = null;
+    // ── Search ─────────────────────────────────────────────────────────────────
+    public string  $searchFamilyName = '';
+    public string  $searchFirstName  = '';
+    public ?string $searchSex        = null;
+    public ?string $searchBirthday   = null;
 
-    // Search results & state
-    public array $searchResults = [];
-    public array $availableDoctors = [];
-    public bool $hasSearched = false;
-    public ?int $selectedPatientId = null;
-    public bool $showCreateForm = false;
-    public bool $confirmNoMatch = false;
+    public array $searchResults    = [];
+    public bool  $hasSearched      = false;
+    public ?int  $selectedPatientId = null;
+    public bool  $showCreateForm   = false;
+    public bool  $confirmNoMatch   = false;
 
-    // Registration form data
+    // ── Registration form ──────────────────────────────────────────────────────
+    // payment_class is intentionally NOT here — doctor sets it during assessment.
     public array $formData = [
-        'family_name'        => '',
-        'first_name'         => '',
-        'middle_name'        => '',
-        'birthday'           => null,
-        'sex'                => null,
-        'address'            => '',
-        'contact_number'     => '',
-        'occupation'         => '',
-        'civil_status'       => null,
-        'spouse_name'        => '',
-        'father_name'        => '',
-        'mother_name'        => '',
-        'registration_type'  => 'OPD',
-        'brought_by'         => null,
+        'family_name'          => '',
+        'first_name'           => '',
+        'middle_name'          => '',
+        'birthday'             => null,
+        'sex'                  => null,
+        'address'              => '',
+        'contact_number'       => '',
+        'occupation'           => '',
+        'civil_status'         => null,
+        'spouse_name'          => '',
+        'father_name'          => '',
+        'mother_name'          => '',
+        'registration_type'    => 'OPD',   // OPD clerk → OPD, ER clerk → ER
+        'brought_by'           => null,
         'condition_on_arrival' => null,
-        'chief_complaint'    => '',
-        'payment_class'      => 'Charity',
-        'assigned_doctor_id' => null,
+        'chief_complaint'      => '',
     ];
 
     public function mount(): void
     {
+        // ER clerks get ER pre-selected
         if (auth()->user()->hasRole('clerk-er')) {
             $this->formData['registration_type'] = 'ER';
         }
-        $this->loadDoctors();
     }
 
-    public function loadDoctors(): void
-    {
-        $this->availableDoctors = User::whereHas('roles', fn ($q) => $q->where('name', 'doctor'))
-            ->whereNotNull('specialty')
-            ->orderBy('specialty')
-            ->orderBy('name')
-            ->get(['id', 'name', 'specialty'])
-            ->toArray();
-    }
-
+    // ── Search wiring ──────────────────────────────────────────────────────────
     public function updatedSearchFamilyName(): void { $this->runSearch(); }
-    public function updatedSearchFirstName(): void { if (strlen($this->searchFamilyName) >= 3) $this->runSearch(); }
-    public function updatedSearchSex(): void { if (strlen($this->searchFamilyName) >= 3) $this->runSearch(); }
+    public function updatedSearchFirstName(): void  { if (strlen($this->searchFamilyName) >= 3) $this->runSearch(); }
+    public function updatedSearchSex(): void        { if (strlen($this->searchFamilyName) >= 3) $this->runSearch(); }
 
     public function runSearch(): void
     {
         if (strlen($this->searchFamilyName) < 3) {
             $this->searchResults = [];
-            $this->hasSearched = false;
+            $this->hasSearched   = false;
             return;
         }
 
@@ -87,21 +73,21 @@ class RegisterPatient extends Page
             $this->searchFamilyName,
             $this->searchFirstName ?: null,
             $this->searchSex,
-            $this->searchBirthday
+            $this->searchBirthday,
         );
 
         $this->searchResults = $results->map(fn ($p) => [
-            'id'           => $p->id,
-            'case_no'      => $p->case_no,
-            'full_name'    => $p->full_name,
-            'age_display'  => $p->age_display,
-            'sex'          => $p->sex,
-            'birthday'     => $p->birthday?->format('M d, Y'),
-            'address'      => substr($p->address ?? '', 0, 50),
-            'last_visit'   => $p->latestVisit?->registered_at?->format('M d, Y'),
+            'id'          => $p->id,
+            'case_no'     => $p->case_no,
+            'full_name'   => $p->full_name,
+            'age_display' => $p->age_display,
+            'sex'         => $p->sex,
+            'birthday'    => $p->birthday?->format('M d, Y'),
+            'address'     => substr($p->address ?? '', 0, 50),
+            'last_visit'  => $p->latestVisit?->registered_at?->format('M d, Y'),
         ])->toArray();
 
-        $this->hasSearched = true;
+        $this->hasSearched    = true;
         $this->showCreateForm = false;
         $this->selectedPatientId = null;
     }
@@ -132,28 +118,20 @@ class RegisterPatient extends Page
         }
 
         $this->formData['family_name'] = $this->searchFamilyName;
-        $this->formData['first_name'] = $this->searchFirstName;
-        $this->formData['sex'] = $this->searchSex;
-        $this->formData['birthday'] = $this->searchBirthday;
+        $this->formData['first_name']  = $this->searchFirstName;
+        $this->formData['sex']         = $this->searchSex;
+        $this->formData['birthday']    = $this->searchBirthday;
         $this->showCreateForm = true;
-    }
-
-    public function updatedFormDataPaymentClass(): void
-    {
-        if ($this->formData['payment_class'] === 'Charity') {
-            $this->formData['assigned_doctor_id'] = null;
-        }
     }
 
     public function save(): void
     {
         $this->validate([
-            'formData.family_name'        => 'required|string|max:100',
-            'formData.first_name'         => 'required|string|max:100',
-            'formData.sex'                => 'required|in:Male,Female',
-            'formData.address'            => 'required|string|min:5',
-            'formData.chief_complaint'    => 'required|string|min:3',
-            'formData.assigned_doctor_id' => 'required_if:formData.payment_class,Private', // ← NEW RULE
+            'formData.family_name'     => 'required|string|max:100',
+            'formData.first_name'      => 'required|string|max:100',
+            'formData.sex'             => 'required|in:Male,Female',
+            'formData.address'         => 'required|string|min:5',
+            'formData.chief_complaint' => 'required|string|min:3',
         ], [
             'formData.family_name.required'     => 'Family name is required.',
             'formData.first_name.required'      => 'First name is required.',
@@ -162,14 +140,13 @@ class RegisterPatient extends Page
             'formData.address.min'              => 'Please enter a complete address.',
             'formData.chief_complaint.required' => 'Chief complaint is required.',
             'formData.chief_complaint.min'      => 'Please describe the chief complaint.',
-            'formData.assigned_doctor_id.required_if' => 'Assigned physician is required for Private Pay patients.',
         ]);
 
+        // Only patient-record fields go to the patients table
         $patientFields = array_filter(
             $this->formData,
             fn ($v, $k) => !in_array($k, [
-                'registration_type', 'brought_by', 'condition_on_arrival',
-                'chief_complaint', 'payment_class', 'assigned_doctor_id',
+                'registration_type', 'brought_by', 'condition_on_arrival', 'chief_complaint',
             ]) && $v !== null && $v !== '',
             ARRAY_FILTER_USE_BOTH
         );
@@ -180,22 +157,20 @@ class RegisterPatient extends Page
             $action = 'updated_patient';
         } else {
             $patient = Patient::create($patientFields);
-            $action = 'created_patient';
+            $action  = 'created_patient';
         }
 
+        // Create visit — payment_class is NULL; doctor sets it on admission
         $visit = Visit::create([
-            'patient_id'         => $patient->id,
-            'clerk_id'           => auth()->id(),
-            'visit_type'         => $this->formData['registration_type'],
-            'chief_complaint'    => $this->formData['chief_complaint'],
-            'brought_by'         => $this->formData['brought_by'] ?? null,
-            'condition_on_arrival'=> $this->formData['condition_on_arrival'] ?? null,
-            'status'             => 'registered',
-            'registered_at'      => now(),
-            'payment_class'      => $this->formData['payment_class'],
-            'assigned_doctor_id' => $this->formData['payment_class'] === 'Private'
-                ? ($this->formData['assigned_doctor_id'] ?? null)
-                : null,
+            'patient_id'           => $patient->id,
+            'clerk_id'             => auth()->id(),
+            'visit_type'           => $this->formData['registration_type'],
+            'chief_complaint'      => $this->formData['chief_complaint'],
+            'brought_by'           => $this->formData['brought_by'] ?? null,
+            'condition_on_arrival' => $this->formData['condition_on_arrival'] ?? null,
+            'status'               => 'registered',
+            'payment_class'        => null,   // ← doctor sets this during assessment
+            'registered_at'        => now(),
         ]);
 
         ActivityLog::create([
@@ -213,7 +188,7 @@ class RegisterPatient extends Page
             ->send();
 
         $this->redirect(
-            \App\Filament\Clerk\Pages\RecordVitals::getUrl(['visitId' => $visit->id])
+            RecordVitals::getUrl(['visitId' => $visit->id])
         );
     }
 }

@@ -1,8 +1,6 @@
 <x-filament-panels::page>
 
-{{-- ═══════════════════════════════════════════════════════════ --}}
-{{-- LUMC HEADER                                                --}}
-{{-- ═══════════════════════════════════════════════════════════ --}}
+{{-- LUMC HEADER --}}
 <div class="rounded-xl mb-6 overflow-hidden"
      style="background:linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 100%);border:1px solid #1e40af;">
     <div class="flex items-center justify-between px-6 py-4">
@@ -29,7 +27,7 @@
                     📋 Out-Patient Registration
                 @endif
             </div>
-                    </div>
+        </div>
         <div class="flex-shrink-0">
             @if(file_exists(public_path('images/ph-flag.png')))
                 <img src="{{ asset('images/ph-flag.png') }}" alt="Philippine Flag" class="h-16 w-16 object-contain">
@@ -41,9 +39,7 @@
     </div>
 </div>
 
-{{-- ═══════════════════════════════════════════════════════════ --}}
-{{-- STEP 1: SEARCH                                             --}}
-{{-- ═══════════════════════════════════════════════════════════ --}}
+{{-- STEP 1: SEARCH --}}
 <div class="rounded-xl shadow-sm mb-4 dark:border-gray-700"
      style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;">
 
@@ -89,7 +85,6 @@
         </div>
     </div>
 
-    {{-- Results --}}
     @if($hasSearched)
         @if(count($searchResults) > 0)
             <div class="rounded-lg overflow-hidden dark:border-gray-700" style="border:1px solid #e5e7eb;">
@@ -103,9 +98,7 @@
                     </thead>
                     <tbody>
                         @foreach($searchResults as $r)
-                        <tr class="{{ $selectedPatientId == $r['id']
-                                ? 'bg-green-50 dark:bg-green-900/30'
-                                : 'bg-white dark:bg-gray-900 hover:bg-blue-50 dark:hover:bg-blue-900/20' }}"
+                        <tr class="{{ $selectedPatientId == $r['id'] ? 'bg-green-50 dark:bg-green-900/30' : 'bg-white dark:bg-gray-900 hover:bg-blue-50 dark:hover:bg-blue-900/20' }}"
                             style="border-top:1px solid #f3f4f6;">
                             <td class="px-3 py-2 font-mono text-xs text-blue-700 dark:text-blue-400">{{ $r['case_no'] }}</td>
                             <td class="px-3 py-2 font-bold text-gray-900 dark:text-white">{{ $r['full_name'] }}</td>
@@ -114,7 +107,6 @@
                             <td class="px-3 py-2 text-gray-500 dark:text-gray-400 text-xs">{{ $r['last_visit'] ?? 'No visit' }}</td>
                             <td class="px-3 py-2 text-gray-500 dark:text-gray-400 text-xs">{{ $r['address'] }}…</td>
                             <td class="px-3 py-2">
-                                {{-- ✅ Inline style = always visible regardless of mode --}}
                                 <button wire:click="selectPatient({{ $r['id'] }})"
                                     style="background:#16a34a;color:#ffffff;border:none;padding:6px 14px;border-radius:6px;
                                            font-size:.75rem;font-weight:700;cursor:pointer;white-space:nowrap;"
@@ -131,9 +123,7 @@
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
                 {{ count($searchResults) }} result(s). Click "This is the patient" if you see a match above.
             </p>
-
         @else
-            {{-- No results --}}
             <div style="background:#fefce8;border:1px solid #fde047;border-radius:10px;padding:16px;"
                  class="dark:bg-yellow-900/20 dark:border-yellow-700">
                 <p style="font-weight:700;color:#854d0e;" class="dark:text-yellow-300">
@@ -143,8 +133,7 @@
                     Double-check spelling. If certain this is a new patient, tick the box below.
                 </p>
                 <div style="display:flex;align-items:center;gap:8px;margin-top:12px;">
-                    <input type="checkbox" id="confirmNoMatch"
-                        wire:model.live="confirmNoMatch"
+                    <input type="checkbox" id="confirmNoMatch" wire:model.live="confirmNoMatch"
                         style="width:16px;height:16px;cursor:pointer;accent-color:#1d4ed8;">
                     <label for="confirmNoMatch"
                         style="font-size:.83rem;font-weight:700;cursor:pointer;"
@@ -153,7 +142,6 @@
                     </label>
                 </div>
                 @if($confirmNoMatch)
-                    {{-- ✅ Inline style = always visible --}}
                     <button wire:click="showNewPatientForm"
                         style="margin-top:12px;background:#1d4ed8;color:#ffffff;border:none;
                                padding:10px 22px;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;"
@@ -172,9 +160,7 @@
     @endif
 </div>
 
-{{-- ═══════════════════════════════════════════════════════════ --}}
-{{-- STEP 2: REGISTRATION FORM                                  --}}
-{{-- ═══════════════════════════════════════════════════════════ --}}
+{{-- STEP 2: REGISTRATION FORM --}}
 @if($showCreateForm)
 <div class="rounded-xl shadow-sm dark:border-gray-700"
      style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;">
@@ -188,87 +174,27 @@
     {{-- Registration Type --}}
     <div style="border-radius:8px;padding:12px;margin-bottom:20px;border:1px solid #e5e7eb;"
          class="bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
-        <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:8px;" class="text-gray-700 dark:text-gray-200">Registration Type *</label>
+        <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:8px;" class="text-gray-700 dark:text-gray-200">
+            Entry Point *
+        </label>
         <div style="display:flex;gap:24px;">
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                <input type="radio" wire:model.live="formData.registration_type" value="OPD" style="accent-color:#1d4ed8;width:16px;height:16px;">
-                <span style="font-weight:700;" class="text-blue-800 dark:text-blue-300">OPD (Out-Patient)</span>
+                <input type="radio" wire:model.live="formData.registration_type" value="OPD"
+                    style="accent-color:#1d4ed8;width:16px;height:16px;">
+                <span style="font-weight:700;" class="text-blue-800 dark:text-blue-300">📋 OPD (Out-Patient)</span>
             </label>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                <input type="radio" wire:model.live="formData.registration_type" value="ER" style="accent-color:#dc2626;width:16px;height:16px;">
+                <input type="radio" wire:model.live="formData.registration_type" value="ER"
+                    style="accent-color:#dc2626;width:16px;height:16px;">
                 <span style="font-weight:700;" class="text-red-700 dark:text-red-400">🚑 ER (Emergency Room)</span>
             </label>
         </div>
     </div>
 
-     {{-- Payment Classification --}}
-    <div style="border-radius:8px;padding:12px;margin-bottom:20px;border:1px solid #e5e7eb;"
-        class="bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
-        <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:8px;" class="text-gray-700 dark:text-gray-200">
-            Payment Classification *
-        </label>
-        <div style="display:flex;gap:24px;">
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                <input type="radio" wire:model.live="formData.payment_class" value="Charity"
-                    style="accent-color:#16a34a;width:16px;height:16px;">
-                <span style="font-weight:700;" class="text-green-800 dark:text-green-300">
-                    🏥 Charity (PhilHealth / Indigent / 4Ps / Malasakit)
-                </span>
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                <input type="radio" wire:model.live="formData.payment_class" value="Private"
-                    style="accent-color:#7c3aed;width:16px;height:16px;">
-                <span style="font-weight:700;" class="text-purple-800 dark:text-purple-300">
-                    💳 Private Pay
-                </span>
-            </label>
-        </div>
-    </div>
-
-    {{-- Doctor Assignment (Private only) --}}
-    @if(($formData['payment_class'] ?? 'Charity') === 'Private')
-    <div style="border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:20px;"
-        class="bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
-        <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:8px;"
-            class="{{ $errors->has('formData.assigned_doctor_id') ? 'text-red-600' : 'text-gray-700 dark:text-gray-200' }}">
-            Assigned Physician *
-        </label>
-        <select wire:model="formData.assigned_doctor_id"
-                class="w-full rounded-lg px-3 py-2 text-sm border border-gray-300 bg-white text-gray-900
-                    dark:border-gray-600 dark:bg-gray-800 dark:text-white
-                    focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="">— Select physician —</option>
-            @php
-                $grouped = collect($availableDoctors)->groupBy('specialty');
-            @endphp
-            @foreach($grouped as $specialty => $doctors)
-            <optgroup label="{{ $specialty }}">
-                @foreach($doctors as $doc)
-                <option value="{{ $doc['id'] }}">Dr. {{ $doc['name'] }}</option>
-                @endforeach
-            </optgroup>
-            @endforeach
-        </select>
-        @error('formData.assigned_doctor_id')
-            <p style="color:#ef4444;font-size:.73rem;margin-top:4px;">{{ $message }}</p>
-        @enderror
-    </div>
-    @endif
-    
-    {{-- Required label + input helper --}}
-    @php
-        function fieldLabel($field, $label, $required = false) {
-            $hasError = session()->has('errors') && session('errors')->has("formData.$field");
-            $color = $hasError ? '#ef4444' : '#374151';
-            $req   = $required ? ' *' : '';
-            return "<label style='display:block;font-size:.78rem;font-weight:700;margin-bottom:4px;color:{$color};'>{$label}{$req}</label>";
-        }
-    @endphp
-
+    {{-- Required fields --}}
     <p style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;" class="text-gray-500 dark:text-gray-400">Required Information</p>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
 
-        {{-- Family Name --}}
         <div>
             <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:4px;"
                    class="{{ $errors->has('formData.family_name') ? 'text-red-600' : 'text-gray-700 dark:text-gray-200' }}">
@@ -285,7 +211,6 @@
             @enderror
         </div>
 
-        {{-- First Name --}}
         <div>
             <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:4px;"
                    class="{{ $errors->has('formData.first_name') ? 'text-red-600' : 'text-gray-700 dark:text-gray-200' }}">
@@ -302,7 +227,6 @@
             @enderror
         </div>
 
-        {{-- Middle Name --}}
         <div>
             <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:4px;" class="text-gray-700 dark:text-gray-200">Middle Name</label>
             <input type="text" wire:model="formData.middle_name" placeholder="Optional"
@@ -312,7 +236,6 @@
                        focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 
-        {{-- Sex --}}
         <div>
             <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:4px;"
                    class="{{ $errors->has('formData.sex') ? 'text-red-600' : 'text-gray-700 dark:text-gray-200' }}">
@@ -332,7 +255,6 @@
             @enderror
         </div>
 
-        {{-- Birthday --}}
         <div>
             <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:4px;" class="text-gray-700 dark:text-gray-200">Birthday</label>
             <input type="date" wire:model="formData.birthday"
@@ -341,7 +263,6 @@
                        focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 
-        {{-- Contact --}}
         <div>
             <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:4px;" class="text-gray-700 dark:text-gray-200">Contact Number</label>
             <input type="text" wire:model="formData.contact_number" placeholder="09XX-XXX-XXXX"
@@ -370,7 +291,7 @@
         @enderror
     </div>
 
-    {{-- Optional --}}
+    {{-- Optional fields --}}
     <p style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;" class="text-gray-500 dark:text-gray-400">Optional Information</p>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
         <div>
@@ -411,11 +332,11 @@
         </div>
     </div>
 
-    {{-- ER Fields --}}
+    {{-- ER fields --}}
     @if(($formData['registration_type'] ?? 'OPD') === 'ER')
     <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:16px;margin-bottom:20px;"
          class="dark:bg-red-900/20 dark:border-red-700">
-        <h3 style="font-weight:700;margin-bottom:12px;" class="text-red-800 dark:text-red-300">🚑 Emergency Room Information</h3>
+        <h3 style="font-weight:700;margin-bottom:12px;" class="text-red-800 dark:text-red-300">🚑 Emergency Room Details</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label style="display:block;font-size:.78rem;font-weight:600;margin-bottom:4px;" class="text-gray-700 dark:text-gray-300">Brought By</label>

@@ -15,14 +15,15 @@ class DoctorPanelProvider extends PanelProvider
             ->id('doctor')
             ->path('doctor')
             ->login()
+            // ✅ homeUrl must point to an actual registered route (not the panel root)
+            //    PatientQueueResource registers at /doctor/patient-queues
+            ->homeUrl('/doctor/patient-queues')
             ->colors(['primary' => Color::Teal])
             ->brandName('LUMC — Doctor Portal')
             ->favicon(asset('images/favicon.ico'))
-            // ✅ Register explicitly instead of discoverResources
             ->resources([
                 PatientQueueResource::class,
             ])
-            // ✅ Register explicitly instead of discoverPages
             ->pages([
                 PatientAssessment::class,
             ])

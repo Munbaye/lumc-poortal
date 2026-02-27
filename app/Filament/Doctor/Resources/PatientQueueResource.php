@@ -5,7 +5,7 @@ use App\Models\Visit;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
 
 class PatientQueueResource extends Resource
 {
@@ -18,11 +18,19 @@ class PatientQueueResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            // Base query — tabs (modifyQueryUsing) refine this further
+            ->query(
+                Visit::with(['patient', 'latestVitals', 'assignedDoctor'])
+                    ->latest('registered_at')
+            )
             ->columns([
+
                 Tables\Columns\TextColumn::make('patient.case_no')
                     ->label('Case No')
                     ->searchable()
-                    ->fontFamily('mono'),
+                    ->fontFamily('mono')
+                    ->color('primary')
+                    ->copyable(),
 
                 Tables\Columns\TextColumn::make('patient.full_name')
                     ->label('Patient')
@@ -35,16 +43,29 @@ class PatientQueueResource extends Resource
                 Tables\Columns\TextColumn::make('patient.sex')
                     ->label('Sex'),
 
+                // Entry point badge (OPD / ER)
                 Tables\Columns\TextColumn::make('visit_type')
-                    ->label('Type')
+                    ->label('Entry')
                     ->badge()
                     ->color(fn ($state) => $state === 'ER' ? 'danger' : 'primary'),
 
+                // Payment class — NULL means not yet admitted (shows "—")
+                Tables\Columns\TextColumn::make('payment_class')
+                    ->label('Class')
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => $state ?? '—')
+                    ->color(fn ($state) => match ($state) {
+                        'Charity' => 'success',
+                        'Private' => 'gray',
+                        default   => 'secondary',
+                    }),
+
                 Tables\Columns\TextColumn::make('chief_complaint')
                     ->label('Chief Complaint')
-                    ->limit(35),
+                    ->limit(30)
+                    ->tooltip(fn ($record) => $record->chief_complaint),
 
-                // Vitals summary with abnormality highlighting
+                // ── Vitals summary ───────────────────────────────────────────
                 Tables\Columns\TextColumn::make('latestVitals.temperature')
                     ->label('Temp')
                     ->formatStateUsing(fn ($state) => $state ? $state . '°C' : '—')
@@ -65,35 +86,56 @@ class PatientQueueResource extends Resource
                     ->formatStateUsing(fn ($state) => $state ? $state . '%' : '—')
                     ->color(fn ($state) => ($state && $state < 95) ? 'danger' : null),
 
+                // ── Status ───────────────────────────────────────────────────
                 Tables\Columns\TextColumn::make('status')
                     ->formatStateUsing(fn ($state) => match ($state) {
-                        'vitals_done' => 'Waiting',
+                        'registered'  => 'Waiting',
+                        'vitals_done' => 'Vitals Done',
                         'assessed'    => 'Assessed',
+                        'admitted'    => 'Admitted',
+                        'discharged'  => 'Discharged',
+                        'referred'    => 'Referred',
                         default       => ucfirst(str_replace('_', ' ', $state)),
                     })
                     ->badge()
                     ->color(fn ($state) => match ($state) {
-                        'vitals_done' => 'warning',
+                        'registered'  => 'warning',
+                        'vitals_done' => 'info',
                         'assessed'    => 'success',
+                        'admitted'    => 'primary',
+                        'discharged'  => 'gray',
+                        'referred'    => 'gray',
                         default       => 'gray',
                     }),
 
                 Tables\Columns\TextColumn::make('registered_at')
                     ->label('Time')
-                    ->time('H:i'),
+                    ->time('H:i')
+                    ->sortable(),
+
             ])
             ->defaultSort('registered_at', 'asc')
             ->filters([
-                Tables\Filters\SelectFilter::make('visit_type')
-                    ->options(['OPD' => 'OPD', 'ER' => 'ER']),
+                // Quick filter for when viewing across multiple tabs
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'registered'  => 'Registered',
+                        'vitals_done' => 'Vitals Done',
+                        'assessed'    => 'Assessed',
+                        'admitted'    => 'Admitted',
+                        'discharged'  => 'Discharged',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\Action::make('assess')
-                    ->label('Assess')
+                    ->label(fn (Visit $record) => $record->status === 'admitted' ? 'Update' : 'Assess')
                     ->icon('heroicon-o-clipboard-document')
-                    ->url(fn ($record) =>
+                    ->color(fn (Visit $record) => $record->status === 'admitted' ? 'gray' : 'primary')
+                    ->button()
+                    ->url(fn (Visit $record) =>
                         \App\Filament\Doctor\Pages\PatientAssessment::getUrl(['visitId' => $record->id])
-                    ),
+                    )
+                    ->visible(fn (Visit $record) => !in_array($record->status, ['discharged', 'referred'])),
             ]);
     }
 

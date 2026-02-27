@@ -8,7 +8,7 @@ Route::get('/', function () {
     }
     $panelRoutes = [
         'admin'   => '/admin',
-        'doctor'  => '/doctor/patient-queues',   // ← direct to resource, not panel root
+        'doctor'  => '/doctor/patient-queues',
         'nurse'   => '/nurse',
         'clerk'   => '/clerk',
         'tech'    => '/tech',

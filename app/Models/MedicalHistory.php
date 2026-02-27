@@ -16,8 +16,7 @@ class MedicalHistory extends Model
         'drug_allergies',
         'drug_therapy',
         'other_allergies',
-        'current_medications',
-        // NUR-005 Physical Exam (exact LUMC form fields)
+        // NUR-005 Physical Exam
         'pe_skin',
         'pe_head_eent',
         'pe_lymph_nodes',
@@ -31,16 +30,15 @@ class MedicalHistory extends Model
         'pe_musculoskeletal',
         'pe_extremities',
         'pe_neurology',
-        // Kept for backward compat
-        'physical_exam',
         // Assessment
+        'admitting_impression',
         'diagnosis',
         'differential_diagnosis',
+        'plan',
         'disposition',
         'admitted_ward',
         'service',
         'payment_type',
-        'plan',
     ];
 
     public function visit()   { return $this->belongsTo(Visit::class); }
