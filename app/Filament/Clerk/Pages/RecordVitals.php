@@ -51,11 +51,6 @@ class RecordVitals extends Page
         }
     }
 
-    /**
-     * ✅ #[Computed] is Livewire 3's way to expose computed values to the blade.
-     *    getShowBpAttribute() is Eloquent magic — it does NOT work on Livewire components.
-     *    In blade, reference as: $this->showBp
-     */
     #[Computed]
     public function showBp(): bool
     {

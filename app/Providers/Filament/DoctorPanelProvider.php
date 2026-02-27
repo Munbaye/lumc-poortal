@@ -15,7 +15,7 @@ class DoctorPanelProvider extends PanelProvider
             ->id('doctor')
             ->path('doctor')
             ->login()
-            // ✅ homeUrl must point to an actual registered route (not the panel root)
+            // homeUrl must point to an actual registered route (not the panel root)
             //    PatientQueueResource registers at /doctor/patient-queues
             ->homeUrl('/doctor/patient-queues')
             ->colors(['primary' => Color::Teal])

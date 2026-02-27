@@ -14,7 +14,6 @@ class ActivityLogResource extends Resource
     protected static ?string $pluralLabel = 'Activity Logs';
     protected static ?string $navigationGroup = 'Admin';
 
-    // Activity logs are view-only
     public static function canCreate(): bool
     {
         return false;
@@ -73,7 +72,7 @@ class ActivityLogResource extends Resource
                     ]),
             ])
             ->defaultSort('created_at', 'desc')
-            ->actions([]) // no row actions
-            ->bulkActions([]); // no bulk actions
+            ->actions([])
+            ->bulkActions([]);
     }
 }

@@ -86,9 +86,6 @@ class Patient extends Model
         return strtoupper($this->family_name) . ', ' . $this->first_name . $middle;
     }
 
-    /**
-     * "25 y/o" — always a clean whole number, never negative
-     */
     public function getAgeDisplayAttribute(): string
     {
         if ($this->birthday) {
@@ -96,7 +93,7 @@ class Patient extends Model
             if ($birthday->isFuture()) {
                 return '0 y/o';
             }
-            $age = (int) $birthday->diffInYears(now()); // whole integer, never negative
+            $age = (int) $birthday->diffInYears(now());
             return $age . ' y/o';
         }
 

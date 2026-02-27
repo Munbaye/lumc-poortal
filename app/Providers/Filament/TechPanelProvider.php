@@ -13,7 +13,7 @@ class TechPanelProvider extends PanelProvider
             ->id('tech')
             ->path('tech')
             ->login()
-            // ✅ NO ->homeUrl() — prevents redirect loops
+            // NO ->homeUrl() — prevents redirect loops
             ->colors(['primary' => Color::Orange])
             ->brandName('LUMC — Tech Portal')
             ->favicon(asset('images/favicon.ico'))

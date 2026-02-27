@@ -1,5 +1,4 @@
 <?php
-// FILE: app/Filament/Doctor/Pages/PatientAssessment.php
 namespace App\Filament\Doctor\Pages;
 
 use App\Models\Visit;

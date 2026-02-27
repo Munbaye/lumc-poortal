@@ -13,7 +13,7 @@ class ClerkPanelProvider extends PanelProvider
             ->id('clerk')
             ->path('clerk')
             ->login()
-            // ✅ NO ->homeUrl() — prevents redirect loops
+            // NO ->homeUrl() — prevents redirect loops
             ->colors(['primary' => Color::Amber])
             ->brandName('LUMC — Clerk Portal')
             ->favicon(asset('images/favicon.ico'))

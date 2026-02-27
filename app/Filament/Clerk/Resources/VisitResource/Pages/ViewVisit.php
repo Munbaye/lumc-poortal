@@ -105,7 +105,6 @@ class ViewVisit extends ViewRecord
                     ->description('All recorded vital signs for this visit — newest first')
                     ->collapsible()
                     ->schema([
-                        // ✅ No Placeholder class in Filament v3 infolists.
                         // Use TextEntry with formatStateUsing to show the empty state message.
                         TextEntry::make('vitals_empty_notice')
                             ->label('')

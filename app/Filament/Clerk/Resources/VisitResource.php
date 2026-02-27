@@ -1,5 +1,4 @@
 <?php
-// FILE: app/Filament/Clerk/Resources/VisitResource.php
 namespace App\Filament\Clerk\Resources;
 
 use App\Models\Visit;

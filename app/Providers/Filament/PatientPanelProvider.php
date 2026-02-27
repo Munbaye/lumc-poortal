@@ -13,7 +13,7 @@ class PatientPanelProvider extends PanelProvider
             ->id('patient')
             ->path('patient')
             ->login()
-            // ✅ NO ->homeUrl() — prevents redirect loops
+            // NO ->homeUrl() — prevents redirect loops
             ->colors(['primary' => Color::Green])
             ->brandName('LUMC — Patient Portal')
             ->favicon(asset('images/favicon.ico'))

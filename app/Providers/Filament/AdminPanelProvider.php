@@ -14,7 +14,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            // ✅ NO ->homeUrl() — letting Filament decide where to land prevents redirect loops
+            // NO ->homeUrl() — letting Filament decide where to land prevents redirect loops
             ->colors(['primary' => Color::Blue])
             ->brandName('LUMC Admin Panel')
             ->favicon(asset('images/favicon.ico'))

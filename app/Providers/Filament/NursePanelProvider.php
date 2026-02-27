@@ -13,7 +13,7 @@ class NursePanelProvider extends PanelProvider
             ->id('nurse')
             ->path('nurse')
             ->login()
-            // ✅ NO ->homeUrl() — prevents redirect loops
+            // NO ->homeUrl() — prevents redirect loops
             ->colors(['primary' => Color::Rose])
             ->brandName('LUMC — Nurse Portal')
             ->favicon(asset('images/favicon.ico'))
