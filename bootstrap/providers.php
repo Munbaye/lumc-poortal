@@ -9,4 +9,5 @@ return [
     App\Providers\Filament\TechPanelProvider::class,
     App\Providers\Filament\PatientPanelProvider::class,
     Spatie\Permission\PermissionServiceProvider::class,
+    App\Listeners\EventServiceProvider::class,
 ];

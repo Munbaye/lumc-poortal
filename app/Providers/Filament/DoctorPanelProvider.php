@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Providers\Filament;
 
 use Filament\Panel;
@@ -6,6 +7,7 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use App\Filament\Doctor\Resources\PatientQueueResource;
 use App\Filament\Doctor\Pages\PatientAssessment;
+use App\Http\Middleware\Filament\StaffAuthenticate;
 
 class DoctorPanelProvider extends PanelProvider
 {
@@ -14,13 +16,10 @@ class DoctorPanelProvider extends PanelProvider
         return $panel
             ->id('doctor')
             ->path('doctor')
-            ->login()
-            // homeUrl must point to an actual registered route (not the panel root)
-            //    PatientQueueResource registers at /doctor/patient-queues
             ->homeUrl('/doctor/patient-queues')
             ->colors(['primary' => Color::Teal])
             ->brandName('LUMC — Doctor Portal')
-            ->favicon(asset('images/favicon.ico'))
+            ->favicon(asset('images/lumc-logo.png'))
             ->resources([
                 PatientQueueResource::class,
             ])
@@ -39,6 +38,7 @@ class DoctorPanelProvider extends PanelProvider
                 \Filament\Http\Middleware\DisableBladeIconComponents::class,
                 \Filament\Http\Middleware\DispatchServingFilamentEvent::class,
             ])
-            ->authMiddleware([\Filament\Http\Middleware\Authenticate::class]);
+            ->authGuard('web')
+            ->authMiddleware([StaffAuthenticate::class]);
     }
 }

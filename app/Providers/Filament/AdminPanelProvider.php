@@ -1,10 +1,11 @@
 <?php
+
 namespace App\Providers\Filament;
 
-use Filament\Http\Middleware\Authenticate;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use App\Http\Middleware\Filament\StaffAuthenticate;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -13,11 +14,9 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('admin')
-            ->login()
-            // NO ->homeUrl() — letting Filament decide where to land prevents redirect loops
             ->colors(['primary' => Color::Blue])
-            ->brandName('LUMC Admin Panel')
-            ->favicon(asset('images/favicon.ico'))
+            ->brandName('LUMC — Admin Panel')
+            ->favicon(asset('images/lumc-logo.png'))
             ->discoverPages(
                 in: app_path('Filament/Admin/Pages'),
                 for: 'App\Filament\Admin\Pages'
@@ -41,6 +40,7 @@ class AdminPanelProvider extends PanelProvider
                 \Filament\Http\Middleware\DisableBladeIconComponents::class,
                 \Filament\Http\Middleware\DispatchServingFilamentEvent::class,
             ])
-            ->authMiddleware([Authenticate::class]);
+            ->authGuard('web')
+            ->authMiddleware([StaffAuthenticate::class]);
     }
 }

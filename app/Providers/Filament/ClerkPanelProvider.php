@@ -1,9 +1,11 @@
 <?php
+
 namespace App\Providers\Filament;
 
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use App\Http\Middleware\Filament\StaffAuthenticate;
 
 class ClerkPanelProvider extends PanelProvider
 {
@@ -12,11 +14,9 @@ class ClerkPanelProvider extends PanelProvider
         return $panel
             ->id('clerk')
             ->path('clerk')
-            ->login()
-            // NO ->homeUrl() — prevents redirect loops
             ->colors(['primary' => Color::Amber])
             ->brandName('LUMC — Clerk Portal')
-            ->favicon(asset('images/favicon.ico'))
+            ->favicon(asset('images/lumc-logo.png'))
             ->discoverPages(
                 in: app_path('Filament/Clerk/Pages'),
                 for: 'App\Filament\Clerk\Pages'
@@ -40,6 +40,7 @@ class ClerkPanelProvider extends PanelProvider
                 \Filament\Http\Middleware\DisableBladeIconComponents::class,
                 \Filament\Http\Middleware\DispatchServingFilamentEvent::class,
             ])
-            ->authMiddleware([\Filament\Http\Middleware\Authenticate::class]);
+            ->authGuard('web')
+            ->authMiddleware([StaffAuthenticate::class]);
     }
 }

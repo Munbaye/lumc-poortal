@@ -2,7 +2,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // This file registers auth event listeners for activity logging.
 // ─────────────────────────────────────────────────────────────────────────────
-namespace App\Providers;
+namespace App\Listeners;
 
 use App\Listeners\LogAuthEvent;
 use Illuminate\Auth\Events\Failed;

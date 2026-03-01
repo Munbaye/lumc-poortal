@@ -1,35 +1,59 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\AuthController;
 
+// ── PUBLIC LANDING PAGE ────────────────────────────────────────────────────────
 Route::get('/', function () {
-    if (!auth()->check()) {
-        return view('welcome');
+    if (auth()->check()) {
+        $routes = [
+            'admin'   => '/admin',
+            'doctor'  => '/doctor/patient-queues',
+            'nurse'   => '/nurse',
+            'clerk'   => '/clerk',
+            'tech'    => '/tech',
+            'patient' => '/patient',
+        ];
+        return redirect($routes[auth()->user()->panel] ?? '/admin');
     }
-    $panelRoutes = [
-        'admin'   => '/admin',
-        'doctor'  => '/doctor/patient-queues',
-        'nurse'   => '/nurse',
-        'clerk'   => '/clerk',
-        'tech'    => '/tech',
-        'patient' => '/patient',
-    ];
-    $target = $panelRoutes[auth()->user()->panel ?? 'admin'] ?? '/admin/login';
-    return redirect($target);
+    return view('welcome');
 });
 
-Route::get('/logout', function () {
-    Auth::logout();
-    request()->session()->invalidate();
-    request()->session()->regenerateToken();
-    return redirect('/');
-});
+// ── PATIENT LOGIN ──────────────────────────────────────────────────────────────
+Route::post('/patient-login', [AuthController::class, 'patientLogin'])
+    ->name('patient.login.submit');
 
-Route::get('/switch/{panel}', function (string $panel) {
-    Auth::logout();
-    request()->session()->invalidate();
-    request()->session()->regenerateToken();
-    $validPanels = ['admin', 'doctor', 'nurse', 'clerk', 'tech', 'patient'];
-    $target = in_array($panel, $validPanels) ? "/{$panel}/login" : '/';
-    return redirect($target);
-});
+// ── STAFF PORTAL ───────────────────────────────────────────────────────────────
+Route::get('/staff', function () {
+    if (auth()->check()) {
+        $user = auth()->user();
+        if ($user->panel === 'patient') return redirect('/patient');
+        $routes = [
+            'admin'  => '/admin',
+            'doctor' => '/doctor/patient-queues',
+            'nurse'  => '/nurse',
+            'clerk'  => '/clerk',
+            'tech'   => '/tech',
+        ];
+        return redirect($routes[$user->panel] ?? '/admin');
+    }
+    return view('staff-login');
+})->name('staff.login');
+
+Route::post('/staff/login', [AuthController::class, 'staffLogin'])
+    ->name('staff.login.submit');
+
+// ── MASTER LOGOUT ──────────────────────────────────────────────────────────────
+Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])
+    ->name('logout');
+
+// Intercept every Filament panel logout route.
+foreach (['admin', 'doctor', 'nurse', 'clerk', 'tech', 'patient'] as $panel) {
+    Route::match(['get', 'post'], "/{$panel}/logout", [AuthController::class, 'logout'])
+        ->name("{$panel}.logout");
+}
+
+// ── PASSWORD RESET PLACEHOLDER ─────────────────────────────────────────────────
+Route::get('/forgot-password', function () {
+    return redirect('/staff')->with('error', 'Password reset is not yet available. Please contact the administrator.');
+})->name('password.request');

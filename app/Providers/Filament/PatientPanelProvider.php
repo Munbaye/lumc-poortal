@@ -1,9 +1,11 @@
 <?php
+
 namespace App\Providers\Filament;
 
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use App\Http\Middleware\Filament\PatientAuthenticate;
 
 class PatientPanelProvider extends PanelProvider
 {
@@ -12,11 +14,9 @@ class PatientPanelProvider extends PanelProvider
         return $panel
             ->id('patient')
             ->path('patient')
-            ->login()
-            // NO ->homeUrl() — prevents redirect loops
             ->colors(['primary' => Color::Green])
             ->brandName('LUMC — Patient Portal')
-            ->favicon(asset('images/favicon.ico'))
+            ->favicon(asset('images/lumc-logo.png'))
             ->discoverPages(
                 in: app_path('Filament/Patient/Pages'),
                 for: 'App\Filament\Patient\Pages'
@@ -36,6 +36,7 @@ class PatientPanelProvider extends PanelProvider
                 \Filament\Http\Middleware\DisableBladeIconComponents::class,
                 \Filament\Http\Middleware\DispatchServingFilamentEvent::class,
             ])
-            ->authMiddleware([\Filament\Http\Middleware\Authenticate::class]);
+            ->authGuard('web')
+            ->authMiddleware([PatientAuthenticate::class]);
     }
 }
