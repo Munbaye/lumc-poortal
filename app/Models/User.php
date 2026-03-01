@@ -12,7 +12,9 @@ class User extends Authenticatable implements FilamentUser
     use Notifiable, HasRoles;
 
     protected $fillable = [
-        'name', 'email', 'password', 'employee_id', 'panel', 'specialty', 'is_active',
+        'name', 'email', 'password',
+        'employee_id', 'panel', 'specialty',
+        'is_active', 'patient_id',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -37,7 +39,12 @@ class User extends Authenticatable implements FilamentUser
         };
     }
 
-    // Full display name for dropdowns — includes specialty if available
+    // Linked patient record (for patient-panel users)
+    public function patientRecord()
+    {
+        return $this->belongsTo(Patient::class, 'patient_id');
+    }
+
     public function getDoctorLabelAttribute(): string
     {
         return $this->specialty

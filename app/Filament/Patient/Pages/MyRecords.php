@@ -3,55 +3,31 @@ namespace App\Filament\Patient\Pages;
 
 use App\Models\Patient;
 use App\Models\Visit;
-use App\Models\ResultUpload;
 use Filament\Pages\Page;
 
 class MyRecords extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static string  $view = 'filament.patient.pages.my-records';
-    protected static ?string $title = 'My Medical Records';
+    protected static ?string $navigationIcon  = 'heroicon-o-document-text';
+    protected static string  $view            = 'filament.patient.pages.my-records';
+    protected static ?string $title           = 'My Medical Records';
+    protected static ?string $navigationLabel = 'My Records';
+    protected static ?int    $navigationSort  = 1;
 
     public ?Patient $patient = null;
+    public $visits;
 
     public function mount(): void
     {
-        $this->patient = $this->getPatient();
-    }
+        // Resolve patient via the direct FK link on the User
+        $this->patient = auth()->user()?->patientRecord;
 
-    public function getPatient(): ?Patient
-    {
-        $user = auth()->user();
-
-        if (!$user) {
-            return null;
+        if ($this->patient) {
+            $this->visits = Visit::where('patient_id', $this->patient->id)
+                ->with(['latestVitals', 'medicalHistory', 'vitals'])
+                ->orderByDesc('registered_at')
+                ->get();
+        } else {
+            $this->visits = collect();
         }
-
-        return Patient::where('contact_number', $user->contact_number)
-            ->orWhere('email', $user->email)
-            ->first();
-    }
-
-    public function getVisits()
-    {
-        if (!$this->patient) {
-            return collect();
-        }
-
-        return Visit::where('patient_id', $this->patient->id)
-            ->with(['vitals', 'medicalHistory', 'doctorsOrders', 'nursesNotes', 'uploads'])
-            ->orderByDesc('registered_at')
-            ->get();
-    }
-
-    public function getUploads()
-    {
-        if (!$this->patient) {
-            return collect();
-        }
-
-        return ResultUpload::where('patient_id', $this->patient->id)
-            ->orderByDesc('created_at')
-            ->get();
     }
 }

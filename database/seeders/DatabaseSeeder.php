@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
         ]);
         $admin->assignRole('admin');
 
-        // ── 3. Doctors with specialties ───────────────────────────────────────
+        // ── 3. Doctors ────────────────────────────────────────────────────────
         $doctorDefs = [
             ['Ricardo Santos',   'rsantos@lumc.gov.ph',    'Internal Medicine', 'MD-001'],
             ['Maria Reyes',      'mreyes@lumc.gov.ph',     'Pediatrics',        'MD-002'],
@@ -88,12 +88,11 @@ class DatabaseSeeder extends Seeder
         ]);
         $tech->assignRole('tech');
 
-        // ── 7. Patients + Visits ─────────────────────────────────────────────
-        // Helper: create patient record
+        // ── 7. Patients + Visits ──────────────────────────────────────────────
         $mkPatient = function (array $p): Patient {
             $birthday = $p['birthday'] ? Carbon::parse($p['birthday']) : null;
-            $age = $birthday ? (int) $birthday->diffInYears(now()) : null;
-            $isPedia = ($p['is_pedia'] ?? false) || ($age !== null && $age < 12);
+            $age      = $birthday ? (int) $birthday->diffInYears(now()) : null;
+            $isPedia  = ($p['is_pedia'] ?? false) || ($age !== null && $age < 12);
             return Patient::create([
                 'family_name'    => $p['family_name'],
                 'first_name'     => $p['first_name'],
@@ -109,25 +108,22 @@ class DatabaseSeeder extends Seeder
             ]);
         };
 
-        // Helper: create visit + vitals + optional assessment
         $mkVisit = function (
             Patient $patient, User $clerk, array $v,
             ?User $assessingDoctor = null
         ) {
-            $at = now()->subDays($v['days_ago'])->setTimeFromTimeString($v['time']);
+            $at      = now()->subDays($v['days_ago'])->setTimeFromTimeString($v['time']);
             $isPedia = $patient->is_pedia;
 
-            // Determine if this visit has been assessed/admitted
-            $hasAssessment = isset($v['assessment']);
-            $a = $v['assessment'] ?? null;
-
-            $status = $v['status'];
-            $disposition = null;
-            $paymentClass = null;
-            $admittedWard = null;
-            $admittedService = null;
+            $hasAssessment    = isset($v['assessment']);
+            $a                = $v['assessment'] ?? null;
+            $status           = $v['status'];
+            $disposition      = null;
+            $paymentClass     = null;
+            $admittedWard     = null;
+            $admittedService  = null;
             $assignedDoctorId = null;
-            $dischargedAt = null;
+            $dischargedAt     = null;
 
             if ($hasAssessment) {
                 $disposition = $a['disposition'];
@@ -180,40 +176,37 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
 
-            // Assessment / Medical History
             if ($hasAssessment && $assessingDoctor) {
                 MedicalHistory::create([
-                    'visit_id'               => $visit->id,
-                    'patient_id'             => $patient->id,
-                    'doctor_id'              => $assessingDoctor->id,
-                    'chief_complaint'        => $v['cc'],
+                    'visit_id'                   => $visit->id,
+                    'patient_id'                 => $patient->id,
+                    'doctor_id'                  => $assessingDoctor->id,
+                    'chief_complaint'            => $v['cc'],
                     'history_of_present_illness' => $a['hpi'] ?? null,
-                    'past_medical_history'   => $a['pmh'] ?? null,
-                    'drug_allergies'         => $a['allergies'] ?? 'NKDA',
-                    'pe_skin'                => 'No rashes, no lesions noted',
-                    'pe_head_eent'           => 'Anicteric sclerae, pink palpebral conjunctiva',
-                    'pe_chest'               => 'Symmetrical chest expansion',
-                    'pe_lungs'               => $a['pe_lungs']  ?? 'Clear breath sounds bilaterally',
-                    'pe_cardiovascular'      => $a['pe_cvs']    ?? 'Adynamic precordium, RRR, no murmur',
-                    'pe_abdomen'             => $a['pe_abd']    ?? 'Soft, non-tender, non-distended',
-                    'pe_extremities'         => 'No edema, capillary refill < 2 sec',
-                    'admitting_impression'   => $a['impression'] ?? $a['diagnosis'],
-                    'diagnosis'              => $a['diagnosis'],
-                    'differential_diagnosis' => $a['ddx'] ?? null,
-                    'plan'                   => $a['plan'],
-                    'disposition'            => $disposition,
-                    'admitted_ward'          => $admittedWard,
-                    'service'                => $admittedService,
-                    'payment_type'           => $paymentClass,
+                    'past_medical_history'       => $a['pmh'] ?? null,
+                    'drug_allergies'             => $a['allergies'] ?? 'NKDA',
+                    'pe_skin'                    => 'No rashes, no lesions noted',
+                    'pe_head_eent'               => 'Anicteric sclerae, pink palpebral conjunctiva',
+                    'pe_chest'                   => 'Symmetrical chest expansion',
+                    'pe_lungs'                   => $a['pe_lungs']  ?? 'Clear breath sounds bilaterally',
+                    'pe_cardiovascular'          => $a['pe_cvs']    ?? 'Adynamic precordium, RRR, no murmur',
+                    'pe_abdomen'                 => $a['pe_abd']    ?? 'Soft, non-tender, non-distended',
+                    'pe_extremities'             => 'No edema, capillary refill < 2 sec',
+                    'admitting_impression'       => $a['impression'] ?? $a['diagnosis'],
+                    'diagnosis'                  => $a['diagnosis'],
+                    'differential_diagnosis'     => $a['ddx'] ?? null,
+                    'plan'                       => $a['plan'],
+                    'disposition'                => $disposition,
+                    'admitted_ward'              => $admittedWard,
+                    'service'                    => $admittedService,
+                    'payment_type'               => $paymentClass,
                 ]);
             }
 
             return $visit;
         };
 
-        // ────────────────────────────────────────────────────────────────────
-        // TODAY'S PATIENTS (days_ago = 0) — various stages of the workflow
-        // ────────────────────────────────────────────────────────────────────
+        // ── TODAY ─────────────────────────────────────────────────────────────
 
         // 1. Registered only (no vitals yet)
         $p1 = $mkPatient([
@@ -279,24 +272,22 @@ class DatabaseSeeder extends Seeder
             'brought_by' => 'Ambulance', 'condition' => 'Fair', 'status' => 'admitted',
             'vitals' => ['temp' => 37.2, 'pr' => 118, 'rr' => 26, 'bp' => '88/60', 'o2' => 89, 'wt' => 68.0, 'pain' => 9],
             'assessment' => [
-                'diagnosis'    => 'Blunt chest trauma; Tension pneumothorax, right',
-                'hpi'          => 'Patient was in a motorcycle accident. Struck by a car. Progressive SOB after impact.',
-                'pmh'          => 'No known prior illness',
-                'allergies'    => 'NKDA',
-                'pe_lungs'     => 'Absent breath sounds on the right, deviated trachea to left',
-                'pe_cvs'       => 'Tachycardic, muffled heart sounds',
-                'pe_abd'       => 'Soft, non-tender',
-                'impression'   => 'Tension pneumothorax R side',
-                'ddx'          => 'Hemothorax, cardiac tamponade',
-                'plan'         => 'Emergency needle decompression → chest tube insertion; IVF PNSS 1L fast drip; O2 via NRM; Surgical consult',
-                'disposition'  => 'Admitted',
-                'payment_class'=> 'Charity',
-                'ward'         => 'ICU',
-                'service'      => 'Surgery',
+                'diagnosis'   => 'Blunt chest trauma; Tension pneumothorax, right',
+                'hpi'         => 'Patient was in a motorcycle accident. Struck by a car. Progressive SOB after impact.',
+                'pmh'         => 'No known prior illness',
+                'allergies'   => 'NKDA',
+                'pe_lungs'    => 'Absent breath sounds on the right, deviated trachea to left',
+                'pe_cvs'      => 'Tachycardic, muffled heart sounds',
+                'pe_abd'      => 'Soft, non-tender',
+                'impression'  => 'Tension pneumothorax R side',
+                'ddx'         => 'Hemothorax, cardiac tamponade',
+                'plan'        => 'Emergency needle decompression → chest tube insertion; IVF PNSS 1L fast drip; O2 via NRM; Surgical consult',
+                'disposition' => 'Admitted', 'payment_class' => 'Charity',
+                'ward' => 'ICU', 'service' => 'Surgery',
             ],
         ], $drDelaCruz);
 
-        // 6. OPD — assessed + discharged
+        // p6 — discharged, will be the "ali" patient user
         $p6 = $mkPatient([
             'family_name' => 'Reyes', 'first_name' => 'Maria', 'middle_name' => 'Cruz',
             'birthday' => '1975-07-22', 'sex' => 'Female',
@@ -309,18 +300,16 @@ class DatabaseSeeder extends Seeder
             'status' => 'discharged',
             'vitals' => ['temp' => 36.8, 'pr' => 78, 'rr' => 16, 'bp' => '165/105', 'o2' => 98, 'wt' => 72.0, 'pain' => 3],
             'assessment' => [
-                'diagnosis'    => 'Hypertension Stage 2, uncontrolled',
-                'hpi'          => 'Headache for 2 days. BP poorly controlled despite amlodipine 5mg OD.',
-                'pmh'          => 'Known hypertensive x 5 years',
-                'allergies'    => 'NKDA',
-                'plan'         => 'Upstep amlodipine to 10mg OD; add losartan 50mg OD; low-salt diet; return in 2 weeks',
-                'disposition'  => 'Discharged',
+                'diagnosis'   => 'Hypertension Stage 2, uncontrolled',
+                'hpi'         => 'Headache for 2 days. BP poorly controlled despite amlodipine 5mg OD.',
+                'pmh'         => 'Known hypertensive x 5 years',
+                'allergies'   => 'NKDA',
+                'plan'        => 'Upstep amlodipine to 10mg OD; add losartan 50mg OD; low-salt diet; return in 2 weeks',
+                'disposition' => 'Discharged',
             ],
         ], $drSantos);
 
-        // ────────────────────────────────────────────────────────────────────
-        // YESTERDAY'S PATIENTS (days_ago = 1)
-        // ────────────────────────────────────────────────────────────────────
+        // ── YESTERDAY ─────────────────────────────────────────────────────────
 
         // 7. ER — admitted, Private (Surgery)
         $p7 = $mkPatient([
@@ -335,23 +324,20 @@ class DatabaseSeeder extends Seeder
             'brought_by' => 'Family', 'condition' => 'Fair', 'status' => 'admitted',
             'vitals' => ['temp' => 38.2, 'pr' => 104, 'rr' => 18, 'bp' => '108/72', 'o2' => 99, 'wt' => 52.0, 'pain' => 8],
             'assessment' => [
-                'diagnosis'    => 'Acute appendicitis (Alvarado score 8/10)',
-                'hpi'          => 'Periumbilical pain that migrated to RLQ over 12 hours. McBurney\'s point positive. Rovsing\'s sign positive.',
-                'pmh'          => 'No prior surgeries',
-                'allergies'    => 'Penicillin (rash)',
-                'pe_abd'       => 'Guarding and rigidity at RLQ; rebound tenderness positive',
-                'impression'   => 'Acute appendicitis, non-perforated',
-                'ddx'          => 'Ovarian cyst torsion, ectopic pregnancy, mesenteric lymphadenitis',
-                'plan'         => 'NPO; IVF D5LR 1L x 8h; Cefuroxime 1.5g IV q8h; Metronidazole 500mg IV q8h; Prep for laparoscopic appendectomy',
-                'disposition'  => 'Admitted',
-                'payment_class'=> 'Private',
-                'ward'         => 'Surgical Ward Rm 204',
-                'service'      => 'Surgery',
-                'doctor'       => $drDelaCruz,
+                'diagnosis'   => 'Acute appendicitis (Alvarado score 8/10)',
+                'hpi'         => 'Periumbilical pain that migrated to RLQ over 12 hours. McBurney\'s point positive. Rovsing\'s sign positive.',
+                'pmh'         => 'No prior surgeries',
+                'allergies'   => 'Penicillin (rash)',
+                'pe_abd'      => 'Guarding and rigidity at RLQ; rebound tenderness positive',
+                'impression'  => 'Acute appendicitis, non-perforated',
+                'ddx'         => 'Ovarian cyst torsion, ectopic pregnancy, mesenteric lymphadenitis',
+                'plan'        => 'NPO; IVF D5LR 1L x 8h; Cefuroxime 1.5g IV q8h; Metronidazole 500mg IV q8h; Prep for laparoscopic appendectomy',
+                'disposition' => 'Admitted', 'payment_class' => 'Private',
+                'ward' => 'Surgical Ward Rm 204', 'service' => 'Surgery', 'doctor' => $drDelaCruz,
             ],
         ], $drDelaCruz);
 
-        // 8. OPD — discharged
+        // p8 — discharged, will be the "patient" demo user
         $p8 = $mkPatient([
             'family_name' => 'Bautista', 'first_name' => 'Eduardo', 'middle_name' => 'Navarro',
             'birthday' => '1970-05-10', 'sex' => 'Male',
@@ -364,18 +350,16 @@ class DatabaseSeeder extends Seeder
             'status' => 'discharged',
             'vitals' => ['temp' => 36.5, 'pr' => 74, 'rr' => 15, 'bp' => '126/82', 'o2' => 98, 'wt' => 78.0, 'pain' => 1],
             'assessment' => [
-                'diagnosis'    => 'Diabetes Mellitus Type 2, poorly controlled (FBS 15.2 mmol/L)',
-                'hpi'          => 'Known T2DM x 3 years, non-compliant with metformin. Recent FBS 15.2.',
-                'pmh'          => 'DM Type 2 x 3 years',
-                'allergies'    => 'NKDA',
-                'plan'         => 'Metformin 1g BID (reinstate); add glimepiride 2mg OD; ADA diet counseling; HbA1c; return in 1 month',
-                'disposition'  => 'Discharged',
+                'diagnosis'   => 'Diabetes Mellitus Type 2, poorly controlled (FBS 15.2 mmol/L)',
+                'hpi'         => 'Known T2DM x 3 years, non-compliant with metformin. Recent FBS 15.2.',
+                'pmh'         => 'DM Type 2 x 3 years',
+                'allergies'   => 'NKDA',
+                'plan'        => 'Metformin 1g BID (reinstate); add glimepiride 2mg OD; ADA diet counseling; HbA1c; return in 1 month',
+                'disposition' => 'Discharged',
             ],
         ], $drSantos);
 
-        // ────────────────────────────────────────────────────────────────────
-        // OLDER VISITS (days_ago = 3–10)
-        // ────────────────────────────────────────────────────────────────────
+        // ── OLDER ─────────────────────────────────────────────────────────────
 
         // 9. Referred (TB)
         $p9 = $mkPatient([
@@ -390,14 +374,14 @@ class DatabaseSeeder extends Seeder
             'status' => 'referred',
             'vitals' => ['temp' => 37.8, 'pr' => 88, 'rr' => 20, 'bp' => '120/78', 'o2' => 93, 'wt' => 42.0, 'pain' => 2],
             'assessment' => [
-                'diagnosis'    => 'Pulmonary Tuberculosis, Bacteriologically Confirmed, Category I',
-                'hpi'          => 'Cough for 3 weeks productive of yellowish sputum. Drenching night sweats. Weight loss 8 lbs.',
-                'pmh'          => 'No prior TB treatment',
-                'allergies'    => 'NKDA',
-                'pe_lungs'     => 'Coarse rales bilateral upper lobes',
-                'impression'   => 'PTB Cat I',
-                'plan'         => 'GeneXpert sputum; refer to DOTS center; RIPE regimen to start pending result',
-                'disposition'  => 'Referred',
+                'diagnosis'   => 'Pulmonary Tuberculosis, Bacteriologically Confirmed, Category I',
+                'hpi'         => 'Cough for 3 weeks productive of yellowish sputum. Drenching night sweats. Weight loss 8 lbs.',
+                'pmh'         => 'No prior TB treatment',
+                'allergies'   => 'NKDA',
+                'pe_lungs'    => 'Coarse rales bilateral upper lobes',
+                'impression'  => 'PTB Cat I',
+                'plan'        => 'GeneXpert sputum; refer to DOTS center; RIPE regimen to start pending result',
+                'disposition' => 'Referred',
             ],
         ], $drSantos);
 
@@ -414,15 +398,14 @@ class DatabaseSeeder extends Seeder
             'brought_by' => 'Family', 'condition' => 'Fair', 'status' => 'discharged',
             'vitals' => ['temp' => 37.0, 'pr' => 92, 'rr' => 16, 'bp' => '118/76', 'o2' => 98, 'wt' => 55.0, 'pain' => 2],
             'assessment' => [
-                'diagnosis'    => 'New onset seizure, etiology to be determined',
-                'hpi'          => 'Witnessed GTC seizure lasting 3 minutes at home. No prior episodes. No fever. No head trauma.',
-                'pmh'          => 'No prior neurological illness',
-                'allergies'    => 'NKDA',
-                'pe_neurology' => 'Post-ictal state on arrival; GCS 14; pupils equal round reactive; no focal deficit noted',
-                'impression'   => 'New onset seizure — r/o epilepsy, structural lesion, metabolic cause',
-                'ddx'          => 'Epilepsy, intracranial mass, metabolic disturbance',
-                'plan'         => 'EEG; MRI brain with contrast; CBC, BMP, blood glucose; Phenytoin 15mg/kg IV loading; neurology follow-up',
-                'disposition'  => 'Discharged',
+                'diagnosis'   => 'New onset seizure, etiology to be determined',
+                'hpi'         => 'Witnessed GTC seizure lasting 3 minutes at home. No prior episodes. No fever. No head trauma.',
+                'pmh'         => 'No prior neurological illness',
+                'allergies'   => 'NKDA',
+                'impression'  => 'New onset seizure — r/o epilepsy, structural lesion, metabolic cause',
+                'ddx'         => 'Epilepsy, intracranial mass, metabolic disturbance',
+                'plan'        => 'EEG; MRI brain with contrast; CBC, BMP, blood glucose; Phenytoin 15mg/kg IV loading; neurology follow-up',
+                'disposition' => 'Discharged',
             ],
         ], $drCastillo);
 
@@ -438,17 +421,15 @@ class DatabaseSeeder extends Seeder
             'status' => 'admitted',
             'vitals' => ['temp' => 39.6, 'pr' => 148, 'rr' => 52, 'bp' => null, 'o2' => 93, 'wt' => 10.2, 'pain' => 7],
             'assessment' => [
-                'diagnosis'    => 'Severe Pneumonia (CAP-HR), 3-year-old male',
-                'hpi'          => 'Fever 39°C for 2 days. Progressive difficulty breathing. Poor feeding. No rashes.',
-                'pmh'          => 'No prior admissions. Vaccinations complete.',
-                'allergies'    => 'NKDA',
-                'pe_lungs'     => 'Subcostal and intercostal retractions; bilateral crackles on auscultation',
-                'impression'   => 'CAP-HR (SARI)',
-                'plan'         => 'Admit; O2 via face mask 2-3 LPM; IVF D5 0.3NaCl 900mL/day; Ampicillin 200mg/kg/day q6h; Chloramphenicol 75mg/kg/day',
-                'disposition'  => 'Admitted',
-                'payment_class'=> 'Charity',
-                'ward'         => 'Pedia Ward',
-                'service'      => 'Pediatrics',
+                'diagnosis'   => 'Severe Pneumonia (CAP-HR), 3-year-old male',
+                'hpi'         => 'Fever 39°C for 2 days. Progressive difficulty breathing. Poor feeding. No rashes.',
+                'pmh'         => 'No prior admissions. Vaccinations complete.',
+                'allergies'   => 'NKDA',
+                'pe_lungs'    => 'Subcostal and intercostal retractions; bilateral crackles on auscultation',
+                'impression'  => 'CAP-HR (SARI)',
+                'plan'        => 'Admit; O2 via face mask 2-3 LPM; IVF D5 0.3NaCl 900mL/day; Ampicillin 200mg/kg/day q6h; Chloramphenicol 75mg/kg/day',
+                'disposition' => 'Admitted', 'payment_class' => 'Charity',
+                'ward' => 'Pedia Ward', 'service' => 'Pediatrics',
             ],
         ], $drReyes);
 
@@ -465,46 +446,64 @@ class DatabaseSeeder extends Seeder
             'status' => 'admitted',
             'vitals' => ['temp' => 36.7, 'pr' => 88, 'rr' => 16, 'bp' => '160/110', 'o2' => 99, 'wt' => 68.0, 'pain' => 7],
             'assessment' => [
-                'diagnosis'    => 'Severe Pre-eclampsia, G2P1, 34 weeks AOG',
-                'hpi'          => 'Known OB patient. Severe headache, scotomata, epigastric pain. BP 160/110 on recumbent position.',
-                'pmh'          => 'No prior hypertension',
-                'allergies'    => 'NKDA',
-                'pe_abd'       => 'FH 34 cm; FHT 148 bpm; cephalic; no uterine contractions',
-                'impression'   => 'Severe Pre-eclampsia',
-                'ddx'          => 'Gestational hypertension, HELLP syndrome',
-                'plan'         => 'Admit; Magnesium sulfate loading 4g IVP then 1g/hr; Hydralazine 10mg IVP PRN for BP >160/110; NST; Betamethasone 12mg IM q24h x 2',
-                'disposition'  => 'Admitted',
-                'payment_class'=> 'Private',
-                'ward'         => 'OB Ward Rm 312',
-                'service'      => 'OB-Gynecology',
-                'doctor'       => $drVillanueva,
+                'diagnosis'   => 'Severe Pre-eclampsia, G2P1, 34 weeks AOG',
+                'hpi'         => 'Known OB patient. Severe headache, scotomata, epigastric pain. BP 160/110 on recumbent position.',
+                'pmh'         => 'No prior hypertension',
+                'allergies'   => 'NKDA',
+                'pe_abd'      => 'FH 34 cm; FHT 148 bpm; cephalic; no uterine contractions',
+                'impression'  => 'Severe Pre-eclampsia',
+                'ddx'         => 'Gestational hypertension, HELLP syndrome',
+                'plan'        => 'Admit; Magnesium sulfate loading 4g IVP then 1g/hr; Hydralazine 10mg IVP PRN for BP >160/110; NST; Betamethasone 12mg IM q24h x 2',
+                'disposition' => 'Admitted', 'payment_class' => 'Private',
+                'ward' => 'OB Ward Rm 312', 'service' => 'OB-Gynecology', 'doctor' => $drVillanueva,
             ],
         ], $drVillanueva);
 
-        // ────────────────────────────────────────────────────────────────────
+        // ── 8. Patient portal users — linked to existing Patient records ───────
+        // juan@lumc.gov.ph → linked to p6 (Maria Reyes — hypertension, discharged)
+        $userAli = User::create([
+            'name'       => 'Maria Reyes',
+            'email'      => 'juan@lumc.gov.ph',
+            'password'   => Hash::make('password'),
+            'panel'      => 'patient',
+            'is_active'  => true,
+            'patient_id' => $p6->id,
+        ]);
+        $userAli->assignRole('patient');
+
+        // patient@lumc.gov.ph → linked to p8 (Eduardo Bautista — diabetes, discharged)
+        $userPatient = User::create([
+            'name'       => 'Eduardo Bautista',
+            'email'      => 'patient@lumc.gov.ph',
+            'password'   => Hash::make('password'),
+            'panel'      => 'patient',
+            'is_active'  => true,
+            'patient_id' => $p8->id,
+        ]);
+        $userPatient->assignRole('patient');
+
+        // ── Console output ────────────────────────────────────────────────────
         $this->command->info('');
         $this->command->info('✅  LUMC database seeded successfully!');
         $this->command->info('');
-        $this->command->info('┌─────────────────────────────────────────────────────────────────┐');
-        $this->command->info('│                    LOGIN CREDENTIALS                             │');
-        $this->command->info('│                  All passwords: password                         │');
-        $this->command->info('├──────────────────────────┬──────────────────────────────────────┤');
-        $this->command->info('│ Role                     │ Email                                │');
-        $this->command->info('├──────────────────────────┼──────────────────────────────────────┤');
-        $this->command->info('│ Admin                    │ admin@lumc.gov.ph                    │');
-        $this->command->info('│ Doctor (Int. Medicine)   │ doctor@lumc.gov.ph                   │');
-        $this->command->info('│ Doctor (Int. Medicine)   │ rsantos@lumc.gov.ph                  │');
-        $this->command->info('│ Doctor (Pediatrics)      │ mreyes@lumc.gov.ph                   │');
-        $this->command->info('│ Doctor (Surgery)         │ jdelacruz@lumc.gov.ph                │');
-        $this->command->info('│ Doctor (OB-Gynecology)   │ avillanueva@lumc.gov.ph              │');
-        $this->command->info('│ Doctor (Neurology)       │ rcastillo@lumc.gov.ph                │');
-        $this->command->info('│ Nurse                    │ gmendoza@lumc.gov.ph                 │');
-        $this->command->info('│ Clerk (OPD)              │ clerk@lumc.gov.ph                    │');
-        $this->command->info('│ Clerk (ER)               │ clerk-er@lumc.gov.ph                 │');
-        $this->command->info('│ Tech                     │ tech@lumc.gov.ph                     │');
-        $this->command->info('└──────────────────────────┴──────────────────────────────────────┘');
+        $this->command->info('┌──────────────────────────────┬──────────────────────────────────────┐');
+        $this->command->info('│ Role                         │ Email                                │');
+        $this->command->info('├──────────────────────────────┼──────────────────────────────────────┤');
+        $this->command->info('│ Admin                        │ admin@lumc.gov.ph                    │');
+        $this->command->info('│ Doctor (Int. Medicine)       │ doctor@lumc.gov.ph                   │');
+        $this->command->info('│ Doctor (Int. Medicine)       │ rsantos@lumc.gov.ph                  │');
+        $this->command->info('│ Doctor (Pediatrics)          │ mreyes@lumc.gov.ph                   │');
+        $this->command->info('│ Doctor (Surgery)             │ jdelacruz@lumc.gov.ph                │');
+        $this->command->info('│ Doctor (OB-Gynecology)       │ avillanueva@lumc.gov.ph              │');
+        $this->command->info('│ Doctor (Neurology)           │ rcastillo@lumc.gov.ph                │');
+        $this->command->info('│ Nurse                        │ gmendoza@lumc.gov.ph                 │');
+        $this->command->info('│ Clerk (OPD)                  │ clerk@lumc.gov.ph                    │');
+        $this->command->info('│ Clerk (ER)                   │ clerk-er@lumc.gov.ph                 │');
+        $this->command->info('│ Tech                         │ tech@lumc.gov.ph                     │');
+        $this->command->info('│ Patient (Maria Reyes)        │ juan@lumc.gov.ph                      │');
+        $this->command->info('│ Patient (Eduardo Bautista)   │ patient@lumc.gov.ph                  │');
+        $this->command->info('└──────────────────────────────┴──────────────────────────────────────┘');
+        $this->command->info('  All passwords: password');
         $this->command->info('');
-        $this->command->info('12 patients seeded — today: 6 (2 registered, 2 vitals done, 1 admitted, 1 discharged)');
-        $this->command->info('Panel URLs:  /admin  /doctor  /nurse  /clerk  /tech');
     }
 }
