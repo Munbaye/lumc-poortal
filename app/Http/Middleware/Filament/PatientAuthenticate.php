@@ -2,17 +2,25 @@
 
 namespace App\Http\Middleware\Filament;
 
-use Filament\Http\Middleware\Authenticate as FilamentAuthenticate;
+use Closure;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
-/**
- * Replaces Filament's default Authenticate middleware for the PATIENT panel.
- * When unauthenticated, redirects to the public landing page (/)
- * where the patient login modal lives.
- */
-class PatientAuthenticate extends FilamentAuthenticate
+class PatientAuthenticate
 {
-    protected function redirectTo($request): string
+    public function handle(Request $request, Closure $next)
     {
-        return '/';
+        if (!Auth::check()) {
+            return redirect('/');
+        }
+
+        $user = Auth::user();
+
+        if ($user->panel !== 'patient' || !$user->is_active) {
+            Auth::logout();
+            return redirect('/');
+        }
+
+        return $next($request);
     }
 }

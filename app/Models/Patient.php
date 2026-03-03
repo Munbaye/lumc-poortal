@@ -3,6 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class Patient extends Model
@@ -14,12 +15,15 @@ class Patient extends Model
         'birthday', 'age', 'sex', 'address', 'contact_number',
         'occupation', 'civil_status', 'spouse_name', 'father_name',
         'mother_name', 'nationality', 'registration_type',
-        'brought_by', 'condition_on_arrival', 'is_pedia'
+        'brought_by', 'condition_on_arrival', 'is_pedia',
+        'has_incomplete_info', 'is_unknown',
     ];
 
     protected $casts = [
-        'birthday' => 'date',
-        'is_pedia'  => 'boolean',
+        'birthday'            => 'date',
+        'is_pedia'            => 'boolean',
+        'has_incomplete_info' => 'boolean',
+        'is_unknown'          => 'boolean',
     ];
 
     protected static function boot(): void
@@ -28,56 +32,62 @@ class Patient extends Model
 
         static::creating(function ($patient) {
 
-            // ── Auto-generate case_no ──────────────────────────────
-            $year = now()->year;
-            $last = static::whereYear('created_at', $year)
-                ->orderByDesc('id')
-                ->first();
+            // ── Auto-generate case_no (with lock to prevent duplicates) ──────
+            //
+            // We wrap the sequence read+assign in a DB transaction with a
+            // table-level lock so that if two patients are created at the exact
+            // same millisecond, they cannot both read the same "last" seq number.
+            //
+            $patient->case_no = DB::transaction(function () {
+                $year = now()->year;
 
-            $seq = 1;
-            if ($last && $last->case_no) {
-                $parts = explode('-', $last->case_no);
-                $seq   = ((int) end($parts)) + 1;
-            }
+                // IMPORTANT: use withTrashed() so soft-deleted patients are
+                // included. The unique constraint on case_no applies to ALL rows
+                // including soft-deleted ones, so we must never reuse their numbers.
+                $last = static::withTrashed()
+                    ->whereYear('created_at', $year)
+                    ->lockForUpdate()
+                    ->orderByDesc('id')
+                    ->first();
 
-            $patient->case_no = 'LUMC-' . $year . '-' . str_pad($seq, 6, '0', STR_PAD_LEFT);
+                $seq = 1;
+                if ($last && $last->case_no) {
+                    $parts = explode('-', $last->case_no);
+                    $seq   = ((int) end($parts)) + 1;
+                }
 
-            // ── Auto-calculate age from birthday ───────────────────
-            // Uses Carbon so it is always a whole positive integer
+                return 'LUMC-' . $year . '-' . str_pad($seq, 6, '0', STR_PAD_LEFT);
+            });
+
+            // ── Auto-calculate age from birthday ─────────────────────────────
             if ($patient->birthday) {
                 $birthday = Carbon::parse($patient->birthday);
-
-                // Birthday must be in the past; guard against future dates
                 if ($birthday->isFuture()) {
                     $patient->age      = 0;
                     $patient->is_pedia = true;
                 } else {
-                    $age               = (int) $birthday->diffInYears(now()); // always ≥ 0
+                    $age               = (int) $birthday->diffInYears(now());
                     $patient->age      = $age;
                     $patient->is_pedia = $age < 12;
                 }
             }
-            // Note: pedia from weight (<10 kg) is evaluated in RecordVitals::save()
+            // If only age given (no birthday), keep age as-is
         });
 
-        // Re-calculate age on update if birthday changes
         static::updating(function ($patient) {
             if ($patient->isDirty('birthday') && $patient->birthday) {
                 $birthday = Carbon::parse($patient->birthday);
                 if (!$birthday->isFuture()) {
-                    $age           = (int) $birthday->diffInYears(now());
-                    $patient->age  = $age;
+                    $age               = (int) $birthday->diffInYears(now());
+                    $patient->age      = $age;
                     $patient->is_pedia = $age < 12;
                 }
             }
         });
     }
 
-    // ── Accessors ─────────────────────────────────────────────────
+    // ── Accessors ──────────────────────────────────────────────────────────────
 
-    /**
-     * "DELA CRUZ, Juan M." format
-     */
     public function getFullNameAttribute(): string
     {
         $middle = $this->middle_name
@@ -86,25 +96,30 @@ class Patient extends Model
         return strtoupper($this->family_name) . ', ' . $this->first_name . $middle;
     }
 
-    public function getAgeDisplayAttribute(): string
+    /**
+     * Always compute age dynamically from birthday if available,
+     * so it updates automatically over the years.
+     */
+    public function getCurrentAgeAttribute(): ?int
     {
         if ($this->birthday) {
-            $birthday = Carbon::parse($this->birthday);
-            if ($birthday->isFuture()) {
-                return '0 y/o';
-            }
-            $age = (int) $birthday->diffInYears(now());
-            return $age . ' y/o';
+            return (int) \Carbon\Carbon::parse($this->birthday)->diffInYears(now());
         }
+        return $this->age;
+    }
 
-        if ($this->age !== null && $this->age >= 0) {
-            return (int) $this->age . ' y/o';
+    public function getAgeDisplayAttribute(): string
+    {
+        $age = $this->current_age;
+
+        if ($age !== null && $age >= 0) {
+            return $age . ' y/o';
         }
 
         return 'Unknown';
     }
 
-    // ── Relationships ──────────────────────────────────────────────
+    // ── Relationships ──────────────────────────────────────────────────────────
 
     public function visits()
     {
@@ -119,5 +134,10 @@ class Patient extends Model
     public function latestVisit()
     {
         return $this->hasOne(Visit::class)->latestOfMany('registered_at');
+    }
+
+    public function userAccount()
+    {
+        return $this->hasOne(User::class, 'patient_id');
     }
 }

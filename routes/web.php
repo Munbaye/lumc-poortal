@@ -6,22 +6,43 @@ use App\Http\Controllers\AuthController;
 // ── PUBLIC LANDING PAGE ────────────────────────────────────────────────────────
 Route::get('/', function () {
     if (auth()->check()) {
-        $routes = [
-            'admin'   => '/admin',
-            'doctor'  => '/doctor/patient-queues',
-            'nurse'   => '/nurse',
-            'clerk'   => '/clerk',
-            'tech'    => '/tech',
-            'patient' => '/patient',
+        $user = auth()->user();
+
+        // Staff panels: redirect them away from the public homepage
+        $staffRoutes = [
+            'admin'  => '/admin',
+            'doctor' => '/doctor/patient-queues',
+            'nurse'  => '/nurse',
+            'clerk'  => '/clerk',
+            'tech'   => '/tech',
         ];
-        return redirect($routes[auth()->user()->panel] ?? '/admin');
+
+        if (isset($staffRoutes[$user->panel])) {
+            return redirect($staffRoutes[$user->panel]);
+        }
+
+        // Patients with force_password_change: stay on homepage so the modal can open
+        if ($user->panel === 'patient' && $user->force_password_change) {
+            return view('welcome');
+        }
+
+        // Patients fully logged in: send to their records
+        if ($user->panel === 'patient') {
+            return redirect('/patient/my-records');
+        }
     }
+
     return view('welcome');
 });
 
 // ── PATIENT LOGIN ──────────────────────────────────────────────────────────────
 Route::post('/patient-login', [AuthController::class, 'patientLogin'])
     ->name('patient.login.submit');
+
+// ── PATIENT CHANGE PASSWORD ────────────────────────────────────────────────────
+Route::post('/patient-change-password', [AuthController::class, 'patientChangePassword'])
+    ->name('patient.change.password')
+    ->middleware('auth');
 
 // ── STAFF PORTAL ───────────────────────────────────────────────────────────────
 Route::get('/staff', function () {
@@ -52,6 +73,13 @@ foreach (['admin', 'doctor', 'nurse', 'clerk', 'tech', 'patient'] as $panel) {
     Route::match(['get', 'post'], "/{$panel}/logout", [AuthController::class, 'logout'])
         ->name("{$panel}.logout");
 }
+
+// ── NAMED LOGIN FALLBACK ───────────────────────────────────────────────────────
+// Laravel's AuthenticateSession and other internals look for route('login').
+// We have no separate login page — the login modal lives on the homepage.
+Route::get('/login', function () {
+    return redirect('/');
+})->name('login');
 
 // ── PASSWORD RESET PLACEHOLDER ─────────────────────────────────────────────────
 Route::get('/forgot-password', function () {

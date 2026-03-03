@@ -18,21 +18,17 @@ class VisitResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            // Shows ALL visits — use date filter to narrow.
-            // Default: today's visits newest-first.
             ->query(
                 Visit::with(['patient', 'assignedDoctor'])
                     ->latest('registered_at')
             )
             ->columns([
-                // ── Date / Time ─────────────────────────────────────────────
                 Tables\Columns\TextColumn::make('registered_at')
                     ->label('Date / Time')
                     ->dateTime('M d, Y H:i')
                     ->sortable()
                     ->description(fn ($record) => $record->registered_at->diffForHumans()),
 
-                // ── Patient identifiers ─────────────────────────────────────
                 Tables\Columns\TextColumn::make('patient.case_no')
                     ->label('Case No')
                     ->searchable()
@@ -44,7 +40,9 @@ class VisitResource extends Resource
                     ->label('Last Name')
                     ->searchable()
                     ->sortable()
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->color(fn ($record) => $record->patient?->has_incomplete_info ? 'danger' : null)
+                    ->description(fn ($record) => $record->patient?->has_incomplete_info ? '⚠️ Incomplete Info' : null),
 
                 Tables\Columns\TextColumn::make('patient.first_name')
                     ->label('First Name')
@@ -54,14 +52,17 @@ class VisitResource extends Resource
                 Tables\Columns\TextColumn::make('patient.age')
                     ->label('Age')
                     ->sortable()
-                    ->formatStateUsing(fn ($state) => $state !== null ? $state . ' y/o' : '—')
+                    ->formatStateUsing(fn ($record) =>
+                        $record->patient
+                            ? ($record->patient->current_age ?? $record->patient->age) . ' y/o'
+                            : '—'
+                    )
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('patient.sex')
                     ->label('Sex')
                     ->alignCenter(),
 
-                // ── Visit details ───────────────────────────────────────────
                 Tables\Columns\TextColumn::make('visit_type')
                     ->label('Entry')
                     ->badge()
@@ -96,18 +97,13 @@ class VisitResource extends Resource
             ])
             ->defaultSort('registered_at', 'desc')
             ->filters([
-                // Date range — defaults to today so the clerk sees today's list by default
                 Tables\Filters\Filter::make('date_range')
                     ->label('Date Range')
                     ->form([
                         \Filament\Forms\Components\DatePicker::make('from')
-                            ->label('From')
-                            ->default(today())
-                            ->native(false),
+                            ->label('From')->default(today())->native(false),
                         \Filament\Forms\Components\DatePicker::make('until')
-                            ->label('Until')
-                            ->default(today())
-                            ->native(false),
+                            ->label('Until')->default(today())->native(false),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -120,11 +116,9 @@ class VisitResource extends Resource
                         if ($data['until']) $out[] = 'Until: ' . Carbon::parse($data['until'])->format('M d, Y');
                         return $out;
                     }),
-
                 Tables\Filters\SelectFilter::make('visit_type')
                     ->label('Entry Point')
                     ->options(['OPD' => 'OPD', 'ER' => 'ER']),
-
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'registered'  => 'Registered',
@@ -134,8 +128,14 @@ class VisitResource extends Resource
                         'admitted'    => 'Admitted',
                         'referred'    => 'Referred',
                     ]),
+                Tables\Filters\TernaryFilter::make('incomplete_info')
+                    ->label('Incomplete Info')
+                    ->queries(
+                        true:  fn (Builder $query) => $query->whereHas('patient', fn ($q) => $q->where('has_incomplete_info', true)),
+                        false: fn (Builder $query) => $query->whereHas('patient', fn ($q) => $q->where('has_incomplete_info', false)),
+                    ),
             ])
-            ->persistFiltersInSession() // remembers last filter settings per user
+            ->persistFiltersInSession()
             ->actions([
                 Tables\Actions\Action::make('add_vitals')
                     ->label('Add Vitals')
@@ -146,7 +146,6 @@ class VisitResource extends Resource
                         \App\Filament\Clerk\Pages\RecordVitals::getUrl(['visitId' => $record->id])
                     )
                     ->visible(fn (Visit $record) => $record->status === 'registered'),
-
                 Tables\Actions\ViewAction::make(),
             ]);
     }

@@ -252,14 +252,6 @@
         .modal-footer-note a:hover { color: #93c5fd; }
 
         /* ── HERO IMAGE CAROUSEL ──────────────────────────────────────── */
-        /*
-         * Fully transparent — no background, no border, no frame.
-         * Every image is forced to fill the SAME fixed display size
-         * (width: 100%, height: 100%) using object-fit: contain so
-         * all images — regardless of their original pixel dimensions —
-         * appear at the exact same large size. No image is smaller or
-         * larger than another.
-         */
         .hero-carousel {
             position: relative;
             width: 100%;
@@ -276,12 +268,6 @@
             opacity: 1;
         }
 
-        /*
-         * The image wrapper forces a fixed display box — every image
-         * stretches to fill this box with object-fit: contain, so all
-         * images render at the same apparent size no matter their
-         * native resolution or aspect ratio.
-         */
         .carousel-slide .img-wrap {
             position: absolute;
             inset: 0;
@@ -290,10 +276,8 @@
             justify-content: center;
         }
         .carousel-slide .img-wrap img {
-            /* Force every image to the same display size */
             width: 100%;
             height: 100%;
-            /* contain = whole image visible, no cropping, no distortion */
             object-fit: contain;
             display: block;
             filter: drop-shadow(0 16px 40px rgba(0,0,0,.35));
@@ -324,7 +308,7 @@
             <a href="#contact"  class="text-gray-500 hover:text-blue-900 transition">Contact</a>
 
             <div class="login-wrap">
-                <button onclick="openLoginModal()"
+                <button onclick="openLoginModal(false)"
                     class="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg font-bold text-[13px] transition shadow">
                     <i class="fas fa-sign-in-alt mr-1.5"></i>Patient Login
                 </button>
@@ -345,7 +329,7 @@
         </nav>
 
         <div class="flex lg:hidden items-center gap-2">
-            <button onclick="openLoginModal()" class="bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-black">
+            <button onclick="openLoginModal(false)" class="bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-black">
                 <i class="fas fa-sign-in-alt mr-1"></i>Login
             </button>
             <a href="/staff" class="bg-blue-900 text-white px-3 py-2 rounded-lg text-xs font-black">
@@ -393,10 +377,6 @@
                 </div>
             </div>
 
-            {{-- ── HERO IMAGE CAROUSEL ──
-                 Every image is forced to width:100% height:100% with
-                 object-fit:contain — all images render at the same large
-                 display size regardless of their native pixel dimensions. --}}
             <div class="lg:col-span-2 hidden lg:flex items-center justify-center anim-fi">
                 <div class="hero-carousel">
                     @php
@@ -656,7 +636,7 @@
 </footer>
 
 {{-- ═══════════════════════════════════════════════════════ --}}
-{{-- PATIENT LOGIN MODAL — dark staff-portal style          --}}
+{{-- PATIENT LOGIN MODAL — two states: login & change pwd   --}}
 {{-- ═══════════════════════════════════════════════════════ --}}
 <div id="loginModal" class="patient-modal-overlay" onclick="handleOverlayClick(event)">
     <div class="patient-modal">
@@ -667,97 +647,206 @@
 
         <div class="modal-body">
 
-            <div class="modal-head">
-                <div class="modal-head-left">
-                    <img src="{{ asset('images/lumc-logo.png') }}" alt="LUMC" class="modal-head-logo"
-                        onerror="this.style.display='none'">
-                    <div class="modal-head-text">
-                        <div class="modal-head-super">La Union Medical Center</div>
-                        <div class="modal-head-title">Patient Sign In</div>
+            {{-- ══ LOGIN FORM ══ --}}
+            <div id="modalLogin">
+
+                <div class="modal-head">
+                    <div class="modal-head-left">
+                        <img src="{{ asset('images/lumc-logo.png') }}" alt="LUMC" class="modal-head-logo"
+                            onerror="this.style.display='none'">
+                        <div>
+                            <div class="modal-head-super">La Union Medical Center</div>
+                            <div class="modal-head-title">Patient Sign In</div>
+                        </div>
+                    </div>
+                    <button class="modal-close" onclick="closeLoginModal()" aria-label="Close">&times;</button>
+                </div>
+
+                <div class="modal-divider"></div>
+
+                @if(session('error'))
+                <div class="modal-err">
+                    <i class="fas fa-exclamation-circle" style="flex-shrink:0;"></i>
+                    <span>{{ session('error') }}</span>
+                </div>
+                @endif
+
+                @if($errors->has('email'))
+                <div class="modal-err">
+                    <i class="fas fa-exclamation-circle" style="flex-shrink:0;"></i>
+                    <span>{{ $errors->first('email') }}</span>
+                </div>
+                @endif
+
+                <form method="POST" action="{{ route('patient.login.submit') }}">
+                    @csrf
+
+                    <label class="modal-label">Username</label>
+                    <div class="modal-field">
+                        <i class="fas fa-user modal-field-icon"></i>
+                        <input type="text" name="email" value="{{ old('email') }}"
+                            placeholder="e.g. JuanDelaCruz25" required autofocus
+                            autocomplete="username">
+                    </div>
+
+                    <label class="modal-label">Password</label>
+                    <div class="modal-field">
+                        <i class="fas fa-lock modal-field-icon"></i>
+                        <input type="password" name="password" id="patientPwd"
+                            placeholder="••••••••" required autocomplete="current-password">
+                        <button type="button" class="modal-eye" onclick="togglePwd('patientPwd','patientPwdIcon')">
+                            <i id="patientPwdIcon" class="fas fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <div class="modal-meta">
+                        <label class="modal-remember">
+                            <input type="checkbox" name="remember">
+                            <span>Remember me</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="modal-submit">
+                        <i class="fas fa-sign-in-alt" style="margin-right:8px;"></i>SIGN IN AS PATIENT
+                    </button>
+                </form>
+
+                <div class="modal-footer-note">
+                    Hospital employee? <a href="/staff">Use the Staff Portal →</a>
+                </div>
+
+            </div>
+            {{-- ══ END LOGIN FORM ══ --}}
+
+            {{-- ══ CHANGE PASSWORD FORM ══ --}}
+            <div id="modalChangePassword" style="display:none;">
+
+                <div class="modal-head">
+                    <div class="modal-head-left">
+                        <img src="{{ asset('images/lumc-logo.png') }}" alt="LUMC" class="modal-head-logo"
+                            onerror="this.style.display='none'">
+                        <div>
+                            <div class="modal-head-super">La Union Medical Center</div>
+                            <div class="modal-head-title">Set New Password</div>
+                        </div>
                     </div>
                 </div>
-                <button class="modal-close" onclick="closeLoginModal()" aria-label="Close">&times;</button>
-            </div>
 
-            <div class="modal-divider"></div>
+                <div class="modal-divider"></div>
 
-            @if(session('error'))
-            <div class="modal-err">
-                <i class="fas fa-exclamation-circle" style="flex-shrink:0;"></i>
-                <span>{{ session('error') }}</span>
-            </div>
-            @endif
-
-            <form method="POST" action="{{ route('patient.login.submit') }}">
-                @csrf
-
-                <label class="modal-label">Email Address</label>
-                <div class="modal-field">
-                    <i class="fas fa-envelope modal-field-icon"></i>
-                    <input type="email" name="email" value="{{ old('email') }}"
-                        placeholder="your@email.com" required autofocus>
+                <div class="modal-err" style="margin-bottom:18px;">
+                    <i class="fas fa-lock" style="flex-shrink:0;"></i>
+                    <span>You must set a new password before accessing your records.</span>
                 </div>
-                @error('email')
-                <p style="color:#f87171;font-size:.73rem;margin-top:-10px;margin-bottom:14px;display:flex;align-items:center;gap:5px;">
-                    <i class="fas fa-exclamation-circle" style="font-size:.62rem;"></i>{{ $message }}
-                </p>
-                @enderror
 
-                <label class="modal-label">Password</label>
-                <div class="modal-field">
-                    <i class="fas fa-lock modal-field-icon"></i>
-                    <input type="password" name="password" id="patientPwd"
-                        placeholder="••••••••" required autocomplete="current-password">
-                    <button type="button" class="modal-eye" onclick="togglePwd('patientPwd','patientPwdIcon')">
-                        <i id="patientPwdIcon" class="fas fa-eye"></i>
+                @if(session('change_error'))
+                <div class="modal-err">
+                    <i class="fas fa-exclamation-circle" style="flex-shrink:0;"></i>
+                    <span>{{ session('change_error') }}</span>
+                </div>
+                @endif
+
+                <form method="POST" action="{{ route('patient.change.password') }}">
+                    @csrf
+
+                    <label class="modal-label">Current / Temporary Password</label>
+                    <div class="modal-field">
+                        <i class="fas fa-lock modal-field-icon"></i>
+                        <input type="password" name="current_password" id="chgCur"
+                            placeholder="Your temporary password" required>
+                        <button type="button" class="modal-eye" onclick="togglePwd('chgCur','chgCurIc')">
+                            <i id="chgCurIc" class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    @error('current_password')
+                        <p style="color:#f87171;font-size:.73rem;margin-top:-10px;margin-bottom:14px;">⚠️ {{ $message }}</p>
+                    @enderror
+
+                    <label class="modal-label">New Password <span style="opacity:.5;font-weight:400;">(min 8 chars)</span></label>
+                    <div class="modal-field">
+                        <i class="fas fa-key modal-field-icon"></i>
+                        <input type="password" name="new_password" id="chgNew"
+                            placeholder="Choose a strong password" required>
+                        <button type="button" class="modal-eye" onclick="togglePwd('chgNew','chgNewIc')">
+                            <i id="chgNewIc" class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    @error('new_password')
+                        <p style="color:#f87171;font-size:.73rem;margin-top:-10px;margin-bottom:14px;">⚠️ {{ $message }}</p>
+                    @enderror
+
+                    <label class="modal-label">Confirm New Password</label>
+                    <div class="modal-field">
+                        <i class="fas fa-check-circle modal-field-icon"></i>
+                        <input type="password" name="confirm_password" id="chgCon"
+                            placeholder="Re-enter new password" required>
+                        <button type="button" class="modal-eye" onclick="togglePwd('chgCon','chgConIc')">
+                            <i id="chgConIc" class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    @error('confirm_password')
+                        <p style="color:#f87171;font-size:.73rem;margin-top:-10px;margin-bottom:14px;">⚠️ {{ $message }}</p>
+                    @enderror
+
+                    <button type="submit" class="modal-submit">
+                        <i class="fas fa-lock" style="margin-right:8px;"></i>SET NEW PASSWORD
                     </button>
-                </div>
-                @error('password')
-                <p style="color:#f87171;font-size:.73rem;margin-top:-10px;margin-bottom:14px;display:flex;align-items:center;gap:5px;">
-                    <i class="fas fa-exclamation-circle" style="font-size:.62rem;"></i>{{ $message }}
-                </p>
-                @enderror
+                </form>
 
-                <div class="modal-meta">
-                    <label class="modal-remember">
-                        <input type="checkbox" name="remember">
-                        <span>Remember me</span>
-                    </label>
-                    <a href="/forgot-password" class="modal-forgot">Forgot password?</a>
+                <div class="modal-footer-note">
+                    LUMC Patient Portal · La Union Medical Center
                 </div>
 
-                <button type="submit" class="modal-submit">
-                    <i class="fas fa-sign-in-alt" style="margin-right:8px;"></i>SIGN IN AS PATIENT
-                </button>
-            </form>
-
-            <div class="modal-footer-note">
-                Hospital employee?
-                <a href="/staff">Use the Staff Portal →</a>
             </div>
+            {{-- ══ END CHANGE PASSWORD FORM ══ --}}
 
         </div>
     </div>
 </div>
 
 <script>
-    function openLoginModal() {
+    // ── MODAL STATE ────────────────────────────────────────────────────────────
+    const forceChange = {{ request('change_password') ? 'true' : 'false' }};
+    const changeOpen  = {{ session('change_password_open') ? 'true' : 'false' }};
+
+    function openLoginModal(changeMode) {
         document.getElementById('loginModal').classList.add('open');
         document.body.style.overflow = 'hidden';
+        if (changeMode) {
+            document.getElementById('modalLogin').style.display = 'none';
+            document.getElementById('modalChangePassword').style.display = 'block';
+        } else {
+            document.getElementById('modalLogin').style.display = 'block';
+            document.getElementById('modalChangePassword').style.display = 'none';
+        }
     }
+
     function closeLoginModal() {
         document.getElementById('loginModal').classList.remove('open');
         document.body.style.overflow = 'auto';
     }
+
     function handleOverlayClick(e) {
+        // Prevent closing when in force-change mode
+        const inChangeMode = document.getElementById('modalChangePassword').style.display !== 'none';
+        if (inChangeMode) return;
         if (e.target === document.getElementById('loginModal')) closeLoginModal();
     }
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLoginModal(); });
 
-    @if($errors->any() || session('error'))
-        document.addEventListener('DOMContentLoaded', () => openLoginModal());
-    @endif
+    document.addEventListener('keydown', e => {
+        const inChangeMode = document.getElementById('modalChangePassword').style.display !== 'none';
+        if (e.key === 'Escape' && !inChangeMode) closeLoginModal();
+    });
 
+    document.addEventListener('DOMContentLoaded', () => {
+        if (forceChange || changeOpen) {
+            openLoginModal(true);
+        } else if ({{ $errors->any() || session('error') ? 'true' : 'false' }}) {
+            openLoginModal(false);
+        }
+    });
+
+    // ── PASSWORD TOGGLE ────────────────────────────────────────────────────────
     function togglePwd(inputId, iconId) {
         const el = document.getElementById(inputId);
         const ic = document.getElementById(iconId);
@@ -766,20 +855,18 @@
         ic.classList.toggle('fa-eye-slash');
     }
 
-    // ── HEADER SCROLL ─────────────────────────────────────────────────
+    // ── HEADER SCROLL ──────────────────────────────────────────────────────────
     window.addEventListener('scroll', () => {
         document.getElementById('hdr').classList.toggle('hdr-scrolled', window.scrollY > 8);
     });
 
-    // ── SCROLL REVEAL ─────────────────────────────────────────────────
+    // ── SCROLL REVEAL ──────────────────────────────────────────────────────────
     const observer = new IntersectionObserver(entries => {
         entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
     }, { threshold: 0.1 });
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-    // ── HERO CAROUSEL ─────────────────────────────────────────────────
-    // All images rendered at identical display size via CSS.
-    // Smooth 1.5s crossfade every 5 seconds.
+    // ── HERO CAROUSEL ──────────────────────────────────────────────────────────
     (function () {
         const DURATION = 5000;
         const carousel = document.querySelector('.hero-carousel');

@@ -12,16 +12,24 @@ class User extends Authenticatable implements FilamentUser
     use Notifiable, HasRoles;
 
     protected $fillable = [
-        'name', 'email', 'password',
-        'employee_id', 'panel', 'specialty',
-        'is_active', 'patient_id',
+        'name',       // Display name: "Juan Dela Cruz"
+        'username',   // Login username: "JuanDelaCruz25"
+        'email',      // Internal email (hidden from UI)
+        'password',
+        'employee_id',
+        'panel',
+        'specialty',
+        'is_active',
+        'patient_id',
+        'force_password_change',
     ];
 
     protected $hidden = ['password', 'remember_token'];
 
     protected $casts = [
-        'email_verified_at' => 'datetime',
-        'is_active'         => 'boolean',
+        'email_verified_at'     => 'datetime',
+        'is_active'             => 'boolean',
+        'force_password_change' => 'boolean',
     ];
 
     public function canAccessPanel(Panel $panel): bool
@@ -39,7 +47,6 @@ class User extends Authenticatable implements FilamentUser
         };
     }
 
-    // Linked patient record (for patient-panel users)
     public function patientRecord()
     {
         return $this->belongsTo(Patient::class, 'patient_id');

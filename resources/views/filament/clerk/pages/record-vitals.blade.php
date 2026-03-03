@@ -232,21 +232,32 @@
     </div>
 
     {{-- Actions --}}
-    <div class="flex gap-3 items-center">
+    <div class="flex gap-3 items-center flex-wrap">
+
         <button wire:click="save"
                 wire:loading.attr="disabled"
-                wire:loading.class="opacity-50"
-                style="background:#1e3a5f;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;"
-                onmouseover="this.style.opacity='.88'"
-                onmouseout="this.style.opacity='1'">
+                wire:loading.class="opacity-60"
+                style="display:inline-flex;align-items:center;justify-content:center;gap:8px;
+                       width:200px;padding:11px 0;border-radius:8px;
+                       background:#1e3a5f;color:#fff;border:none;
+                       font-size:.875rem;font-weight:600;cursor:pointer;
+                       transition:background .18s;">
             <span wire:loading.remove wire:target="save">💾 Save Vital Signs</span>
             <span wire:loading wire:target="save">⏳ Saving…</span>
         </button>
+
         <a href="{{ \App\Filament\Clerk\Resources\VisitResource::getUrl('index') }}"
-           style="padding:12px 20px;border-radius:8px;font-size:.85rem;font-weight:600;text-decoration:none;"
-           class="bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+           style="display:inline-flex;align-items:center;justify-content:center;gap:8px;
+                  width:200px;padding:11px 0;border-radius:8px;
+                  background:#fff;color:#374151;text-decoration:none;
+                  border:1.5px solid #d1d5db;
+                  font-size:.875rem;font-weight:600;
+                  transition:background .18s,border-color .18s;"
+           onmouseover="this.style.background='#f3f4f6';this.style.borderColor='#9ca3af'"
+           onmouseout="this.style.background='#fff';this.style.borderColor='#d1d5db'">
             ← Back to Patients List
         </a>
+
     </div>
 </div>
 

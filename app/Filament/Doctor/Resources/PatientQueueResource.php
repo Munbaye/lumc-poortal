@@ -5,7 +5,6 @@ use App\Models\Visit;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
 class PatientQueueResource extends Resource
 {
@@ -35,7 +34,12 @@ class PatientQueueResource extends Resource
                 Tables\Columns\TextColumn::make('patient.full_name')
                     ->label('Patient')
                     ->searchable()
-                    ->weight('semibold'),
+                    ->weight('semibold')
+                    ->color(fn ($record) => $record->patient?->has_incomplete_info ? 'danger' : null)
+                    ->description(fn ($record) => $record->patient?->has_incomplete_info
+                        ? '⚠️ Incomplete Info'
+                        : null
+                    ),
 
                 Tables\Columns\TextColumn::make('patient.age_display')
                     ->label('Age'),
@@ -43,13 +47,11 @@ class PatientQueueResource extends Resource
                 Tables\Columns\TextColumn::make('patient.sex')
                     ->label('Sex'),
 
-                // Entry point badge (OPD / ER)
                 Tables\Columns\TextColumn::make('visit_type')
                     ->label('Entry')
                     ->badge()
                     ->color(fn ($state) => $state === 'ER' ? 'danger' : 'primary'),
 
-                // Payment class — NULL means not yet admitted (shows "—")
                 Tables\Columns\TextColumn::make('payment_class')
                     ->label('Class')
                     ->badge()
@@ -65,7 +67,6 @@ class PatientQueueResource extends Resource
                     ->limit(30)
                     ->tooltip(fn ($record) => $record->chief_complaint),
 
-                // ── Vitals summary ───────────────────────────────────────────
                 Tables\Columns\TextColumn::make('latestVitals.temperature')
                     ->label('Temp')
                     ->formatStateUsing(fn ($state) => $state ? $state . '°C' : '—')
@@ -86,7 +87,6 @@ class PatientQueueResource extends Resource
                     ->formatStateUsing(fn ($state) => $state ? $state . '%' : '—')
                     ->color(fn ($state) => ($state && $state < 95) ? 'danger' : null),
 
-                // ── Status ───────────────────────────────────────────────────
                 Tables\Columns\TextColumn::make('status')
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'registered'  => 'Waiting',
@@ -116,7 +116,6 @@ class PatientQueueResource extends Resource
             ])
             ->defaultSort('registered_at', 'asc')
             ->filters([
-                // Quick filter for when viewing across multiple tabs
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'registered'  => 'Registered',
@@ -125,6 +124,9 @@ class PatientQueueResource extends Resource
                         'admitted'    => 'Admitted',
                         'discharged'  => 'Discharged',
                     ]),
+                Tables\Filters\TernaryFilter::make('patient.has_incomplete_info')
+                    ->label('Incomplete Info')
+                    ->attribute('patient.has_incomplete_info'),
             ])
             ->actions([
                 Tables\Actions\Action::make('assess')

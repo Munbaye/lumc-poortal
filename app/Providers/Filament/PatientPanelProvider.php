@@ -6,6 +6,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use App\Http\Middleware\Filament\PatientAuthenticate;
+use App\Http\Middleware\Filament\PatientForcePasswordChange;
 
 class PatientPanelProvider extends PanelProvider
 {
@@ -17,6 +18,7 @@ class PatientPanelProvider extends PanelProvider
             ->colors(['primary' => Color::Green])
             ->brandName('LUMC — Patient Portal')
             ->favicon(asset('images/lumc-logo.png'))
+            ->login(false)
             ->discoverPages(
                 in: app_path('Filament/Patient/Pages'),
                 for: 'App\Filament\Patient\Pages'
@@ -29,14 +31,19 @@ class PatientPanelProvider extends PanelProvider
                 \Illuminate\Cookie\Middleware\EncryptCookies::class,
                 \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
                 \Illuminate\Session\Middleware\StartSession::class,
-                \Illuminate\Session\Middleware\AuthenticateSession::class,
+                // AuthenticateSession REMOVED — it calls route('login') on session
+                // mismatch (e.g. after password change), which crashes because
+                // this app has no 'login' named route. PatientAuthenticate below
+                // handles auth checking instead.
                 \Illuminate\View\Middleware\ShareErrorsFromSession::class,
                 \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
                 \Illuminate\Routing\Middleware\SubstituteBindings::class,
                 \Filament\Http\Middleware\DisableBladeIconComponents::class,
                 \Filament\Http\Middleware\DispatchServingFilamentEvent::class,
+                PatientForcePasswordChange::class,
+                PatientAuthenticate::class,
             ])
-            ->authGuard('web')
-            ->authMiddleware([PatientAuthenticate::class]);
+            ->authGuard('web');
+            // NO ->authMiddleware() — we handle auth ourselves in PatientAuthenticate above
     }
 }
