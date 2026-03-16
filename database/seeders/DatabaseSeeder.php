@@ -85,6 +85,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Lab Tech', 'email' => 'tech@lumc.gov.ph',
             'password' => Hash::make('password'),
             'employee_id' => 'TEC-001', 'panel' => 'tech', 'is_active' => true,
+            'specialty' => 'MedTech',
         ]);
         $tech->assignRole('tech');
 

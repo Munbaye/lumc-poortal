@@ -26,7 +26,10 @@ return new class extends Migration
                 $table->dropForeign(['patient_id']);
                 $table->dropColumn('patient_id');
             }
-            $table->dropColumnIfExists('force_password_change');
+            // Fixed: dropColumnIfExists does not exist in Laravel Blueprint
+            if (Schema::hasColumn('users', 'force_password_change')) {
+                $table->dropColumn('force_password_change');
+            }
         });
     }
 };

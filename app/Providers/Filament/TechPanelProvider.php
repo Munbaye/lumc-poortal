@@ -6,6 +6,8 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use App\Http\Middleware\Filament\StaffAuthenticate;
+use App\Filament\Tech\Resources\ResultUploadResource;
+use App\Filament\Tech\Pages\TechDashboard;
 
 class TechPanelProvider extends PanelProvider
 {
@@ -17,18 +19,16 @@ class TechPanelProvider extends PanelProvider
             ->colors(['primary' => Color::Orange])
             ->brandName('LUMC — Tech Portal')
             ->favicon(asset('images/lumc-logo.png'))
-            ->discoverPages(
-                in: app_path('Filament/Tech/Pages'),
-                for: 'App\Filament\Tech\Pages'
-            )
-            ->discoverResources(
-                in: app_path('Filament/Tech/Resources'),
-                for: 'App\Filament\Tech\Resources'
-            )
-            ->discoverWidgets(
-                in: app_path('Filament/Tech/Widgets'),
-                for: 'App\Filament\Tech\Widgets'
-            )
+
+            // Explicit registration — no filesystem scanning on every request
+            ->resources([
+                ResultUploadResource::class,
+            ])
+            ->pages([
+                TechDashboard::class,
+            ])
+            ->homeUrl(fn () => TechDashboard::getUrl())
+
             ->middleware([
                 \Illuminate\Cookie\Middleware\EncryptCookies::class,
                 \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,

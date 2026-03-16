@@ -27,10 +27,18 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('patients', function (Blueprint $table) {
-            $table->dropColumnIfExists('has_incomplete_info');
-            $table->dropColumnIfExists('is_unknown');
-            $table->dropColumnIfExists('age');
-            $table->dropColumnIfExists('registration_type');
+            if (Schema::hasColumn('patients', 'has_incomplete_info')) {
+                $table->dropColumn('has_incomplete_info');
+            }
+            if (Schema::hasColumn('patients', 'is_unknown')) {
+                $table->dropColumn('is_unknown');
+            }
+            if (Schema::hasColumn('patients', 'age')) {
+                $table->dropColumn('age');
+            }
+            if (Schema::hasColumn('patients', 'registration_type')) {
+                $table->dropColumn('registration_type');
+            }
         });
     }
 };
