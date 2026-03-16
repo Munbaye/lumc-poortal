@@ -1,5 +1,4 @@
 <?php
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -10,7 +9,7 @@ return new class extends Migration
     {
         Schema::create('medical_histories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('visit_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('visit_id')->unique()->constrained()->cascadeOnDelete();
             $table->foreignId('patient_id')->constrained()->cascadeOnDelete();
             $table->foreignId('doctor_id')->nullable()->constrained('users')->nullOnDelete();
 
@@ -44,12 +43,9 @@ return new class extends Migration
             $table->text('diagnosis')->nullable();
             $table->text('differential_diagnosis')->nullable();
             $table->text('plan')->nullable();
-
-            // ── Disposition (mirrors visits) ──────────────────────────────────
+            $table->text('admitting_orders')->nullable(); // NUR-009: orders to nurse
             $table->enum('disposition', ['Discharged','Admitted','Referred','HAMA','Expired'])->nullable();
-            $table->string('admitted_ward')->nullable();
-            $table->string('service')->nullable();
-            $table->string('payment_type')->nullable(); // mirrors visits.payment_class
+            $table->string('service')->nullable(); // admitting service
 
             $table->timestamps();
         });

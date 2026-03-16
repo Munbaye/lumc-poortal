@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ConsentController;
 
 // ── PUBLIC LANDING PAGE ────────────────────────────────────────────────────────
 Route::get('/', function () {
@@ -85,3 +86,7 @@ Route::get('/login', function () {
 Route::get('/forgot-password', function () {
     return redirect('/staff')->with('error', 'Password reset is not yet available. Please contact the administrator.');
 })->name('password.request');
+
+Route::get('/forms/consent-to-care/{visit}', [ConsentController::class, 'consentToCare'])
+    ->middleware(['auth'])
+    ->name('forms.consent-to-care');

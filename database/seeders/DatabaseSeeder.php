@@ -120,7 +120,7 @@ class DatabaseSeeder extends Seeder
             $status           = $v['status'];
             $disposition      = null;
             $paymentClass     = null;
-            $admittedWard     = null;
+            $admittedService     = null;
             $admittedService  = null;
             $assignedDoctorId = null;
             $dischargedAt     = null;
@@ -129,7 +129,6 @@ class DatabaseSeeder extends Seeder
                 $disposition = $a['disposition'];
                 if ($disposition === 'Admitted') {
                     $paymentClass     = $a['payment_class'] ?? 'Charity';
-                    $admittedWard     = $a['ward']    ?? null;
                     $admittedService  = $a['service'] ?? null;
                     $assignedDoctorId = ($paymentClass === 'Private' && isset($a['doctor']))
                         ? $a['doctor']->id : null;
@@ -149,7 +148,6 @@ class DatabaseSeeder extends Seeder
                 'status'               => $status,
                 'disposition'          => $disposition,
                 'payment_class'        => $paymentClass,
-                'admitted_ward'        => $admittedWard,
                 'admitted_service'     => $admittedService,
                 'assigned_doctor_id'   => $assignedDoctorId,
                 'discharged_at'        => $dischargedAt,
@@ -197,9 +195,7 @@ class DatabaseSeeder extends Seeder
                     'differential_diagnosis'     => $a['ddx'] ?? null,
                     'plan'                       => $a['plan'],
                     'disposition'                => $disposition,
-                    'admitted_ward'              => $admittedWard,
                     'service'                    => $admittedService,
-                    'payment_type'               => $paymentClass,
                 ]);
             }
 

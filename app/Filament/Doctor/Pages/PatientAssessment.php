@@ -3,6 +3,7 @@ namespace App\Filament\Doctor\Pages;
 
 use App\Models\Visit;
 use App\Models\MedicalHistory;
+use App\Models\DoctorsOrder;
 use App\Models\ActivityLog;
 use App\Models\User;
 use Filament\Notifications\Notification;
@@ -11,9 +12,9 @@ use Livewire\Attributes\Url;
 
 class PatientAssessment extends Page
 {
-    protected static ?string $navigationIcon        = 'heroicon-o-clipboard-document';
-    protected static string  $view                  = 'filament.doctor.pages.patient-assessment';
-    protected static ?string $title                 = 'Patient Assessment';
+    protected static ?string $navigationIcon           = 'heroicon-o-clipboard-document';
+    protected static string  $view                     = 'filament.doctor.pages.patient-assessment';
+    protected static ?string $title                    = 'Patient Assessment';
     protected static bool    $shouldRegisterNavigation = false;
 
     #[Url]
@@ -21,10 +22,7 @@ class PatientAssessment extends Page
 
     public ?Visit $visit = null;
 
-    /** Doctors grouped by specialty for Private assignment dropdown */
-    public array $availableDoctors = [];
-
-    // ── NUR-006: Medical History ───────────────────────────────────────────────
+    // NUR-006 History
     public string $chiefComplaint          = '';
     public string $historyOfPresentIllness = '';
     public string $pastMedicalHistory      = '';
@@ -34,7 +32,7 @@ class PatientAssessment extends Page
     public string $drugTherapy             = '';
     public string $otherAllergies          = '';
 
-    // ── NUR-005: Physical Examination ─────────────────────────────────────────
+    // NUR-005 Physical Exam
     public string $peSkin            = '';
     public string $peHeadEent        = '';
     public string $peLymphNodes      = '';
@@ -50,23 +48,30 @@ class PatientAssessment extends Page
     public string $peNeurology       = '';
     public string $admittingImpression = '';
 
-    // ── Diagnosis ─────────────────────────────────────────────────────────────
+    // Diagnosis
     public string $diagnosis             = '';
     public string $differentialDiagnosis = '';
     public string $plan                  = '';
 
-    // ── Disposition — two-step ────────────────────────────────────────────────
-    // Step 1: null = not decided, true = admit, false = not admitting
-    public ?bool   $willAdmit            = null;
-
-    // Step 2a (not admitting): Discharged | Referred | HAMA | Expired
+    // Disposition
+    public ?bool   $willAdmit             = null;
     public ?string $outpatientDisposition = null;
 
-    // Step 2b (admitting): ward, service, payment, doctor
-    public string  $admittedWard         = '';
-    public string  $admittedService      = '';
-    public string  $paymentClass         = 'Charity';
-    public ?int    $assignedDoctorId     = null;
+    // Admitting service (required when admitting) — 6 options only
+    public string $admittingService = '';
+
+    public array $serviceOptions = [
+        'Internal Medicine',
+        'Pediatrics',
+        'Surgical',
+        'Obstetrics and Gynecology',
+        'ICU',
+        'NICU',
+    ];
+
+    // Doctor's Orders (only when admitting)
+    public array  $orders   = [];
+    public string $newOrder = '';
 
     public function mount(): void
     {
@@ -75,7 +80,7 @@ class PatientAssessment extends Page
             return;
         }
 
-        $this->visit = Visit::with(['patient', 'latestVitals', 'medicalHistory'])
+        $this->visit = Visit::with(['patient', 'latestVitals', 'medicalHistory', 'doctorsOrders'])
             ->find($this->visitId);
 
         if (!$this->visit) {
@@ -84,30 +89,15 @@ class PatientAssessment extends Page
             return;
         }
 
-        // Load doctors grouped by specialty
-        $this->availableDoctors = User::role('doctor')
-            ->where('is_active', true)
-            ->orderBy('specialty')
-            ->orderBy('name')
-            ->get(['id', 'name', 'specialty'])
-            ->toArray();
-
-        // Pre-fill chief complaint from visit
         $this->chiefComplaint = $this->visit->chief_complaint ?? '';
 
-        // Restore willAdmit state from saved disposition
-        if ($this->visit->disposition === 'Admitted') {
-            $this->willAdmit       = true;
-            $this->admittedWard    = $this->visit->admitted_ward    ?? '';
-            $this->admittedService = $this->visit->admitted_service ?? '';
-            $this->paymentClass    = $this->visit->payment_class    ?? 'Charity';
-            $this->assignedDoctorId = $this->visit->assigned_doctor_id;
-        } elseif ($this->visit->disposition !== null) {
+        if ($this->visit->doctor_admitted_at !== null) {
+            $this->willAdmit = true;
+        } elseif ($this->visit->disposition !== null && $this->visit->disposition !== 'Admitted') {
             $this->willAdmit             = false;
             $this->outpatientDisposition = $this->visit->disposition;
         }
 
-        // Pre-fill from existing medical history record
         if ($h = $this->visit->medicalHistory) {
             $this->chiefComplaint          = $h->chief_complaint             ?? $this->chiefComplaint;
             $this->historyOfPresentIllness = $h->history_of_present_illness  ?? '';
@@ -134,59 +124,63 @@ class PatientAssessment extends Page
             $this->diagnosis               = $h->diagnosis                   ?? '';
             $this->differentialDiagnosis   = $h->differential_diagnosis      ?? '';
             $this->plan                    = $h->plan                        ?? '';
+            $this->admittingService        = $h->service                     ?? '';
         }
-    }
 
-    public function updatedPaymentClass(): void
-    {
-        if ($this->paymentClass === 'Charity') {
-            $this->assignedDoctorId = null;
+        if (!$this->admittingService && $this->visit->admitted_service) {
+            $this->admittingService = $this->visit->admitted_service;
         }
+
+        $this->orders = $this->visit->doctorsOrders
+            ->map(fn ($o) => [
+                'id'           => $o->id,
+                'order_text'   => $o->order_text,
+                'is_completed' => $o->is_completed,
+            ])->toArray();
     }
 
     public function updatedWillAdmit(): void
     {
-        // Reset step-2 fields when the admit decision changes
         $this->outpatientDisposition = null;
         if (!$this->willAdmit) {
-            $this->admittedWard      = '';
-            $this->admittedService   = '';
-            $this->paymentClass      = 'Charity';
-            $this->assignedDoctorId  = null;
+            $this->admittingService = '';
+            $this->newOrder         = '';
+        }
+    }
+
+    public function addOrder(): void
+    {
+        $text = trim($this->newOrder);
+        if (!$text) return;
+        $this->orders[] = ['id' => null, 'order_text' => $text, 'is_completed' => false];
+        $this->newOrder = '';
+    }
+
+    public function removeOrder(int $index): void
+    {
+        if (!($this->orders[$index]['id'] ?? null)) {
+            array_splice($this->orders, $index, 1);
         }
     }
 
     public function save(): void
     {
-        // Guard: must have made an admit decision
         if ($this->willAdmit === null) {
-            Notification::make()->title('Please make an admit decision (Section 4) before saving.')->warning()->send();
+            Notification::make()->title('Please make a disposition decision in Section 4.')->warning()->send();
             return;
         }
 
-        // Guard: must have a specific outcome
         $disposition = $this->willAdmit ? 'Admitted' : $this->outpatientDisposition;
 
         if (!$disposition) {
-            Notification::make()->title('Please select a specific disposition outcome.')->warning()->send();
+            Notification::make()->title('Please select a specific outcome before saving.')->warning()->send();
             return;
         }
 
-        // Guard: Private admission must have assigned doctor
-        if ($this->willAdmit && $this->paymentClass === 'Private' && !$this->assignedDoctorId) {
-            Notification::make()->title('Please assign a doctor for Private patients.')->warning()->send();
+        if ($this->willAdmit && !$this->admittingService) {
+            Notification::make()->title('Please select a service type before admitting.')->warning()->send();
             return;
         }
-
-        // ── Capture old state for diff in the log ─────────────────────────────
-        $oldVisitSnapshot = array_filter([
-            'status'          => $this->visit->status,
-            'disposition'     => $this->visit->disposition,
-            'payment_class'   => $this->visit->payment_class,
-            'admitted_ward'   => $this->visit->admitted_ward,
-            'admitted_service'=> $this->visit->admitted_service,
-            'diagnosis'       => $this->visit->medicalHistory?->diagnosis,
-        ]);
 
         MedicalHistory::updateOrCreate(
             ['visit_id' => $this->visitId],
@@ -219,80 +213,98 @@ class PatientAssessment extends Page
                 'differential_diagnosis'     => $this->differentialDiagnosis,
                 'plan'                       => $this->plan,
                 'disposition'                => $disposition,
-                'admitted_ward'              => $this->willAdmit ? ($this->admittedWard   ?: null) : null,
-                'service'                    => $this->willAdmit ? ($this->admittedService ?: null) : null,
-                'payment_type'               => $this->willAdmit ? $this->paymentClass : null,
+                'service'                    => $this->willAdmit ? $this->admittingService : null,
             ]
         );
 
-        // Map disposition → visit status
+        if ($this->willAdmit) {
+            // Only create NEW orders (those without an ID)
+            $newOrders = collect($this->orders)
+                ->filter(fn ($order) => !isset($order['id']) || !$order['id'])
+                ->pluck('order_text')
+                ->filter()
+                ->unique();
+
+            foreach ($newOrders as $text) {
+                DoctorsOrder::create([
+                    'visit_id'     => $this->visitId,
+                    'doctor_id'    => auth()->id(),
+                    'order_text'   => trim($text),
+                    'is_completed' => false,
+                ]);
+            }
+        }
+
         $status = match ($disposition) {
+            'Admitted'                      => 'admitted',
             'Discharged', 'HAMA', 'Expired' => 'discharged',
-            'Admitted'                       => 'admitted',
-            'Referred'                       => 'referred',
-            default                          => 'assessed',
+            'Referred'                      => 'referred',
+            default                         => 'assessed',
         };
 
-        $visitUpdate = [
-            'status'        => $status,
-            'disposition'   => $disposition,
-            'discharged_at' => in_array($disposition, ['Discharged', 'HAMA', 'Expired']) ? now() : null,
-        ];
+        $visitUpdate = ['status' => $status, 'disposition' => $disposition];
 
         if ($this->willAdmit) {
-            $visitUpdate['payment_class']      = $this->paymentClass;
-            $visitUpdate['admitted_ward']      = $this->admittedWard    ?: null;
-            $visitUpdate['admitted_service']   = $this->admittedService ?: null;
-            $visitUpdate['assigned_doctor_id'] = $this->paymentClass === 'Private'
-                ? $this->assignedDoctorId : null;
-        } else {
-            // Clear admission fields if not admitting (e.g., re-assessment)
-            $visitUpdate['payment_class']      = null;
-            $visitUpdate['admitted_ward']      = null;
-            $visitUpdate['admitted_service']   = null;
-            $visitUpdate['assigned_doctor_id'] = null;
+            $visitUpdate['admitting_diagnosis'] = $this->diagnosis ?: $this->admittingImpression ?: $this->chiefComplaint;
+            $visitUpdate['admitted_service']    = $this->admittingService;
+            $visitUpdate['doctor_admitted_at']  = now();
+            $visitUpdate['clerk_admitted_at']   = null; // ensure pending for clerk
+        }
+
+        if (in_array($disposition, ['Discharged', 'HAMA', 'Expired'])) {
+            $visitUpdate['discharged_at'] = now();
         }
 
         $this->visit->update($visitUpdate);
 
-        // ── Activity log ──────────────────────────────────────────────────────
-        // Determine the most specific action for this event
-        $logAction = match (true) {
-            $disposition === 'Admitted'   => ActivityLog::ACT_ADMITTED_PATIENT,
-            $disposition === 'Discharged' => ActivityLog::ACT_DISCHARGED_PATIENT,
-            default                       => ActivityLog::ACT_ASSESSED_PATIENT,
-        };
-
-        // Assigned doctor name (for Private admissions — human-readable in log)
-        $assignedDoctorName = null;
-        if ($this->willAdmit && $this->paymentClass === 'Private' && $this->assignedDoctorId) {
-            $assignedDoctorName = collect($this->availableDoctors)
-                ->firstWhere('id', $this->assignedDoctorId)['name'] ?? null;
-        }
-
         ActivityLog::record(
-            action:       $logAction,
+            action: match (true) {
+                $disposition === 'Admitted'   => ActivityLog::ACT_ADMITTED_PATIENT,
+                $disposition === 'Discharged' => ActivityLog::ACT_DISCHARGED_PATIENT,
+                default                       => ActivityLog::ACT_ASSESSED_PATIENT,
+            },
             category:     ActivityLog::CAT_CLINICAL,
             subject:      $this->visit,
-            subjectLabel: $this->visit->patient->full_name
-                          . ' (' . $this->visit->patient->case_no . ')'
-                          . ' — ' . $this->visit->visit_type,
-            oldValues: $oldVisitSnapshot,
+            subjectLabel: $this->visit->patient->full_name . ' (' . $this->visit->patient->case_no . ')',
             newValues: array_filter([
-                'status'           => $status,
-                'disposition'      => $disposition,
-                'diagnosis'        => $this->diagnosis        ?: null,
-                'plan'             => $this->plan             ?: null,
-                'admitted_ward'    => $this->willAdmit ? ($this->admittedWard    ?: null) : null,
-                'admitted_service' => $this->willAdmit ? ($this->admittedService ?: null) : null,
-                'payment_class'    => $this->willAdmit ? $this->paymentClass     : null,
-                'assigned_doctor'  => $assignedDoctorName,
-                'drug_allergies'   => $this->drugAllergies ?: null,
+                'status'            => $status,
+                'disposition'       => $disposition,
+                'diagnosis'         => $this->diagnosis ?: null,
+                'admitting_service' => $this->willAdmit ? $this->admittingService : null,
             ]),
             panel: 'doctor',
         );
 
-        Notification::make()->title('Assessment saved successfully!')->success()->send();
+        if ($disposition === 'Admitted') {
+            $clerks = User::where('is_active', true)
+                ->whereHas('roles', fn ($q) => $q->whereIn('name', ['clerk','clerk-opd','clerk-er']))
+                ->get();
+
+            foreach ($clerks as $clerk) {
+                Notification::make()
+                    ->title('Patient Ready for Admission — ' . $this->admittingService)
+                    ->body($this->visit->patient->full_name . ' (' . $this->visit->patient->case_no . ') — ' . ($this->diagnosis ?: $this->chiefComplaint))
+                    ->icon('heroicon-o-arrow-right-circle')
+                    ->iconColor('success')
+                    ->actions([
+                        \Filament\Notifications\Actions\Action::make('complete_admission')
+                            ->label('Complete Admission')
+                            ->url(
+                                \App\Filament\Clerk\Pages\CompleteAdmission::getUrl(
+                                    ['visitId' => $this->visit->id],
+                                    panel: 'clerk'
+                                )
+                            )
+                            ->button(),
+                    ])
+                    ->sendToDatabase($clerk);
+            }
+
+            Notification::make()->title('Admission order sent — clerk notified.')->success()->send();
+        } else {
+            Notification::make()->title('Assessment saved.')->success()->send();
+        }
+
         $this->redirect(\App\Filament\Doctor\Resources\PatientQueueResource::getUrl('index'));
     }
 }

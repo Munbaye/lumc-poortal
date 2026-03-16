@@ -9,49 +9,50 @@ return new class extends Migration
     {
         Schema::create('visits', function (Blueprint $table) {
             $table->id();
-
             $table->foreignId('patient_id')->constrained()->cascadeOnDelete();
             $table->foreignId('clerk_id')->nullable()->constrained('users')->nullOnDelete();
-
-            // Set by doctor on assessment ONLY when admitted + Private
             $table->foreignId('assigned_doctor_id')->nullable()->constrained('users')->nullOnDelete();
 
-            // Entry point — set automatically at registration
-            // OPD clerk → OPD, ER clerk → ER
             $table->enum('visit_type', ['OPD', 'ER'])->default('OPD');
-
             $table->text('chief_complaint');
 
             // ── Workflow status ───────────────────────────────────────────────
             $table->enum('status', [
-                'registered',   // Clerk registered the patient
-                'vitals_done',  // Nurse recorded vitals
-                'assessed',     // Doctor assessed — outpatient (not admitted)
-                'discharged',   // Discharged/HAMA/Expired
-                'admitted',     // Doctor admitted to ward
-                'referred',     // Referred to another facility
+                'registered',  // Clerk registered patient
+                'vitals_done', // Vitals recorded
+                'assessed',    // Doctor assessed — not admitted
+                'discharged',  // Discharged / HAMA / Expired
+                'admitted',    // Admitted to ward
+                'referred',    // Referred out
             ])->default('registered');
 
-            // ── Set by doctor during assessment, ONLY when admitting ──────────
-            // NULL = not yet assessed / not admitted
-            $table->enum('payment_class', ['Charity', 'Private'])->nullable();
+            // ── Doctor sets on assessment ─────────────────────────────────────
+            $table->text('admitting_diagnosis')->nullable();   // shown to clerk
+            $table->string('admitted_service')->nullable();    // e.g. "Internal Medicine"
             $table->enum('disposition', ['Discharged','Admitted','Referred','HAMA','Expired'])->nullable();
-            $table->string('admitted_ward')->nullable();
-            $table->string('admitted_service')->nullable();
+            $table->text('referral_notes')->nullable();
+
+            // ── Clerk sets on Complete Admission ──────────────────────────────
+            $table->enum('payment_class', ['Charity', 'Private'])->nullable();
 
             // ── ER-specific ───────────────────────────────────────────────────
             $table->string('brought_by')->nullable();
             $table->string('condition_on_arrival')->nullable();
 
-            $table->text('referral_notes')->nullable();
+            // ── Timestamps ───────────────────────────────────────────────────
             $table->timestamp('registered_at')->useCurrent();
             $table->timestamp('discharged_at')->nullable();
+            $table->timestamp('doctor_admitted_at')->nullable()
+                  ->comment('Set by doctor when ADMIT decision is saved');
+            $table->timestamp('clerk_admitted_at')->nullable()
+                  ->comment('Set ONLY by clerk when CompleteAdmission is submitted');
 
             $table->timestamps();
             $table->softDeletes();
 
             $table->index(['visit_type', 'status']);
             $table->index('registered_at');
+            $table->index('doctor_admitted_at');
         });
     }
 

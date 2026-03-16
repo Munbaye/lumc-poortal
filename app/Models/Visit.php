@@ -9,29 +9,26 @@ class Visit extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'patient_id',
-        'clerk_id',
-        'assigned_doctor_id',   // set by doctor on admission (Private patients)
-        'visit_type',           // OPD | ER
-        'chief_complaint',
-        'payment_class',        // Charity | Private | null — doctor sets on admit
-        'status',               // registered → vitals_done → assessed → discharged/admitted/referred
-        'disposition',          // Discharged | Admitted | Referred | HAMA | Expired
-        'admitted_ward',
-        'admitted_service',
+        'patient_id', 'clerk_id', 'assigned_doctor_id',
+        'visit_type', 'chief_complaint',
+        'admitting_diagnosis',
+        'payment_class',
+        'status', 'disposition',
+        'admitted_ward', 'admitted_service',
         'referral_notes',
-        'brought_by',
-        'condition_on_arrival',
+        'brought_by', 'condition_on_arrival',
         'registered_at',
         'discharged_at',
+        'doctor_admitted_at',  // Set by doctor when they save "ADMIT" — never touched by clerk
+        'clerk_admitted_at',   // Set ONLY by clerk when CompleteAdmission is submitted
     ];
 
     protected $casts = [
-        'registered_at' => 'datetime',
-        'discharged_at' => 'datetime',
+        'registered_at'      => 'datetime',
+        'discharged_at'      => 'datetime',
+        'doctor_admitted_at' => 'datetime',
+        'clerk_admitted_at'  => 'datetime',
     ];
-
-    // ── Relationships ──────────────────────────────────────────────────────────
 
     public function patient()        { return $this->belongsTo(Patient::class); }
     public function clerk()          { return $this->belongsTo(User::class, 'clerk_id'); }
@@ -43,17 +40,21 @@ class Visit extends Model
     public function nursesNotes()    { return $this->hasMany(NursesNote::class); }
     public function uploads()        { return $this->hasMany(ResultUpload::class); }
 
-    // ── Helpers ────────────────────────────────────────────────────────────────
-
     /**
-     * True if this visit's records are visible to the given doctor.
-     * Charity → all doctors; Private → only assigned_doctor_id.
+     * A visit is "pending clerk admission" when:
+     * - Doctor has made the admit decision  (doctor_admitted_at IS NOT NULL)
+     * - Clerk has NOT yet completed it      (clerk_admitted_at IS NULL)
      */
+    public function isPendingAdmission(): bool
+    {
+        return $this->doctor_admitted_at !== null && $this->clerk_admitted_at === null;
+    }
+
     public function isVisibleToDoctor(int $doctorId): bool
     {
         if ($this->payment_class === 'Private') {
             return $this->assigned_doctor_id === $doctorId;
         }
-        return true; // Charity or not yet set
+        return true;
     }
 }
