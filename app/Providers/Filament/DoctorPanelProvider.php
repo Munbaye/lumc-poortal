@@ -6,7 +6,9 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use App\Filament\Doctor\Resources\PatientQueueResource;
+use App\Filament\Doctor\Resources\AdmittedPatientsResource;
 use App\Filament\Doctor\Pages\PatientAssessment;
+use App\Filament\Doctor\Pages\PatientChart;
 use App\Http\Middleware\Filament\StaffAuthenticate;
 
 class DoctorPanelProvider extends PanelProvider
@@ -22,9 +24,11 @@ class DoctorPanelProvider extends PanelProvider
             ->favicon(asset('images/lumc-logo.png'))
             ->resources([
                 PatientQueueResource::class,
+                AdmittedPatientsResource::class,
             ])
             ->pages([
                 PatientAssessment::class,
+                PatientChart::class,
             ])
             ->widgets([])
             ->middleware([

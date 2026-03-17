@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Filament\Doctor\Pages;
 
 use App\Models\Visit;
@@ -69,7 +70,7 @@ class PatientAssessment extends Page
         'NICU',
     ];
 
-    // Doctor's Orders (only when admitting)
+    // Doctor's Orders (shown only when admitting)
     public array  $orders   = [];
     public string $newOrder = '';
 
@@ -182,6 +183,7 @@ class PatientAssessment extends Page
             return;
         }
 
+        // 1. Medical history
         MedicalHistory::updateOrCreate(
             ['visit_id' => $this->visitId],
             [
@@ -217,8 +219,8 @@ class PatientAssessment extends Page
             ]
         );
 
+        // 2. Doctor's orders (only new lines)
         if ($this->willAdmit) {
-            // Only create NEW orders (those without an ID)
             $newOrders = collect($this->orders)
                 ->filter(fn ($order) => !isset($order['id']) || !$order['id'])
                 ->pluck('order_text')
@@ -230,11 +232,13 @@ class PatientAssessment extends Page
                     'visit_id'     => $this->visitId,
                     'doctor_id'    => auth()->id(),
                     'order_text'   => trim($text),
+                    'status'       => DoctorsOrder::STATUS_PENDING,
                     'is_completed' => false,
                 ]);
             }
         }
 
+        // 3. Update visit
         $status = match ($disposition) {
             'Admitted'                      => 'admitted',
             'Discharged', 'HAMA', 'Expired' => 'discharged',
@@ -248,7 +252,7 @@ class PatientAssessment extends Page
             $visitUpdate['admitting_diagnosis'] = $this->diagnosis ?: $this->admittingImpression ?: $this->chiefComplaint;
             $visitUpdate['admitted_service']    = $this->admittingService;
             $visitUpdate['doctor_admitted_at']  = now();
-            $visitUpdate['clerk_admitted_at']   = null; // ensure pending for clerk
+            $visitUpdate['clerk_admitted_at']   = null;
         }
 
         if (in_array($disposition, ['Discharged', 'HAMA', 'Expired'])) {
@@ -257,6 +261,7 @@ class PatientAssessment extends Page
 
         $this->visit->update($visitUpdate);
 
+        // 4. Activity log
         ActivityLog::record(
             action: match (true) {
                 $disposition === 'Admitted'   => ActivityLog::ACT_ADMITTED_PATIENT,
@@ -275,6 +280,7 @@ class PatientAssessment extends Page
             panel: 'doctor',
         );
 
+        // 5. Notify clerks when admitting
         if ($disposition === 'Admitted') {
             $clerks = User::where('is_active', true)
                 ->whereHas('roles', fn ($q) => $q->whereIn('name', ['clerk','clerk-opd','clerk-er']))
@@ -301,10 +307,15 @@ class PatientAssessment extends Page
             }
 
             Notification::make()->title('Admission order sent — clerk notified.')->success()->send();
+
+            // ── KEY CHANGE: redirect to Patient Queue (clerk will handle admission)
+            // The chart becomes available once the clerk completes admission.
+            // For immediate doctor reference, send back to queue with a note.
+            $this->redirect(\App\Filament\Doctor\Resources\PatientQueueResource::getUrl('index'));
+
         } else {
             Notification::make()->title('Assessment saved.')->success()->send();
+            $this->redirect(\App\Filament\Doctor\Resources\PatientQueueResource::getUrl('index'));
         }
-
-        $this->redirect(\App\Filament\Doctor\Resources\PatientQueueResource::getUrl('index'));
     }
 }

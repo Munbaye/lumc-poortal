@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ConsentController;
+use App\Http\Controllers\ChartController;
 
 // ── PUBLIC LANDING PAGE ────────────────────────────────────────────────────────
 Route::get('/', function () {
@@ -90,3 +91,10 @@ Route::get('/forgot-password', function () {
 Route::get('/forms/consent-to-care/{visit}', [ConsentController::class, 'consentToCare'])
     ->middleware(['auth'])
     ->name('forms.consent-to-care');
+
+Route::get('/forms/history-form/{visit}', [ChartController::class, 'historyForm'])
+    ->name('forms.history-form');
+
+// NUR-005 — Physical Examination Form (printable document, new tab)
+Route::get('/forms/physical-exam-form/{visit}', [ChartController::class, 'physicalExamForm'])
+    ->name('forms.physical-exam-form');
