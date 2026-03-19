@@ -2,24 +2,19 @@
 
 namespace App\Filament\Doctor\Pages;
 
-use App\Models\Visit;
 use App\Models\DoctorsOrder;
+use App\Models\LabRequest;
+use App\Models\RadiologyRequest;
+use App\Models\ResultUpload;
+use App\Models\Visit;
 use App\Models\ActivityLog;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Livewire\Attributes\Url;
 
 /**
- * Patient Chart — main hub for admitted patients.
- *
- * URL  : /doctor/patient-chart?visitId={id}
- *
- * Top-tab sections:
- *   profile   — placeholder (future softcopy)
- *   vitals    — full vitals table
- *   history   — links to NUR-006 and NUR-005 document forms (open in new tab)
- *   orders    — write / manage doctor's orders + "Request Lab/Radiology" button
- *   results   — placeholder
+ * PatientChart — main hub for admitted patients (Doctor view).
+ * Updated: Results tab now loads real uploaded results from result_uploads.
  */
 class PatientChart extends Page
 {
@@ -28,32 +23,20 @@ class PatientChart extends Page
     protected static ?string $title                    = 'Patient Chart';
     protected static bool    $shouldRegisterNavigation = false;
 
-    // ── URL parameter ─────────────────────────────────────────────────────────
     #[Url]
     public ?int $visitId = null;
 
-    // ── Loaded data ───────────────────────────────────────────────────────────
     public ?Visit $visit = null;
 
-    // ── UI state ──────────────────────────────────────────────────────────────
     public string $activeTab      = 'orders';
     public bool   $writingOrders  = false;
-    public bool   $showLabModal   = false;   // "Request Lab/Radiology" modal
-
-    // ── Write-order form fields ───────────────────────────────────────────────
-    public array  $orderLines = [['text' => '']];
-
-    // ── Discontinue confirmation ──────────────────────────────────────────────
-    public ?int $confirmDiscontinueId = null;
-
-    // ─────────────────────────────────────────────────────────────────────────
+    public array  $orderLines     = [['text' => '']];
+    public ?int   $confirmDiscontinueId = null;
 
     public function mount(): void
     {
         if (!$this->visitId) {
-            $this->redirect(
-                \App\Filament\Doctor\Resources\AdmittedPatientsResource::getUrl('index')
-            );
+            $this->redirect(\App\Filament\Doctor\Resources\AdmittedPatientsResource::getUrl('index'));
             return;
         }
         $this->loadVisit();
@@ -70,10 +53,50 @@ class PatientChart extends Page
 
         if (!$this->visit) {
             Notification::make()->title('Visit not found.')->danger()->send();
-            $this->redirect(
-                \App\Filament\Doctor\Resources\AdmittedPatientsResource::getUrl('index')
-            );
+            $this->redirect(\App\Filament\Doctor\Resources\AdmittedPatientsResource::getUrl('index'));
         }
+    }
+
+    // ── Computed: all results for this visit ──────────────────────────────────
+
+    public function getLabResultsProperty()
+    {
+        $requestIds = LabRequest::where('visit_id', $this->visitId)
+            ->where('status', 'completed')
+            ->pluck('id');
+
+        return ResultUpload::where('request_type', 'lab')
+            ->whereIn('request_id', $requestIds)
+            ->with('uploadedBy')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    public function getRadResultsProperty()
+    {
+        $requestIds = RadiologyRequest::where('visit_id', $this->visitId)
+            ->where('status', 'completed')
+            ->pluck('id');
+
+        return ResultUpload::where('request_type', 'radiology')
+            ->whereIn('request_id', $requestIds)
+            ->with(['uploadedBy'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($upload) {
+                $upload->radRequest = RadiologyRequest::find($upload->request_id);
+                return $upload;
+            });
+    }
+
+    public function getLabRequestsCountProperty(): int
+    {
+        return LabRequest::where('visit_id', $this->visitId)->count();
+    }
+
+    public function getRadRequestsCountProperty(): int
+    {
+        return RadiologyRequest::where('visit_id', $this->visitId)->count();
     }
 
     // ── Tab navigation ────────────────────────────────────────────────────────
@@ -82,10 +105,9 @@ class PatientChart extends Page
     {
         $this->activeTab     = $tab;
         $this->writingOrders = false;
-        $this->showLabModal  = false;
     }
 
-    // ── Order management ──────────────────────────────────────────────────────
+    // ── Orders ────────────────────────────────────────────────────────────────
 
     public function addOrderLine(): void
     {
@@ -133,36 +155,26 @@ class PatientChart extends Page
             $saved++;
         }
 
-        if (class_exists(ActivityLog::class)) {
-            ActivityLog::record(
-                action:       ActivityLog::ACT_ADMITTED_PATIENT,
-                category:     ActivityLog::CAT_CLINICAL,
-                subject:      $this->visit,
-                subjectLabel: $this->visit->patient->full_name . ' (' . $this->visit->patient->case_no . ')',
-                newValues:    ['orders_written' => $saved],
-                panel:        'doctor',
-            );
-        }
+        ActivityLog::record(
+            action:       ActivityLog::ACT_ADMITTED_PATIENT,
+            category:     ActivityLog::CAT_CLINICAL,
+            subject:      $this->visit,
+            subjectLabel: $this->visit->patient->full_name . ' (' . $this->visit->patient->case_no . ')',
+            newValues:    ['orders_written' => $saved],
+            panel:        'doctor',
+        );
 
-        Notification::make()
-            ->title($saved . ' order' . ($saved > 1 ? 's' : '') . ' written.')
-            ->success()
-            ->send();
+        Notification::make()->title($saved . ' order' . ($saved > 1 ? 's' : '') . ' written.')->success()->send();
 
         $this->writingOrders = false;
         $this->orderLines    = [['text' => '']];
         $this->loadVisit();
     }
 
-    // ── Discontinue order ─────────────────────────────────────────────────────
-
     public function discontinueOrder(int $orderId): void
     {
         $order = DoctorsOrder::where('visit_id', $this->visitId)->find($orderId);
-        if (!$order) {
-            Notification::make()->title('Order not found.')->danger()->send();
-            return;
-        }
+        if (!$order) { Notification::make()->title('Order not found.')->danger()->send(); return; }
 
         $order->update([
             'status'       => DoctorsOrder::STATUS_DISCONTINUED,
@@ -175,13 +187,6 @@ class PatientChart extends Page
         $this->loadVisit();
         Notification::make()->title('Order discontinued.')->success()->send();
     }
-
-    // ── Lab modal ─────────────────────────────────────────────────────────────
-
-    public function openLabModal(): void   { $this->showLabModal = true; }
-    public function closeLabModal(): void  { $this->showLabModal = false; }
-
-    // ── History / PE form URLs (opened in new tab) ────────────────────────────
 
     public function getHistoryFormUrl(): string
     {

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ConsentController;
 use App\Http\Controllers\ChartController;
+use App\Http\Controllers\ResultController;
 
 // ── PUBLIC LANDING PAGE ────────────────────────────────────────────────────────
 Route::get('/', function () {
@@ -88,13 +89,40 @@ Route::get('/forgot-password', function () {
     return redirect('/staff')->with('error', 'Password reset is not yet available. Please contact the administrator.');
 })->name('password.request');
 
-Route::get('/forms/consent-to-care/{visit}', [ConsentController::class, 'consentToCare'])
-    ->middleware(['auth'])
-    ->name('forms.consent-to-care');
+Route::middleware(['auth'])->group(function () {
 
-Route::get('/forms/history-form/{visit}', [ChartController::class, 'historyForm'])
-    ->name('forms.history-form');
+    // ── Consent Form ───────────────────────────────────────
+    Route::get('/forms/consent-to-care/{visit}', [ConsentController::class, 'consentToCare'])
+        ->name('forms.consent-to-care');
 
-// NUR-005 — Physical Examination Form (printable document, new tab)
-Route::get('/forms/physical-exam-form/{visit}', [ChartController::class, 'physicalExamForm'])
-    ->name('forms.physical-exam-form');
+    // ── Clinical document forms (read-only) ────────────────
+    Route::get('/forms/history-form/{visit}', [ChartController::class, 'historyForm'])
+        ->name('forms.history-form');
+
+    Route::get('/forms/physical-exam-form/{visit}', [ChartController::class, 'physicalExamForm'])
+        ->name('forms.physical-exam-form');
+
+    // ── Laboratory Request (VIEW + SAVE) ───────────────────
+    Route::get('/forms/lab-request/{visit}', [ChartController::class, 'labRequest'])
+        ->name('forms.lab-request');
+
+    Route::post('/forms/lab-request/{visit}', [ChartController::class, 'labRequestStore'])
+        ->name('forms.lab-request.store');
+
+    // ── Radiology Request (VIEW + SAVE) ────────────────────
+    Route::get('/forms/radiology-request/{visit}', [ChartController::class, 'radiologyRequest'])
+        ->name('forms.radiology-request');
+
+    Route::post('/forms/radiology-request/{visit}', [ChartController::class, 'radiologyRequestStore'])
+        ->name('forms.radiology-request.store');
+
+    // ── Tech Result Uploads ─────────────────────────────────────────────
+    Route::post('/results/lab/{labRequest}/upload',
+        [ResultController::class, 'uploadLabResult'])
+        ->name('results.lab.upload');
+
+    Route::post('/results/rad/{radRequest}/upload',
+    [ResultController::class, 'uploadRadResult'])
+    ->name('results.rad.upload');
+
+});
