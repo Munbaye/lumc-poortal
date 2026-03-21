@@ -14,7 +14,8 @@ class LabRequest extends Model
         'clinical_diagnosis', 'requesting_physician',
         'tests',
         'specimen', 'antibiotics_taken', 'antibiotics_duration', 'other_tests',
-        'date_requested', 'request_received_at', 'specimen_collected_by',
+        'date_requested', 'request_received_at',
+        'specimen_collected',          // ← was specimen_collected_by (removed "by")
         'test_started_at', 'test_done_at',
         'notes',
     ];
@@ -95,5 +96,18 @@ class LabRequest extends Model
     public function patient()     { return $this->belongsTo(Patient::class); }
     public function doctor()      { return $this->belongsTo(User::class, 'doctor_id'); }
     public function submittedBy() { return $this->belongsTo(User::class, 'submitted_by'); }
-    public function result()      { return $this->hasOne(ResultUpload::class, 'request_id')->where('request_type', 'lab'); }
+
+    /** All uploaded result files for this request. */
+    public function results()
+    {
+        return $this->hasMany(ResultUpload::class, 'request_id')
+            ->where('request_type', 'lab');
+    }
+
+    /** First/only result (backwards-compat with existing views). */
+    public function result()
+    {
+        return $this->hasOne(ResultUpload::class, 'request_id')
+            ->where('request_type', 'lab');
+    }
 }

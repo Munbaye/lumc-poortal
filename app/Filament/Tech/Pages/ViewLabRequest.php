@@ -2,22 +2,15 @@
 
 namespace App\Filament\Tech\Pages;
 
+use App\Models\ActivityLog;
 use App\Models\LabRequest;
+use App\Models\ResultUpload;
+use App\Models\User;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Livewire\Attributes\Url;
 use Livewire\WithFileUploads;
 
-/**
- * ViewLabRequest — tech views a pending lab request and uploads the result.
- *
- * URL: /tech/view-lab-request?requestId={id}
- *
- * Layout:
- *   - Read-only patient + request details panel
- *   - Tests ordered (read-only list)
- *   - Upload section at bottom (file + optional notes)
- */
 class ViewLabRequest extends Page
 {
     use WithFileUploads;
@@ -32,9 +25,10 @@ class ViewLabRequest extends Page
 
     public ?LabRequest $labRequest = null;
 
-    // Upload form
-    public $resultFile   = null;
-    public string $notes = '';
+    // Tech Action fields
+    public array  $resultFiles       = [];
+    public string $specimenCollected = '';
+    public string $notes             = '';
 
     public function mount(): void
     {
@@ -43,67 +37,127 @@ class ViewLabRequest extends Page
             return;
         }
 
-        $this->labRequest = LabRequest::with(['visit.patient', 'doctor', 'result.uploadedBy'])
-            ->find($this->requestId);
+        $this->labRequest = LabRequest::with([
+            'visit.patient', 'doctor', 'results.uploadedBy',
+        ])->find($this->requestId);
 
         if (!$this->labRequest) {
             Notification::make()->title('Request not found.')->danger()->send();
             $this->redirect(TechDashboard::getUrl());
+            return;
         }
+
+        $this->specimenCollected = $this->labRequest->specimen_collected ?? '';
     }
+
+    // ── Step 1: Mark as Received ──────────────────────────────────────────────
+
+    public function markReceived(): void
+    {
+        if ($this->labRequest->request_received_at) {
+            return;
+        }
+        $this->labRequest->update([
+            'request_received_at' => now(),
+            'status'              => LabRequest::STATUS_IN_PROGRESS,
+        ]);
+        $this->labRequest->refresh();
+        Notification::make()->title('Request marked as received.')->success()->send();
+    }
+
+    // ── Step 2: Save specimen text ────────────────────────────────────────────
+
+    public function saveSpecimen(): void
+    {
+        $this->labRequest->update([
+            'specimen_collected' => trim($this->specimenCollected) ?: null,
+        ]);
+        $this->labRequest->refresh();
+        Notification::make()->title('Specimen saved.')->success()->send();
+    }
+
+    // ── Step 3: Test Started ──────────────────────────────────────────────────
+
+    public function markTestStarted(): void
+    {
+        if ($this->labRequest->test_started_at) {
+            return;
+        }
+        $this->labRequest->update([
+            'test_started_at' => now(),
+            'status'          => LabRequest::STATUS_IN_PROGRESS,
+        ]);
+        $this->labRequest->refresh();
+        Notification::make()->title('Test started time recorded.')->success()->send();
+    }
+
+    // ── Remove a pending file before completing ───────────────────────────────
+
+    public function removeFile(int $index): void
+    {
+        $files = $this->resultFiles;
+        unset($files[$index]);
+        $this->resultFiles = array_values($files);
+    }
+
+    // ── Step 4: Complete — upload files, auto-set test_done_at ───────────────
 
     public function saveResult(): void
     {
         $this->validate([
-            'resultFile' => 'required|file|mimes:pdf,jpg,jpeg,png,webp|max:20480',
-            'notes'      => 'nullable|string|max:1000',
+            'resultFiles'   => 'required|array|min:1',
+            'resultFiles.*' => 'file|mimes:pdf,jpg,jpeg,png,webp|max:20480',
+            'notes'         => 'nullable|string|max:1000',
         ]);
 
-        // Delegate to ResultController logic via a service-style call
-        // We call the same logic inline here to avoid HTTP round-trip from Livewire
-        $file    = $this->resultFile;
-        $year    = now()->year;
-        $stored  = $file->storePublicly("results/lab/{$year}", 'public');
+        $year = now()->year;
 
-        \App\Models\ResultUpload::create([
-            'request_type' => 'lab',
-            'request_id'   => $this->labRequest->id,
-            'visit_id'     => $this->labRequest->visit_id,
-            'patient_id'   => $this->labRequest->patient_id,
-            'uploaded_by'  => auth()->id(),
-            'file_path'    => $stored,
-            'file_name'    => $file->getClientOriginalName(),
-            'file_mime'    => $file->getMimeType(),
-            'file_size'    => $file->getSize(),
-            'notes'        => trim($this->notes) ?: null,
+        foreach ($this->resultFiles as $file) {
+            $stored = $file->storePublicly("results/lab/{$year}", 'public');
+
+            ResultUpload::create([
+                'request_type' => 'lab',
+                'request_id'   => $this->labRequest->id,
+                'visit_id'     => $this->labRequest->visit_id,
+                'patient_id'   => $this->labRequest->patient_id,
+                'uploaded_by'  => auth()->id(),
+                'file_path'    => $stored,
+                'file_name'    => $file->getClientOriginalName(),
+                'file_mime'    => $file->getMimeType(),
+                'file_size'    => $file->getSize(),
+                'notes'        => trim($this->notes) ?: null,
+            ]);
+        }
+
+        $this->labRequest->update([
+            'specimen_collected' => trim($this->specimenCollected) ?: $this->labRequest->specimen_collected,
+            'test_done_at'       => now(),   // always auto-set on complete
+            'status'             => LabRequest::STATUS_COMPLETED,
         ]);
 
-        $this->labRequest->update(['status' => LabRequest::STATUS_COMPLETED]);
-
-        \App\Models\ActivityLog::record(
+        ActivityLog::record(
             action:       'uploaded_lab_result',
-            category:     \App\Models\ActivityLog::CAT_CLINICAL,
+            category:     ActivityLog::CAT_CLINICAL,
             subject:      $this->labRequest,
             subjectLabel: $this->labRequest->request_no . ' — ' . ($this->labRequest->patient->full_name ?? ''),
             newValues: [
                 'request_no'  => $this->labRequest->request_no,
-                'file'        => $file->getClientOriginalName(),
+                'files_count' => count($this->resultFiles),
                 'uploaded_by' => auth()->user()->name,
             ],
             panel: 'tech',
         );
 
-        // Notify doctor + nurses
-        $this->sendNotifications('lab');
+        $this->sendNotifications();
 
         Notification::make()
-            ->title('Result uploaded — ' . $this->labRequest->request_no . ' marked as completed.')
+            ->title($this->labRequest->request_no . ' marked as completed.')
             ->success()->send();
 
         $this->redirect(TechDashboard::getUrl());
     }
 
-    private function sendNotifications(string $type): void
+    private function sendNotifications(): void
     {
         $req         = $this->labRequest;
         $patientName = $req->patient?->full_name ?? 'Patient';
@@ -113,17 +167,17 @@ class ViewLabRequest extends Page
 
         $recipients = collect();
         if ($req->doctor_id) {
-            $doc = \App\Models\User::find($req->doctor_id);
+            $doc = User::find($req->doctor_id);
             if ($doc) $recipients->push($doc);
         }
-        $nurses = \App\Models\User::where('is_active', true)
+        $nurses = User::where('is_active', true)
             ->where('panel', 'nurse')
             ->whereHas('roles', fn ($q) => $q->where('name', 'nurse'))
             ->get();
         $recipients = $recipients->merge($nurses)->unique('id');
 
         foreach ($recipients as $r) {
-            \Filament\Notifications\Notification::make()
+            Notification::make()
                 ->title($title)->body($body)
                 ->icon('heroicon-o-beaker')->iconColor('success')
                 ->sendToDatabase($r);

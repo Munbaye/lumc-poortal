@@ -14,17 +14,20 @@ class RadiologyRequest extends Model
         'examination_desired', 'clinical_diagnosis',
         'clinical_findings', 'radiologist_interpretation',
         'requesting_physician',
-        'date_requested', 'exam_done_at', 'released_at',
+        'date_requested',
+        'request_received_at',
+        'exam_started_at',
+        'exam_done_at',
         'notes',
     ];
 
     protected $casts = [
-        'date_requested' => 'date',
-        'exam_done_at'   => 'datetime',
-        'released_at'    => 'datetime',
+        'date_requested'      => 'date',
+        'request_received_at' => 'datetime',
+        'exam_started_at'     => 'datetime',
+        'exam_done_at'        => 'datetime',
     ];
 
-    // ── Status constants ──────────────────────────────────────────────────────
     const STATUS_PENDING     = 'pending';
     const STATUS_IN_PROGRESS = 'in_progress';
     const STATUS_COMPLETED   = 'completed';
@@ -41,8 +44,6 @@ class RadiologyRequest extends Model
             default                  => 'Pending',
         };
     }
-
-    // ── Boot: auto-generate request_no ───────────────────────────────────────
 
     protected static function boot(): void
     {
@@ -77,11 +78,20 @@ class RadiologyRequest extends Model
         });
     }
 
-    // ── Relationships ─────────────────────────────────────────────────────────
-
     public function visit()       { return $this->belongsTo(Visit::class); }
     public function patient()     { return $this->belongsTo(Patient::class); }
     public function doctor()      { return $this->belongsTo(User::class, 'doctor_id'); }
     public function submittedBy() { return $this->belongsTo(User::class, 'submitted_by'); }
-    public function result()      { return $this->hasOne(ResultUpload::class, 'request_id')->where('request_type', 'radiology'); }
+
+    public function results()
+    {
+        return $this->hasMany(ResultUpload::class, 'request_id')
+            ->where('request_type', 'radiology');
+    }
+
+    public function result()
+    {
+        return $this->hasOne(ResultUpload::class, 'request_id')
+            ->where('request_type', 'radiology');
+    }
 }

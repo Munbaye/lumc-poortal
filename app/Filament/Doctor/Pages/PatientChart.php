@@ -14,7 +14,6 @@ use Livewire\Attributes\Url;
 
 /**
  * PatientChart — main hub for admitted patients (Doctor view).
- * Updated: Results tab now loads real uploaded results from result_uploads.
  */
 class PatientChart extends Page
 {
@@ -32,6 +31,11 @@ class PatientChart extends Page
     public bool   $writingOrders  = false;
     public array  $orderLines     = [['text' => '']];
     public ?int   $confirmDiscontinueId = null;
+
+    // ── Result detail view state ──────────────────────────────────────────────
+    // Set to the LabRequest or RadiologyRequest ID when doctor clicks a result card.
+    public ?int $viewingLabRequestId = null;
+    public ?int $viewingRadRequestId = null;
 
     public function mount(): void
     {
@@ -99,12 +103,44 @@ class PatientChart extends Page
         return RadiologyRequest::where('visit_id', $this->visitId)->count();
     }
 
+    // ── Result detail view ────────────────────────────────────────────────────
+
+    /**
+     * Open the detail view for a completed lab result.
+     * Called from the result card in the results tab.
+     */
+    public function viewLabResult(int $requestId): void
+    {
+        $this->viewingLabRequestId = $requestId;
+        $this->viewingRadRequestId = null;
+    }
+
+    /**
+     * Open the detail view for a completed radiology result.
+     */
+    public function viewRadResult(int $requestId): void
+    {
+        $this->viewingRadRequestId = $requestId;
+        $this->viewingLabRequestId = null;
+    }
+
+    /**
+     * Close the result detail view and return to the results list.
+     */
+    public function closeResultView(): void
+    {
+        $this->viewingLabRequestId = null;
+        $this->viewingRadRequestId = null;
+    }
+
     // ── Tab navigation ────────────────────────────────────────────────────────
 
     public function setTab(string $tab): void
     {
-        $this->activeTab     = $tab;
-        $this->writingOrders = false;
+        $this->activeTab           = $tab;
+        $this->writingOrders       = false;
+        $this->viewingLabRequestId = null;
+        $this->viewingRadRequestId = null;
     }
 
     // ── Orders ────────────────────────────────────────────────────────────────

@@ -54,7 +54,7 @@ return new class extends Migration
             // Timing
             $table->date('date_requested')->nullable();
             $table->timestamp('request_received_at')->nullable();
-            $table->string('specimen_collected_by')->nullable();
+            $table->string('specimen_collected')->nullable();
             $table->timestamp('test_started_at')->nullable();
             $table->timestamp('test_done_at')->nullable();
 
@@ -91,8 +91,9 @@ return new class extends Migration
 
             // Timing
             $table->date('date_requested')->nullable();
+            $table->timestamp('request_received_at')->nullable();
+            $table->timestamp('exam_started_at')->nullable();
             $table->timestamp('exam_done_at')->nullable();
-            $table->timestamp('released_at')->nullable();
 
             $table->text('notes')->nullable();
             $table->timestamps();
