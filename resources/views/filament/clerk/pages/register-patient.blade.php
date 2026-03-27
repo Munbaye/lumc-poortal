@@ -7,7 +7,6 @@
     <div style="background:#fff;border-radius:12px;width:100%;max-width:420px;
                 box-shadow:0 20px 48px rgba(0,0,0,.18);overflow:hidden;">
 
-        {{-- Modal Header --}}
         <div style="background:#f0fdf4;border-bottom:1px solid #bbf7d0;padding:20px 24px;
                     display:flex;align-items:center;gap:12px;">
             <div style="width:38px;height:38px;background:#16a34a;border-radius:8px;
@@ -23,40 +22,31 @@
             </div>
         </div>
 
-        {{-- Modal Body --}}
         <div style="padding:24px;">
-
             <div style="margin-bottom:12px;">
                 <p style="font-size:.68rem;font-weight:700;text-transform:uppercase;
-                          letter-spacing:.08em;color:#6b7280;margin:0 0 5px;">
-                    Username
-                </p>
+                          letter-spacing:.08em;color:#6b7280;margin:0 0 5px;">Username</p>
                 <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;
                             padding:11px 14px;font-family:monospace;font-size:1rem;
                             font-weight:700;color:#111827;user-select:all;letter-spacing:.02em;">
                     {{ $credUsername }}
                 </div>
             </div>
-
             <div style="margin-bottom:20px;">
                 <p style="font-size:.68rem;font-weight:700;text-transform:uppercase;
-                          letter-spacing:.08em;color:#6b7280;margin:0 0 5px;">
-                    Initial Password
-                </p>
+                          letter-spacing:.08em;color:#6b7280;margin:0 0 5px;">Initial Password</p>
                 <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:8px;
                             padding:11px 14px;font-family:monospace;font-size:1rem;
                             font-weight:700;color:#dc2626;user-select:all;letter-spacing:.02em;">
                     {{ $credPassword }}
                 </div>
             </div>
-
             <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;
                         padding:10px 14px;margin-bottom:20px;">
                 <p style="font-size:.78rem;color:#92400e;font-weight:600;margin:0;">
                     ⚠️ Patient must change this password on first login. Note it down before continuing.
                 </p>
             </div>
-
             <button wire:click="dismissCredentialsModal"
                     wire:loading.attr="disabled"
                     wire:loading.class="opacity-60"
@@ -68,9 +58,7 @@
                 <span wire:loading.remove wire:target="dismissCredentialsModal">
                     I've noted the credentials — Continue
                 </span>
-                <span wire:loading wire:target="dismissCredentialsModal">
-                    Redirecting…
-                </span>
+                <span wire:loading wire:target="dismissCredentialsModal">Redirecting…</span>
             </button>
         </div>
     </div>
@@ -92,12 +80,10 @@
             @endif
         </div>
         <div style="text-align:center;flex:1;margin:0 16px;">
-            <p style="color:#93c5fd;font-size:11px;letter-spacing:.1em;
-                      text-transform:uppercase;margin:0 0 2px;">
+            <p style="color:#93c5fd;font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 2px;">
                 Republic of the Philippines | Province of La Union
             </p>
-            <h1 style="color:#fff;font-size:1.4rem;font-weight:700;margin:0 0 6px;
-                       text-shadow:0 1px 3px rgba(0,0,0,.4);">
+            <h1 style="color:#fff;font-size:1.4rem;font-weight:700;margin:0 0 6px;text-shadow:0 1px 3px rgba(0,0,0,.4);">
                 LA UNION MEDICAL CENTER
             </h1>
             <div style="display:inline-flex;align-items:center;gap:6px;padding:3px 14px;
@@ -125,13 +111,12 @@
     </div>
 </div>
 
-{{-- shared select style helper (applied via appearance:auto to restore native arrow) --}}
 <style>
     .lumc-select {
-    -webkit-appearance: menulist !important;
-    -moz-appearance: menulist !important;
-    appearance: menulist !important;
-    background-image: none !important;
+        -webkit-appearance: menulist !important;
+        -moz-appearance: menulist !important;
+        appearance: menulist !important;
+        background-image: none !important;
     }
     .lumc-btn-primary {
         display:inline-flex;align-items:center;gap:8px;
@@ -148,7 +133,6 @@
         transform:translateY(-1px);
     }
     .lumc-btn-primary:active { transform:translateY(0); }
-
     .lumc-btn-danger {
         display:inline-flex;align-items:center;gap:8px;
         background:linear-gradient(135deg,#b91c1c,#dc2626);
@@ -164,7 +148,6 @@
         transform:translateY(-1px);
     }
     .lumc-btn-danger:active { transform:translateY(0); }
-
     .lumc-btn-secondary {
         display:inline-flex;align-items:center;gap:8px;
         background:#fff;color:#4b5563;
@@ -208,12 +191,9 @@
                 Registered as ER. Identity can be updated later by the clerk or admin.
             </p>
         </div>
-        <button wire:click="cancelUnknownMode" class="lumc-btn-secondary">
-            ← Cancel
-        </button>
+        <button wire:click="cancelUnknownMode" class="lumc-btn-secondary">← Cancel</button>
     </div>
 
-    {{-- Chief Complaint --}}
     <div style="margin-bottom:16px;">
         <label class="lumc-label {{ $errors->has('unknownFormData.chief_complaint') ? 'lumc-label-error' : '' }}">
             Chief Complaint / Reason for ER Visit *
@@ -228,21 +208,17 @@
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-
         <div>
             <label class="lumc-label">Apparent Sex</label>
-            <select wire:model="unknownFormData.sex"
-                    class="lumc-input lumc-select">
+            <select wire:model="unknownFormData.sex" class="lumc-input lumc-select">
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
             </select>
         </div>
-
         <div>
             <label class="lumc-label {{ $errors->has('unknownFormData.brought_by') ? 'lumc-label-error' : '' }}">
                 Brought By *
             </label>
-            {{-- Values must match the DB ENUM: Self, Family, Ambulance, Police, Other --}}
             <select wire:model="unknownFormData.brought_by"
                     class="lumc-input lumc-select {{ $errors->has('unknownFormData.brought_by') ? 'lumc-input-error' : '' }}">
                 <option value="" disabled>Select…</option>
@@ -258,28 +234,22 @@
         </div>
     </div>
 
-    {{-- Age Range --}}
     <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;
                 padding:16px;margin-bottom:16px;">
-        <label style="display:block;font-size:.78rem;font-weight:700;
-                      margin-bottom:10px;color:#dc2626;">
+        <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:10px;color:#dc2626;">
             Estimated Age Range
         </label>
         <div style="display:flex;align-items:center;gap:12px;">
             <div style="flex:1;">
-                <label style="display:block;font-size:.73rem;font-weight:600;
-                              margin-bottom:4px;color:#6b7280;">Min Age</label>
+                <label style="display:block;font-size:.73rem;font-weight:600;margin-bottom:4px;color:#6b7280;">Min Age</label>
                 <input type="number" wire:model.live="unknownFormData.age_range_min"
-                       min="0" max="120" placeholder="e.g., 20"
-                       class="lumc-input">
+                       min="0" max="120" placeholder="e.g., 20" class="lumc-input">
             </div>
             <div style="padding-top:20px;font-weight:700;color:#9ca3af;">—</div>
             <div style="flex:1;">
-                <label style="display:block;font-size:.73rem;font-weight:600;
-                              margin-bottom:4px;color:#6b7280;">Max Age</label>
+                <label style="display:block;font-size:.73rem;font-weight:600;margin-bottom:4px;color:#6b7280;">Max Age</label>
                 <input type="number" wire:model.live="unknownFormData.age_range_max"
-                       min="0" max="120" placeholder="e.g., 30"
-                       class="lumc-input">
+                       min="0" max="120" placeholder="e.g., 30" class="lumc-input">
             </div>
             <div style="flex:2;padding-top:20px;">
                 @if($unknownFormData['age_range_min'] && $unknownFormData['age_range_max'])
@@ -291,17 +261,12 @@
                 @endif
             </div>
         </div>
-        <p style="font-size:.7rem;color:#9ca3af;margin-top:6px;">
-            Best estimate. Leave blank if completely unknown.
-        </p>
+        <p style="font-size:.7rem;color:#9ca3af;margin-top:6px;">Best estimate. Leave blank if completely unknown.</p>
     </div>
 
-    {{-- Condition on Arrival --}}
     <div style="margin-bottom:24px;">
         <label class="lumc-label">Condition on Arrival</label>
-        {{-- Values must match the DB ENUM: Good, Fair, Poor, Shock, Comatose, Hemorrhagic, DOA --}}
-        <select wire:model="unknownFormData.condition_on_arrival"
-                class="lumc-input lumc-select">
+        <select wire:model="unknownFormData.condition_on_arrival" class="lumc-input lumc-select">
             <option value="" disabled>Select…</option>
             <option value="Good">Good</option>
             <option value="Fair">Fair</option>
@@ -313,9 +278,7 @@
         </select>
     </div>
 
-    <button wire:click="saveUnknown"
-            wire:loading.attr="disabled"
-            wire:loading.class="opacity-60"
+    <button wire:click="saveUnknown" wire:loading.attr="disabled" wire:loading.class="opacity-60"
             class="lumc-btn-danger">
         <span wire:loading.remove wire:target="saveUnknown">🚨 Register Unknown Patient</span>
         <span wire:loading wire:target="saveUnknown">⏳ Registering…</span>
@@ -326,9 +289,7 @@
 
 {{-- ══ STEP 1: SEARCH ══ --}}
 <div class="lumc-section">
-
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;
-                margin-bottom:16px;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
         <div>
             <h2 style="font-size:1rem;font-weight:700;margin:0 0 4px;color:#111827;">
                 🔍 Step 1: Search for Existing Patient
@@ -346,41 +307,46 @@
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px;">
         <div>
             <label class="lumc-label">Family Name *</label>
+            {{-- FIX: autocorrect/autocapitalize off for name fields --}}
             <input type="text" wire:model.live.debounce.400ms="searchFamilyName"
                    placeholder="e.g., Dela Cruz" autofocus
+                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                    class="lumc-input">
         </div>
         <div>
             <label class="lumc-label">First Name</label>
             <input type="text" wire:model.live.debounce.400ms="searchFirstName"
                    placeholder="e.g., Juan"
+                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                    class="lumc-input">
         </div>
         <div>
             <label class="lumc-label">Sex</label>
             <select wire:model.live="searchSex" class="lumc-input lumc-select">
-                <option value="" disabled>Any</option>
+                <option value="">Any</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
             </select>
         </div>
         <div>
             <label class="lumc-label">
-                Birthday
-                <span style="font-size:.65rem;color:#9ca3af;font-weight:400;">(±1 yr)</span>
+                Birthday <span style="font-size:.65rem;color:#9ca3af;font-weight:400;">(±1 yr)</span>
             </label>
             <input type="date" wire:model.live="searchBirthday" class="lumc-input">
         </div>
         <div>
             <label class="lumc-label">
-                Age
-                <span style="font-size:.65rem;color:#9ca3af;font-weight:400;">(±2 yrs)</span>
+                Age <span style="font-size:.65rem;color:#9ca3af;font-weight:400;">(±2 yrs)</span>
             </label>
-            <input type="number" wire:model.live.debounce.400ms="searchAge"
-                   placeholder="e.g., 25" min="0" max="120"
-                   class="lumc-input">
-        </div>
-    </div>
+            <input type="number" wire:model.live="searchAge"
+                placeholder="{{ $searchBirthday ? \Carbon\Carbon::parse($searchBirthday)->age : 'e.g., 25' }}"
+                min="0" max="120"
+                {{ $searchBirthday ? 'disabled' : '' }}
+                class="lumc-input"
+                style="{{ $searchBirthday ? 'background:#f3f4f6;color:#374151;cursor:not-allowed;font-weight:700;' : '' }}"
+                value="{{ $searchBirthday ? \Carbon\Carbon::parse($searchBirthday)->age : '' }}">
+                    </div>
+                </div>
 
     @if($hasSearched)
         @if(count($searchResults) > 0)
@@ -390,67 +356,43 @@
                         <tr>
                             @foreach(['Case No','Full Name','Age / Sex','Birthday','Last Visit','Address','Status',''] as $h)
                             <th style="padding:10px 12px;text-align:left;color:#bfdbfe;
-                                       font-size:.72rem;font-weight:600;white-space:nowrap;">
-                                {{ $h }}
-                            </th>
+                                       font-size:.72rem;font-weight:600;white-space:nowrap;">{{ $h }}</th>
                             @endforeach
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($searchResults as $r)
                         <tr style="border-top:1px solid #f3f4f6;
-                                   background:{{ $selectedPatientId == $r['id']
-                                        ? '#f0fdf4'
-                                        : ($r['has_incomplete'] ? '#fef2f2' : '#fff') }};">
-                            <td style="padding:9px 12px;font-family:monospace;
-                                       font-size:.75rem;color:#1d4ed8;">
+                                   background:{{ $selectedPatientId == $r['id'] ? '#f0fdf4' : ($r['has_incomplete'] ? '#fef2f2' : '#fff') }};">
+                            <td style="padding:9px 12px;font-family:monospace;font-size:.75rem;color:#1d4ed8;">
                                 {{ $r['case_no'] }}
                             </td>
-                            <td style="padding:9px 12px;font-weight:600;
-                                       color:{{ $r['has_incomplete'] ? '#dc2626' : '#111827' }};">
+                            <td style="padding:9px 12px;font-weight:600;color:{{ $r['has_incomplete'] ? '#dc2626' : '#111827' }};">
                                 {{ $r['full_name'] }}
                                 @if($r['has_incomplete'])
-                                    <span style="display:inline-block;background:#fef2f2;
-                                                 border:1px solid #fca5a5;color:#dc2626;
-                                                 font-size:.6rem;font-weight:700;
-                                                 padding:1px 5px;border-radius:4px;margin-left:4px;">
-                                        INCOMPLETE
-                                    </span>
+                                    <span style="display:inline-block;background:#fef2f2;border:1px solid #fca5a5;
+                                                 color:#dc2626;font-size:.6rem;font-weight:700;
+                                                 padding:1px 5px;border-radius:4px;margin-left:4px;">INCOMPLETE</span>
                                 @endif
                             </td>
-                            <td style="padding:9px 12px;color:#374151;">
-                                {{ $r['age_display'] }} / {{ $r['sex'] }}
-                            </td>
-                            <td style="padding:9px 12px;color:#6b7280;font-size:.78rem;">
-                                {{ $r['birthday'] ?? '—' }}
-                            </td>
-                            <td style="padding:9px 12px;color:#6b7280;font-size:.78rem;">
-                                {{ $r['last_visit'] ?? 'No visit' }}
-                            </td>
-                            <td style="padding:9px 12px;color:#6b7280;font-size:.78rem;">
-                                {{ $r['address'] }}…
-                            </td>
+                            <td style="padding:9px 12px;color:#374151;">{{ $r['age_display'] }} / {{ $r['sex'] }}</td>
+                            <td style="padding:9px 12px;color:#6b7280;font-size:.78rem;">{{ $r['birthday'] ?? '—' }}</td>
+                            <td style="padding:9px 12px;color:#6b7280;font-size:.78rem;">{{ $r['last_visit'] ?? 'No visit' }}</td>
+                            <td style="padding:9px 12px;color:#6b7280;font-size:.78rem;">{{ $r['address'] }}…</td>
                             <td style="padding:9px 12px;">
                                 @if($r['has_incomplete'])
-                                    <span style="font-size:.68rem;color:#dc2626;font-weight:600;">
-                                        ⚠️ Incomplete
-                                    </span>
+                                    <span style="font-size:.68rem;color:#dc2626;font-weight:600;">⚠️ Incomplete</span>
                                 @else
-                                    <span style="font-size:.68rem;color:#16a34a;font-weight:600;">
-                                        ✓ Complete
-                                    </span>
+                                    <span style="font-size:.68rem;color:#16a34a;font-weight:600;">✓ Complete</span>
                                 @endif
                             </td>
                             <td style="padding:9px 12px;">
                                 <button wire:click="selectPatient({{ $r['id'] }})"
-                                        style="background:#16a34a;color:#fff;border:none;
-                                               padding:6px 12px;border-radius:6px;
-                                               font-size:.75rem;font-weight:600;
+                                        style="background:#16a34a;color:#fff;border:none;padding:6px 12px;
+                                               border-radius:6px;font-size:.75rem;font-weight:600;
                                                cursor:pointer;white-space:nowrap;"
                                         onmouseover="this.style.opacity='.85'"
-                                        onmouseout="this.style.opacity='1'">
-                                    ✓ Select
-                                </button>
+                                        onmouseout="this.style.opacity='1'">✓ Select</button>
                             </td>
                         </tr>
                         @endforeach
@@ -461,8 +403,7 @@
                 {{ count($searchResults) }} result(s) found — includes fuzzy/typo matches.
             </p>
         @else
-            <div style="background:#fefce8;border:1px solid #fde047;
-                        border-radius:10px;padding:16px;">
+            <div style="background:#fefce8;border:1px solid #fde047;border-radius:10px;padding:16px;">
                 <p style="font-weight:700;color:#854d0e;margin:0 0 4px;">
                     ⚠️ No similar patients found for "<strong>{{ $searchFamilyName }}</strong>"
                 </p>
@@ -470,8 +411,7 @@
                     Double-check spelling. If certain this is a new patient, tick the box below.
                 </p>
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-                    <input type="checkbox" id="confirmNoMatch"
-                           wire:model.live="confirmNoMatch"
+                    <input type="checkbox" id="confirmNoMatch" wire:model.live="confirmNoMatch"
                            style="width:16px;height:16px;cursor:pointer;accent-color:#1d4ed8;">
                     <label for="confirmNoMatch"
                            style="font-size:.83rem;font-weight:600;cursor:pointer;color:#111827;">
@@ -488,9 +428,7 @@
     @else
         <div style="text-align:center;padding:40px 0;color:#9ca3af;">
             <p style="font-size:2rem;margin:0 0 8px;">🔍</p>
-            <p style="font-size:.875rem;margin:0;">
-                Type at least 2 characters in Family Name to begin searching…
-            </p>
+            <p style="font-size:.875rem;margin:0;">Type at least 2 characters in Family Name to begin searching…</p>
         </div>
     @endif
 </div>
@@ -508,8 +446,7 @@
     </h2>
 
     {{-- Entry Point --}}
-    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;
-                padding:14px;margin-bottom:20px;">
+    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:20px;">
         <label class="lumc-label">Entry Point *</label>
         <div style="display:flex;gap:24px;margin-top:4px;">
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
@@ -525,9 +462,7 @@
         </div>
     </div>
 
-    {{-- Required --}}
-    <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;
-              letter-spacing:.08em;color:#9ca3af;margin:0 0 12px;">
+    <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin:0 0 12px;">
         Required Information
     </p>
 
@@ -537,7 +472,9 @@
             <label class="lumc-label {{ $errors->has('formData.family_name') ? 'lumc-label-error' : '' }}">
                 Family Name *
             </label>
+            {{-- FIX: autocorrect off for name fields --}}
             <input type="text" wire:model="formData.family_name"
+                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                    class="lumc-input {{ $errors->has('formData.family_name') ? 'lumc-input-error' : '' }}">
             @error('formData.family_name')
                 <p class="lumc-error">⚠️ {{ $message }}</p>
@@ -549,6 +486,7 @@
                 First Name *
             </label>
             <input type="text" wire:model="formData.first_name"
+                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                    class="lumc-input {{ $errors->has('formData.first_name') ? 'lumc-input-error' : '' }}">
             @error('formData.first_name')
                 <p class="lumc-error">⚠️ {{ $message }}</p>
@@ -558,16 +496,19 @@
         <div>
             <label class="lumc-label">Middle Name</label>
             <input type="text" wire:model="formData.middle_name"
-                   placeholder="Optional" class="lumc-input">
+                   placeholder="Optional"
+                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                   class="lumc-input">
         </div>
 
         <div>
             <label class="lumc-label {{ $errors->has('formData.sex') ? 'lumc-label-error' : '' }}">
                 Sex *
             </label>
+            {{-- FIX: default empty, no pre-selected value --}}
             <select wire:model="formData.sex"
                     class="lumc-input lumc-select {{ $errors->has('formData.sex') ? 'lumc-input-error' : '' }}">
-                <option value="" disabled>Select sex…</option>
+                <option value="">Select sex…</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
             </select>
@@ -578,31 +519,34 @@
 
         <div>
             <label class="lumc-label">
-                Birthday
-                <span style="font-size:.65rem;color:#9ca3af;font-weight:400;"> — preferred</span>
+                Birthday <span style="font-size:.65rem;color:#9ca3af;font-weight:400;"> — preferred</span>
             </label>
+            {{-- FIX: wire:model.live to trigger age calculation immediately --}}
             <input type="date" wire:model.live="formData.birthday" class="lumc-input">
             @if($formData['birthday'])
-                <p style="font-size:.7rem;color:#059669;margin-top:3px;">
-                    ✓ Age calculated automatically
-                </p>
+                <p style="font-size:.7rem;color:#059669;margin-top:3px;">✓ Age calculated automatically</p>
             @endif
         </div>
 
         <div>
             <label class="lumc-label">
-                Age
-                <span style="font-size:.65rem;color:#9ca3af;font-weight:400;"> — if no birthday</span>
+                Age <span style="font-size:.65rem;color:#9ca3af;font-weight:400;"> — if no birthday</span>
             </label>
-            <input type="number" wire:model="formData.age"
-                   placeholder="e.g., 25" min="0" max="120"
-                   {{ $formData['birthday'] ? 'disabled' : '' }}
-                   class="lumc-input"
-                   style="{{ $formData['birthday'] ? 'background:#f3f4f6;color:#9ca3af;cursor:not-allowed;' : '' }}">
+            {{-- FIX: always disabled when birthday set, shows calculated age --}}
             @if($formData['birthday'])
-                <p style="font-size:.7rem;color:#9ca3af;margin-top:3px;">
-                    Disabled — birthday takes priority
-                </p>
+            <input type="number"
+                value="{{ $formData['age'] }}"
+                disabled
+                class="lumc-input"
+                style="background:#f3f4f6;color:#374151;cursor:not-allowed;font-weight:700;">
+            @else
+            <input type="number" wire:model.live="formData.age"
+                placeholder="e.g., 25"
+                min="0" max="120"
+                class="lumc-input">
+            @endif
+            @if($formData['birthday'])
+                <p style="font-size:.7rem;color:#9ca3af;margin-top:3px;">Disabled — birthday takes priority</p>
             @endif
         </div>
 
@@ -629,17 +573,15 @@
     </div>
 
     {{-- Optional --}}
-    <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;
-              letter-spacing:.08em;color:#9ca3af;margin:0 0 12px;">
+    <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin:0 0 12px;">
         Optional Information
     </p>
 
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
         <div>
             <label class="lumc-label">Civil Status</label>
-            <select wire:model.live="formData.civil_status"
-                    class="lumc-input lumc-select">
-                <option value="" disabled>Select…</option>
+            <select wire:model.live="formData.civil_status" class="lumc-input lumc-select">
+                <option value="">Select…</option>
                 <option value="Single">Single</option>
                 <option value="Married">Married</option>
                 <option value="Widowed">Widowed</option>
@@ -650,7 +592,9 @@
         @if(($formData['civil_status'] ?? '') === 'Married')
         <div>
             <label class="lumc-label">Spouse Name</label>
-            <input type="text" wire:model="formData.spouse_name" class="lumc-input">
+            <input type="text" wire:model="formData.spouse_name"
+                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                   class="lumc-input">
         </div>
         @endif
         <div>
@@ -659,27 +603,26 @@
         </div>
         <div>
             <label class="lumc-label">Father's Name</label>
-            <input type="text" wire:model="formData.father_name" class="lumc-input">
+            <input type="text" wire:model="formData.father_name"
+                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                   class="lumc-input">
         </div>
         <div>
             <label class="lumc-label">Mother's Name</label>
-            <input type="text" wire:model="formData.mother_name" class="lumc-input">
+            <input type="text" wire:model="formData.mother_name"
+                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                   class="lumc-input">
         </div>
     </div>
 
     {{-- ER Details --}}
     @if(($formData['registration_type'] ?? 'OPD') === 'ER')
-    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;
-                padding:16px;margin-bottom:20px;">
-        <h3 style="font-size:.875rem;font-weight:700;color:#dc2626;margin:0 0 14px;">
-            🚑 Emergency Room Details
-        </h3>
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <h3 style="font-size:.875rem;font-weight:700;color:#dc2626;margin:0 0 14px;">🚑 Emergency Room Details</h3>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
             <div>
                 <label class="lumc-label">Brought By</label>
-                {{-- Values must match the DB ENUM: Self, Family, Ambulance, Police, Other --}}
-                <select wire:model="formData.brought_by"
-                        class="lumc-input lumc-select">
+                <select wire:model="formData.brought_by" class="lumc-input lumc-select">
                     <option value="" disabled>Select…</option>
                     <option value="Self">Self</option>
                     <option value="Family">Family</option>
@@ -690,9 +633,7 @@
             </div>
             <div>
                 <label class="lumc-label">Condition on Arrival</label>
-                {{-- Values must match the DB ENUM: Good, Fair, Poor, Shock, Comatose, Hemorrhagic, DOA --}}
-                <select wire:model="formData.condition_on_arrival"
-                        class="lumc-input lumc-select">
+                <select wire:model="formData.condition_on_arrival" class="lumc-input lumc-select">
                     <option value="" disabled>Select…</option>
                     <option value="Good">Good</option>
                     <option value="Fair">Fair</option>
@@ -722,29 +663,23 @@
     </div>
 
     {{-- Incomplete Info Flag --}}
-    <div style="background:#fef2f2;border:2px solid #fca5a5;border-radius:10px;
-                padding:16px;margin-bottom:24px;">
+    <div style="background:#fef2f2;border:2px solid #fca5a5;border-radius:10px;padding:16px;margin-bottom:24px;">
         <div style="display:flex;align-items:flex-start;gap:10px;">
             <input type="checkbox" id="hasIncompleteInfo"
                    wire:model.live="formData.has_incomplete_info"
-                   style="width:16px;height:16px;margin-top:2px;
-                          cursor:pointer;accent-color:#dc2626;flex-shrink:0;">
+                   style="width:16px;height:16px;margin-top:2px;cursor:pointer;accent-color:#dc2626;flex-shrink:0;">
             <div>
                 <label for="hasIncompleteInfo"
-                       style="font-size:.85rem;font-weight:700;cursor:pointer;
-                              color:#dc2626;display:block;margin-bottom:3px;">
+                       style="font-size:.85rem;font-weight:700;cursor:pointer;color:#dc2626;display:block;margin-bottom:3px;">
                     ⚠️ Patient has missing or incomplete information
                 </label>
                 <p style="font-size:.78rem;color:#9ca3af;margin:0;">
-                    When checked, this patient's name shows in
-                    <strong style="color:#dc2626;">red</strong>
-                    across all panels until resolved.
+                    When checked, this patient's name shows in <strong style="color:#dc2626;">red</strong> across all panels until resolved.
                 </p>
             </div>
         </div>
         @if($formData['has_incomplete_info'])
-        <div style="margin-top:10px;padding:8px 12px;background:#fff;
-                    border-radius:6px;border:1px solid #fca5a5;">
+        <div style="margin-top:10px;padding:8px 12px;background:#fff;border-radius:6px;border:1px solid #fca5a5;">
             <p style="font-size:.78rem;color:#dc2626;font-weight:600;margin:0;">
                 🔴 Patient will be flagged as having incomplete information.
             </p>
@@ -753,9 +688,7 @@
     </div>
 
     {{-- Submit --}}
-    <button wire:click="save"
-            wire:loading.attr="disabled"
-            wire:loading.class="opacity-60"
+    <button wire:click="save" wire:loading.attr="disabled" wire:loading.class="opacity-60"
             class="lumc-btn-primary">
         <span wire:loading.remove wire:target="save">💾 Save &amp; Proceed to Vitals</span>
         <span wire:loading wire:target="save">⏳ Saving…</span>

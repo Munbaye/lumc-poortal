@@ -57,7 +57,7 @@ class RegisterPatient extends Page
         'middle_name'          => '',
         'birthday'             => null,
         'age'                  => null,
-        'sex'                  => null,
+        'sex'                  => null,      // FIX: default null, not Male
         'address'              => '',
         'contact_number'       => '',
         'occupation'           => '',
@@ -96,6 +96,16 @@ class RegisterPatient extends Page
     public function updatedSearchSex(): void        { if (strlen($this->searchFamilyName) >= 2) $this->runSearch(); }
     public function updatedSearchAge(): void        { if (strlen($this->searchFamilyName) >= 2) $this->runSearch(); }
     public function updatedSearchBirthday(): void   { if (strlen($this->searchFamilyName) >= 2) $this->runSearch(); }
+
+    // FIX: Auto-calculate age when birthday is entered
+    public function updatedFormDataBirthday(): void
+    {
+        if ($this->formData['birthday']) {
+            $this->formData['age'] = \Carbon\Carbon::parse($this->formData['birthday'])->age;
+        } else {
+            $this->formData['age'] = null;
+        }
+    }
 
     public function runSearch(): void
     {
@@ -163,7 +173,14 @@ class RegisterPatient extends Page
         $this->formData['first_name']  = $this->searchFirstName;
         $this->formData['sex']         = $this->searchSex;
         $this->formData['birthday']    = $this->searchBirthday;
-        $this->formData['age']         = $this->searchAge;
+
+        // FIX: calculate age from birthday if present, otherwise use search age
+        if ($this->searchBirthday) {
+            $this->formData['age'] = \Carbon\Carbon::parse($this->searchBirthday)->age;
+        } else {
+            $this->formData['age'] = $this->searchAge;
+        }
+
         $this->showCreateForm = true;
     }
 
@@ -360,7 +377,6 @@ class RegisterPatient extends Page
             $visit = $this->createVisit($patient);
         }
 
-        // Create account and show modal instead of notification
         $credentials = null;
         if ($isNewPatient || ($wasUnknown && !$patient->is_unknown)) {
             if (!User::where('patient_id', $patient->id)->exists()) {
@@ -393,7 +409,6 @@ class RegisterPatient extends Page
         $redirectUrl = \App\Filament\Clerk\Pages\RecordVitals::getUrl(['visitId' => $visit->id]);
 
         if ($credentials) {
-            // Show modal — don't redirect yet, wait for clerk to dismiss
             $this->credUsername        = $credentials['username'];
             $this->credPassword        = $credentials['password'];
             $this->credRedirectUrl     = $redirectUrl;
@@ -442,7 +457,6 @@ class RegisterPatient extends Page
 
         $baseUsername = ucfirst(strtolower($firstName)) . ucfirst(strtolower($lastName)) . $age;
 
-        // Ensure unique username
         $username = $baseUsername;
         $counter  = 1;
         while (User::where('username', $username)->exists()) {
@@ -450,9 +464,7 @@ class RegisterPatient extends Page
             $counter++;
         }
 
-        // Generate a unique placeholder email (internal system use only, never shown)
-        // We need SOMETHING in email column since it's required by Laravel auth
-        $email   = 'patient_' . $patient->id . '_' . time() . '@internal';
+        $email    = 'patient_' . $patient->id . '_' . time() . '@internal';
         $password = $username;
 
         $user = User::create([
