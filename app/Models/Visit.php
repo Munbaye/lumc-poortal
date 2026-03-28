@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,11 @@ class Visit extends Model
 
     protected $fillable = [
         'patient_id', 'clerk_id', 'assigned_doctor_id',
-        'visit_type', 'chief_complaint',
+        'visit_type',
+        'type_of_service',      
+        'medico_legal',
+        'notified_proper_authority',
+        'chief_complaint',
         'admitting_diagnosis',
         'payment_class',
         'status', 'disposition',
@@ -19,8 +24,8 @@ class Visit extends Model
         'brought_by', 'condition_on_arrival',
         'registered_at',
         'discharged_at',
-        'doctor_admitted_at',  // Set by doctor when they save "ADMIT" — never touched by clerk
-        'clerk_admitted_at',   // Set ONLY by clerk when CompleteAdmission is submitted
+        'doctor_admitted_at',
+        'clerk_admitted_at',
     ];
 
     protected $casts = [
@@ -28,6 +33,7 @@ class Visit extends Model
         'discharged_at'      => 'datetime',
         'doctor_admitted_at' => 'datetime',
         'clerk_admitted_at'  => 'datetime',
+        'medico_legal'       => 'boolean',
     ];
 
     public function patient()        { return $this->belongsTo(Patient::class); }
@@ -39,12 +45,10 @@ class Visit extends Model
     public function doctorsOrders()  { return $this->hasMany(DoctorsOrder::class); }
     public function nursesNotes()    { return $this->hasMany(NursesNote::class); }
     public function uploads()        { return $this->hasMany(ResultUpload::class); }
+    public function erRecord()       { return $this->hasOne(ErRecord::class); }
+    public function admissionRecord(){ return $this->hasOne(AdmissionRecord::class); }
+    public function consentRecord()  { return $this->hasOne(ConsentRecord::class); }
 
-    /**
-     * A visit is "pending clerk admission" when:
-     * - Doctor has made the admit decision  (doctor_admitted_at IS NOT NULL)
-     * - Clerk has NOT yet completed it      (clerk_admitted_at IS NULL)
-     */
     public function isPendingAdmission(): bool
     {
         return $this->doctor_admitted_at !== null && $this->clerk_admitted_at === null;

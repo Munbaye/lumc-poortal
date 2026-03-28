@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ConsentController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\ResultController;
+use App\Http\Controllers\ClerkFormController;
 
 // ── PUBLIC LANDING PAGE ────────────────────────────────────────────────────────
 Route::get('/', function () {
@@ -91,9 +92,23 @@ Route::get('/forgot-password', function () {
 
 Route::middleware(['auth'])->group(function () {
 
-    // ── Consent Form ───────────────────────────────────────
-    Route::get('/forms/consent-to-care/{visit}', [ConsentController::class, 'consentToCare'])
-        ->name('forms.consent-to-care');
+// ── ER Record ────────────────────────────────────
+    Route::get('/forms/er-record/{visit}', [ClerkFormController::class, 'erRecord'])
+        ->name('forms.er-record');
+
+    Route::post('/forms/er-record/{visit}/save', [ClerkFormController::class, 'erRecordSave'])
+        ->name('forms.er-record.save');
+
+    // ── Admission Record ─────────────────────────────
+    Route::get('/forms/adm-record/{visit}', [ClerkFormController::class, 'admRecord'])
+        ->name('forms.adm-record');
+
+    Route::post('/forms/adm-record/{visit}/save', [ClerkFormController::class, 'admRecordSave'])
+        ->name('forms.adm-record.save');
+
+    // ── Consent to Care ──────────────────────
+    Route::get('/forms/consent-to-care/{visit}',          [ConsentController::class, 'consentToCare'])->name('forms.consent-to-care');
+    Route::post('/forms/consent-to-care/{visit}/save',    [ConsentController::class, 'consentSave'])  ->name('forms.consent-to-care.save');
 
     // ── Clinical document forms (read-only) ────────────────
     Route::get('/forms/history-form/{visit}', [ChartController::class, 'historyForm'])

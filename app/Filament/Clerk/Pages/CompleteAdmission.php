@@ -1,13 +1,32 @@
 <?php
+
 namespace App\Filament\Clerk\Pages;
 
-use App\Models\Visit;
-use App\Models\Patient;
 use App\Models\ActivityLog;
+use App\Models\AdmissionRecord;
+use App\Models\ConsentRecord;
+use App\Models\ErRecord;
+use App\Models\Patient;
+use App\Models\Visit;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Livewire\Attributes\Url;
 
+use App\Filament\Clerk\Pages\PendingAdmissions;
+
+/**
+ * CompleteAdmission — 4-step wizard for the clerk after a doctor admits a patient.
+ *
+ * Step 1 → ER Record            (iframe — saves via fetch, reloads page)
+ * Step 2 → ADM Record           (iframe — saves via fetch, reloads page)
+ * Step 3 → Consent to Care      (iframe — saves via fetch, reloads page)
+ * Step 4 → Review all 3 forms   (read-only iframes) + Complete Admission button
+ *
+ * Step detection: mount() reads DB state and auto-advances to the correct step.
+ * Speed: iframes send postMessage → parent does location.reload() (no Livewire roundtrip).
+ * Readonly: Step 4 iframes use ?readonly=1 to hide toolbars (clean paper view).
+ * Consent: Fully integrated in Step 3 — no separate browser tab.
+ */
 class CompleteAdmission extends Page
 {
     protected static ?string $navigationIcon           = 'heroicon-o-clipboard-document-check';
@@ -21,158 +40,187 @@ class CompleteAdmission extends Page
     public ?Visit   $visit   = null;
     public ?Patient $patient = null;
 
-    // Read-only: when doctor made the admit decision
-    public ?string $doctorAdmittedAtDisplay = null;
+    /** 1 | 2 | 3 | 4 — driven entirely by DB state on mount() */
+    public int $step = 1;
 
-    // Admission form fields (all optional except paymentClass)
-    public string $birthplace         = '';
-    public string $religion           = '';
-    public string $nationality        = 'Filipino';
-    public string $employerName       = '';
-    public string $employerAddress    = '';
-    public string $employerPhone      = '';
-    public string $fatherFullName     = '';
-    public string $fatherAddress      = '';
-    public string $fatherPhone        = '';
-    public string $motherMaidenName   = '';
-    public string $motherAddress      = '';
-    public string $motherPhone        = '';
-    public string $philhealthId       = '';
-    public string $philhealthType     = '';
-    public string $socialServiceClass = '';
-    public string $paymentClass       = 'Charity';
+    public bool $erRecordSaved      = false;
+    public bool $admRecordSaved     = false;
+    public bool $consentRecordSaved = false;
 
     public function mount(): void
     {
         if (!$this->visitId) {
-            $this->redirect(\App\Filament\Clerk\Pages\PendingAdmissions::getUrl());
+            $this->redirect(PendingAdmissions::getUrl());
             return;
         }
 
-        $this->visit = Visit::with(['patient', 'medicalHistory.doctor', 'latestVitals', 'doctorsOrders'])
-            ->find($this->visitId);
+        $this->visit = Visit::with([
+            'patient', 'medicalHistory.doctor', 'latestVitals',
+            'erRecord', 'admissionRecord', 'consentRecord',
+        ])->find($this->visitId);
 
         if (!$this->visit) {
             Notification::make()->title('Visit not found.')->danger()->send();
-            $this->redirect(\App\Filament\Clerk\Pages\PendingAdmissions::getUrl());
+            $this->redirect(PendingAdmissions::getUrl());
             return;
         }
 
-        // Guard: only allow visits where doctor has admitted but clerk hasn't completed
         if (!$this->visit->doctor_admitted_at) {
-            Notification::make()
-                ->title('This patient has not been admitted by a doctor yet.')
-                ->warning()
-                ->send();
-            $this->redirect(\App\Filament\Clerk\Pages\PendingAdmissions::getUrl());
+            Notification::make()->title('Patient not yet admitted by a doctor.')->warning()->send();
+            $this->redirect(PendingAdmissions::getUrl());
             return;
         }
 
         if ($this->visit->clerk_admitted_at) {
-            Notification::make()
-                ->title('Admission already completed for this patient.')
-                ->info()
-                ->send();
-            $this->redirect(\App\Filament\Clerk\Pages\PendingAdmissions::getUrl());
+            Notification::make()->title('Admission already completed.')->info()->send();
+            $this->redirect(PendingAdmissions::getUrl());
             return;
         }
 
         $this->patient = $this->visit->patient;
 
-        // Format doctor's admission timestamp for display
-        $this->doctorAdmittedAtDisplay = $this->visit->doctor_admitted_at
-            ->timezone('Asia/Manila')
-            ->format('F j, Y \a\t h:i A');
+        // ── Auto-detect step from DB state ──────────────────────────────────
+        if ($this->visit->erRecord)      { $this->erRecordSaved      = true; }
+        if ($this->visit->admissionRecord){ $this->admRecordSaved    = true; }
+        if ($this->visit->consentRecord) { $this->consentRecordSaved = true; }
 
-        // Pre-fill from existing patient record
-        $this->birthplace         = $this->patient->birthplace          ?? '';
-        $this->religion           = $this->patient->religion            ?? '';
-        $this->nationality        = $this->patient->nationality         ?? 'Filipino';
-        $this->employerName       = $this->patient->employer_name       ?? '';
-        $this->employerAddress    = $this->patient->employer_address    ?? '';
-        $this->employerPhone      = $this->patient->employer_phone      ?? '';
-        $this->fatherFullName     = $this->patient->father_full_name
-                                 ?? $this->patient->father_name          ?? '';
-        $this->fatherAddress      = $this->patient->father_address      ?? '';
-        $this->fatherPhone        = $this->patient->father_phone        ?? '';
-        $this->motherMaidenName   = $this->patient->mother_maiden_name
-                                 ?? $this->patient->mother_name          ?? '';
-        $this->motherAddress      = $this->patient->mother_address      ?? '';
-        $this->motherPhone        = $this->patient->mother_phone        ?? '';
-        $this->philhealthId       = $this->patient->philhealth_id       ?? '';
-        $this->philhealthType     = $this->patient->philhealth_type     ?? '';
-        $this->socialServiceClass = $this->patient->social_service_class ?? '';
-        $this->paymentClass       = $this->visit->payment_class         ?? 'Charity';
+        if ($this->erRecordSaved && $this->admRecordSaved && $this->consentRecordSaved) {
+            $this->step = 4;
+        } elseif ($this->erRecordSaved && $this->admRecordSaved) {
+            $this->step = 3;
+        } elseif ($this->erRecordSaved) {
+            $this->step = 2;
+        } else {
+            $this->step = 1;
+        }
     }
 
-    public function save(): void
+    // ── Step navigation ────────────────────────────────────────────────────────
+
+    public function goToStep(int $s): void
     {
-        $this->validate(['paymentClass' => 'required|in:Charity,Private']);
+        match (true) {
+            $s === 1                                        => $this->step = 1,
+            $s === 2 && $this->erRecordSaved               => $this->step = 2,
+            $s === 3 && $this->admRecordSaved              => $this->step = 3,
+            $s === 4 && $this->consentRecordSaved          => $this->step = 4,
+            default                                        => null,
+        };
+    }
 
-        // Update patient record with admission details
-        $this->patient->update(array_merge(
-            // Reset all optional fields first (so empty form fields clear old data)
-            [
-                'birthplace' => null, 'religion' => null, 'nationality' => 'Filipino',
-                'employer_name' => null, 'employer_address' => null, 'employer_phone' => null,
-                'father_full_name' => null, 'father_address' => null, 'father_phone' => null,
-                'mother_maiden_name' => null, 'mother_address' => null, 'mother_phone' => null,
-                'philhealth_id' => null, 'philhealth_type' => null, 'social_service_class' => null,
-            ],
-            // Then apply whatever the clerk actually entered
-            array_filter([
-                'birthplace'           => $this->birthplace        ?: null,
-                'religion'             => $this->religion          ?: null,
-                'nationality'          => $this->nationality       ?: 'Filipino',
-                'employer_name'        => $this->employerName      ?: null,
-                'employer_address'     => $this->employerAddress   ?: null,
-                'employer_phone'       => $this->employerPhone     ?: null,
-                'father_full_name'     => $this->fatherFullName    ?: null,
-                'father_address'       => $this->fatherAddress     ?: null,
-                'father_phone'         => $this->fatherPhone       ?: null,
-                'mother_maiden_name'   => $this->motherMaidenName  ?: null,
-                'mother_address'       => $this->motherAddress     ?: null,
-                'mother_phone'         => $this->motherPhone       ?: null,
-                'philhealth_id'        => $this->philhealthId      ?: null,
-                'philhealth_type'      => $this->philhealthType    ?: null,
-                'social_service_class' => $this->socialServiceClass ?: null,
-            ], fn ($v) => $v !== null)
-        ));
+    // ── Complete Admission ─────────────────────────────────────────────────────
 
-        // Update visit — set clerk_admitted_at (this removes it from pending list)
-        // NEVER reset doctor_admitted_at here
+    public function completeAdmission(): void
+    {
+        if (!$this->consentRecordSaved) {
+            Notification::make()
+                ->title('Please complete the Consent to Care form first.')
+                ->warning()->send();
+            return;
+        }
+
+        $adm     = $this->visit->admissionRecord;
+        $er      = $this->visit->erRecord;
+        $consent = $this->visit->consentRecord;
+
         $this->visit->update([
-            'status'             => 'admitted',
-            'disposition'        => 'Admitted',
-            'payment_class'      => $this->paymentClass,
-            'clerk_admitted_at'  => now(),   // ← the ONLY flag that removes from pending list
+            'status'            => 'admitted',
+            'disposition'       => 'Admitted',
+            'payment_class'     => $adm?->payment_class ?? $this->visit->payment_class,
+            'clerk_admitted_at' => now(),
         ]);
 
-        // Log
-        if (class_exists(ActivityLog::class)) {
-            ActivityLog::record(
-                action:       ActivityLog::ACT_ADMITTED_PATIENT,
-                category:     'admission',
-                subject:      $this->visit,
-                subjectLabel: $this->patient->full_name . ' (' . $this->patient->case_no . ')',
-                newValues: array_filter([
-                    'payment_class'        => $this->paymentClass,
-                    'nationality'          => $this->nationality ?: null,
-                    'philhealth_id'        => $this->philhealthId        ?: null,
-                    'philhealth_type'      => $this->philhealthType       ?: null,
-                    'social_service_class' => $this->socialServiceClass   ?: null,
-                    'clerk_admitted_at'    => now()->toDateTimeString(),
-                    'completed_by'         => auth()->user()->name,
-                ]),
-                panel: 'clerk',
-            );
+        // Back-fill patient demographics from ADM record
+        if ($adm) {
+            $this->patient->update(array_filter([
+                'birthplace'           => $adm->birthplace           ?: null,
+                'religion'             => $adm->religion             ?: null,
+                'nationality'          => $adm->nationality          ?: null,
+                'employer_name'        => $adm->employer_name        ?: null,
+                'employer_address'     => $adm->employer_address     ?: null,
+                'employer_phone'       => $adm->employer_phone       ?: null,
+                'father_full_name'     => $adm->father_name          ?: null,
+                'father_address'       => $adm->father_address       ?: null,
+                'father_phone'         => $adm->father_phone         ?: null,
+                'mother_maiden_name'   => $adm->mother_maiden_name   ?: null,
+                'mother_address'       => $adm->mother_address       ?: null,
+                'mother_phone'         => $adm->mother_phone         ?: null,
+                'philhealth_id'        => $adm->philhealth_id        ?: null,
+                'philhealth_type'      => $adm->philhealth_type      ?: null,
+                'social_service_class' => $adm->social_service_class ?: null,
+            ], fn ($v) => $v !== null));
         }
+
+        // Back-fill visit from ER Record
+        if ($er) {
+            $upd = array_filter([
+                'brought_by'               => $er->brought_by               ?: null,
+                'condition_on_arrival'     => $er->condition_on_arrival     ?: null,
+                'medico_legal'             => $er->medico_legal,
+                'type_of_service'          => $er->type_of_service          ?: null,
+                'notified_proper_authority'=> $er->notified_proper_authority ?: null,
+            ]);
+            if ($upd) {
+                $this->visit->update($upd);
+            }
+        }
+
+        ActivityLog::record(
+            action:       ActivityLog::ACT_ADMITTED_PATIENT,
+            category:     'admission',
+            subject:      $this->visit,
+            subjectLabel: $this->patient->full_name . ' (' . $this->patient->case_no . ')',
+            newValues: [
+                'clerk_admitted_at'  => now()->toDateTimeString(),
+                'completed_by'       => auth()->user()->name,
+                'er_record_id'       => $er?->id,
+                'adm_record_id'      => $adm?->id,
+                'consent_record_id'  => $consent?->id,
+                'consent_section'    => $consent?->active_section,
+            ],
+            panel: 'clerk',
+        );
 
         Notification::make()
             ->title('Admission completed for ' . $this->patient->full_name)
-            ->success()
-            ->send();
+            ->success()->send();
 
-        $this->redirect(\App\Filament\Clerk\Pages\PendingAdmissions::getUrl());
+        $this->redirect(PendingAdmissions::getUrl());
+    }
+
+    // ── URL helpers for iframes ────────────────────────────────────────────────
+
+    /** Step 1 — editable ER Record */
+    public function getErRecordFormUrl(): string
+    {
+        return route('forms.er-record', ['visit' => $this->visitId]);
+    }
+
+    /** Step 2 — editable ADM Record */
+    public function getAdmRecordFormUrl(): string
+    {
+        return route('forms.adm-record', ['visit' => $this->visitId]);
+    }
+
+    /** Step 3 — editable Consent to Care */
+    public function getConsentFormUrl(): string
+    {
+        return route('forms.consent-to-care', ['visit' => $this->visitId]);
+    }
+
+    /** Step 4 review — read-only (toolbar hidden) */
+    public function getErRecordReadonlyUrl(): string
+    {
+        return route('forms.er-record', ['visit' => $this->visitId]) . '?readonly=1';
+    }
+
+    public function getAdmRecordReadonlyUrl(): string
+    {
+        return route('forms.adm-record', ['visit' => $this->visitId]) . '?readonly=1';
+    }
+
+    public function getConsentReadonlyUrl(): string
+    {
+        return route('forms.consent-to-care', ['visit' => $this->visitId]) . '?readonly=1';
     }
 }

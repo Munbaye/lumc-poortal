@@ -41,35 +41,31 @@ class RegisterPatient extends Page
     // ── Unknown mode ─────────────────────────────────────────────────────────
     public bool  $isUnknownMode   = false;
     public array $unknownFormData = [
-        'chief_complaint'      => '',
-        'age_range_min'        => null,
-        'age_range_max'        => null,
-        'brought_by'           => null,
-        'condition_on_arrival' => null,
-        'sex'                  => 'Male',
-        'notes'                => '',
+        'chief_complaint' => '',
+        'sex'             => 'Male',
     ];
 
     // ── Registration form ────────────────────────────────────────────────────
+    // NOTE: brought_by and condition_on_arrival are intentionally REMOVED.
+    // These are collected on the official ER Record form (ER-001) during
+    // Complete Admission, not during patient registration.
     public array $formData = [
-        'family_name'          => '',
-        'first_name'           => '',
-        'middle_name'          => '',
-        'birthday'             => null,
-        'age'                  => null,
-        'sex'                  => null,
-        'address'              => '',
-        'contact_number'       => '',
-        'occupation'           => '',
-        'civil_status'         => null,
-        'spouse_name'          => '',
-        'father_name'          => '',
-        'mother_name'          => '',
-        'registration_type'    => 'OPD',
-        'brought_by'           => null,
-        'condition_on_arrival' => null,
-        'chief_complaint'      => '',
-        'has_incomplete_info'  => false,
+        'family_name'         => '',
+        'first_name'          => '',
+        'middle_name'         => '',
+        'birthday'            => null,
+        'age'                 => null,
+        'sex'                 => null,
+        'address'             => '',
+        'contact_number'      => '',
+        'occupation'          => '',
+        'civil_status'        => null,
+        'spouse_name'         => '',
+        'father_name'         => '',
+        'mother_name'         => '',
+        'registration_type'   => 'OPD',  // OPD or ER — determines visit_type only
+        'chief_complaint'     => '',
+        'has_incomplete_info' => false,
     ];
 
     public function mount(): void
@@ -104,7 +100,6 @@ class RegisterPatient extends Page
             $this->hasSearched   = false;
             return;
         }
-
         $results = (new PatientSearchService())->search(
             $this->searchFamilyName,
             $this->searchFirstName ?: null,
@@ -112,7 +107,6 @@ class RegisterPatient extends Page
             $this->searchBirthday,
             $this->searchAge,
         );
-
         $this->searchResults = $results->map(fn ($p) => [
             'id'             => $p->id,
             'case_no'        => $p->case_no,
@@ -124,7 +118,6 @@ class RegisterPatient extends Page
             'last_visit'     => $p->latestVisit?->registered_at?->format('M d, Y'),
             'has_incomplete' => $p->has_incomplete_info,
         ])->toArray();
-
         $this->hasSearched       = true;
         $this->showCreateForm    = false;
         $this->selectedPatientId = null;
@@ -134,20 +127,17 @@ class RegisterPatient extends Page
     {
         $patient = Patient::findOrFail($patientId);
         $this->selectedPatientId = $patientId;
-
         $this->formData = array_merge($this->formData, $patient->only([
             'family_name', 'first_name', 'middle_name',
             'sex', 'address', 'contact_number', 'occupation',
             'civil_status', 'spouse_name', 'father_name', 'mother_name',
         ]));
-
         if ($patient->birthday) {
             $this->formData['birthday'] = $patient->birthday->format('Y-m-d');
             $this->formData['age']      = $patient->current_age;
         } else {
             $this->formData['age'] = $patient->age;
         }
-
         $this->formData['has_incomplete_info'] = $patient->has_incomplete_info;
         $this->showCreateForm = true;
     }
@@ -158,7 +148,6 @@ class RegisterPatient extends Page
             Notification::make()->title('Please tick the confirmation checkbox first.')->warning()->send();
             return;
         }
-
         $this->formData['family_name'] = $this->searchFamilyName;
         $this->formData['first_name']  = $this->searchFirstName;
         $this->formData['sex']         = $this->searchSex;
@@ -179,68 +168,39 @@ class RegisterPatient extends Page
     public function cancelUnknownMode(): void
     {
         $this->isUnknownMode  = false;
-        $this->unknownFormData = [
-            'chief_complaint'      => '',
-            'age_range_min'        => null,
-            'age_range_max'        => null,
-            'brought_by'           => null,
-            'condition_on_arrival' => null,
-            'sex'                  => 'Male',
-            'notes'                => '',
-        ];
+        $this->unknownFormData = ['chief_complaint' => '', 'sex' => 'Male'];
     }
 
     public function saveUnknown(): void
     {
         $this->validate([
             'unknownFormData.chief_complaint' => 'required|string|min:3',
-            'unknownFormData.brought_by'      => 'required|string',
-        ], [
-            'unknownFormData.chief_complaint.required' => 'Chief complaint is required.',
-            'unknownFormData.brought_by.required'      => 'Please indicate who brought the patient.',
-        ]);
+        ], ['unknownFormData.chief_complaint.required' => 'Chief complaint is required.']);
 
-        $year     = now()->year;
-        $seq      = UnknownPatientSequence::nextForYear($year);
-        $seqLabel = str_pad($seq, 3, '0', STR_PAD_LEFT);
-
-        $ageMin = $this->unknownFormData['age_range_min'];
-        $ageMax = $this->unknownFormData['age_range_max'];
-        $estAge = ($ageMin !== null && $ageMax !== null)
-            ? (int) round(($ageMin + $ageMax) / 2)
-            : null;
-
-        $sex = $this->unknownFormData['sex'] ?? 'Male';
-        if (!in_array($sex, ['Male', 'Female'])) {
-            $sex = 'Male';
-        }
-
-        $firstName  = ($sex === 'Female' ? 'Jane' : 'John') . ' #' . $seqLabel;
-        $familyName = 'Doe';
+        $year      = now()->year;
+        $seq       = UnknownPatientSequence::nextForYear($year);
+        $seqLabel  = str_pad($seq, 3, '0', STR_PAD_LEFT);
+        $sex       = $this->unknownFormData['sex'] ?? 'Male';
+        if (!in_array($sex, ['Male', 'Female'])) $sex = 'Male';
+        $firstName = ($sex === 'Female' ? 'Jane' : 'John') . ' #' . $seqLabel;
 
         $patient = Patient::create([
-            'family_name'          => $familyName,
-            'first_name'           => $firstName,
-            'sex'                  => $sex,
-            'address'              => 'Unknown',
-            'age'                  => $estAge,
-            'brought_by'           => $this->unknownFormData['brought_by'],
-            'condition_on_arrival' => $this->unknownFormData['condition_on_arrival'],
-            'registration_type'    => 'ER',
-            'is_unknown'           => true,
-            'has_incomplete_info'  => true,
+            'family_name'         => 'Doe',
+            'first_name'          => $firstName,
+            'sex'                 => $sex,
+            'address'             => 'Unknown',
+            'registration_type'   => 'ER',
+            'is_unknown'          => true,
+            'has_incomplete_info' => true,
         ]);
 
         $visit = Visit::create([
-            'patient_id'           => $patient->id,
-            'clerk_id'             => auth()->id(),
-            'visit_type'           => 'ER',
-            'chief_complaint'      => $this->unknownFormData['chief_complaint'],
-            'brought_by'           => $this->unknownFormData['brought_by'],
-            'condition_on_arrival' => $this->unknownFormData['condition_on_arrival'],
-            'status'               => 'registered',
-            'payment_class'        => null,
-            'registered_at'        => now(),
+            'patient_id'      => $patient->id,
+            'clerk_id'        => auth()->id(),
+            'visit_type'      => 'ER',
+            'chief_complaint' => $this->unknownFormData['chief_complaint'],
+            'status'          => 'registered',
+            'registered_at'   => now(),
         ]);
 
         if (class_exists(ActivityLog::class)) {
@@ -248,12 +208,10 @@ class RegisterPatient extends Page
                 action:       ActivityLog::ACT_CREATED_PATIENT,
                 category:     ActivityLog::CAT_PATIENT,
                 subject:      $patient,
-                subjectLabel: $familyName . ', ' . $firstName . ' (' . $patient->case_no . ')',
+                subjectLabel: 'Doe, ' . $firstName . ' (' . $patient->case_no . ')',
                 newValues: [
                     'type'            => 'UNKNOWN',
                     'chief_complaint' => $this->unknownFormData['chief_complaint'],
-                    'brought_by'      => $this->unknownFormData['brought_by'],
-                    'age_range'       => ($ageMin && $ageMax) ? "{$ageMin}-{$ageMax} y/o" : 'Unknown',
                 ],
                 panel: 'clerk',
             );
@@ -261,8 +219,7 @@ class RegisterPatient extends Page
 
         Notification::make()
             ->title('Unknown patient registered — ' . $patient->case_no)
-            ->success()
-            ->send();
+            ->success()->send();
 
         $this->redirect(\App\Filament\Clerk\Pages\RecordVitals::getUrl(['visitId' => $visit->id]));
     }
@@ -288,8 +245,8 @@ class RegisterPatient extends Page
         $familyName = $this->properName($this->formData['family_name']);
         $firstName  = $this->properName($this->formData['first_name']);
         $middleName = $this->formData['middle_name']
-                      ? $this->properName($this->formData['middle_name'])
-                      : null;
+            ? $this->properName($this->formData['middle_name'])
+            : null;
 
         $patientFields = [
             'family_name'         => $familyName,
@@ -312,14 +269,6 @@ class RegisterPatient extends Page
             $patientFields['age'] = (int) $this->formData['age'];
         }
 
-        if (
-            !empty($this->formData['birthday']) &&
-            !empty($this->formData['address']) &&
-            !empty($this->formData['contact_number'])
-        ) {
-            $patientFields['has_incomplete_info'] = false;
-        }
-
         $isNewPatient = !$this->selectedPatientId;
         $wasUnknown   = false;
 
@@ -327,11 +276,7 @@ class RegisterPatient extends Page
             $patient    = Patient::findOrFail($this->selectedPatientId);
             $wasUnknown = (bool) $patient->is_unknown;
             $oldValues  = $patient->toArray();
-
-            if ($wasUnknown) {
-                $patientFields['is_unknown'] = false;
-            }
-
+            if ($wasUnknown) $patientFields['is_unknown'] = false;
             $patient->update($patientFields);
             $action = 'updated_patient';
         } else {
@@ -342,15 +287,11 @@ class RegisterPatient extends Page
 
         if ($this->selectedPatientId && $wasUnknown) {
             $existingVisit = Visit::where('patient_id', $patient->id)
-                ->orderByDesc('registered_at')
-                ->first();
-
+                ->orderByDesc('registered_at')->first();
             if ($existingVisit) {
                 $existingVisit->update([
-                    'visit_type'           => $this->formData['registration_type'],
-                    'chief_complaint'      => $this->formData['chief_complaint'],
-                    'brought_by'           => $this->formData['brought_by'] ?? null,
-                    'condition_on_arrival' => $this->formData['condition_on_arrival'] ?? null,
+                    'visit_type'      => $this->formData['registration_type'],
+                    'chief_complaint' => $this->formData['chief_complaint'],
                 ]);
                 $visit = $existingVisit;
             } else {
@@ -360,7 +301,7 @@ class RegisterPatient extends Page
             $visit = $this->createVisit($patient);
         }
 
-        // Create account and show modal instead of notification
+        // Create patient account
         $credentials = null;
         if ($isNewPatient || ($wasUnknown && !$patient->is_unknown)) {
             if (!User::where('patient_id', $patient->id)->exists()) {
@@ -381,7 +322,6 @@ class RegisterPatient extends Page
                     'sex'             => $patient->sex,
                     'birthday'        => $patient->birthday?->format('Y-m-d'),
                     'address'         => $patient->address,
-                    'contact_number'  => $patient->contact_number,
                     'visit_type'      => $this->formData['registration_type'],
                     'chief_complaint' => $this->formData['chief_complaint'],
                     'has_incomplete'  => $patientFields['has_incomplete_info'] ? 'YES' : 'No',
@@ -393,16 +333,14 @@ class RegisterPatient extends Page
         $redirectUrl = \App\Filament\Clerk\Pages\RecordVitals::getUrl(['visitId' => $visit->id]);
 
         if ($credentials) {
-            // Show modal — don't redirect yet, wait for clerk to dismiss
-            $this->credUsername        = $credentials['username'];
-            $this->credPassword        = $credentials['password'];
-            $this->credRedirectUrl     = $redirectUrl;
+            $this->credUsername         = $credentials['username'];
+            $this->credPassword         = $credentials['password'];
+            $this->credRedirectUrl      = $redirectUrl;
             $this->showCredentialsModal = true;
         } else {
             Notification::make()
                 ->title('Patient registered! Case No: ' . $patient->case_no)
-                ->success()
-                ->send();
+                ->success()->send();
             $this->redirect($redirectUrl);
         }
     }
@@ -410,7 +348,7 @@ class RegisterPatient extends Page
     private function properName(string $name): string
     {
         return implode(' ', array_map(
-            fn ($word) => ucfirst(strtolower($word)),
+            fn ($w) => ucfirst(strtolower($w)),
             explode(' ', trim($name))
         ));
     }
@@ -418,41 +356,32 @@ class RegisterPatient extends Page
     private function createVisit(Patient $patient): Visit
     {
         return Visit::create([
-            'patient_id'           => $patient->id,
-            'clerk_id'             => auth()->id(),
-            'visit_type'           => $this->formData['registration_type'],
-            'chief_complaint'      => $this->formData['chief_complaint'],
-            'brought_by'           => $this->formData['brought_by'] ?? null,
-            'condition_on_arrival' => $this->formData['condition_on_arrival'] ?? null,
-            'status'               => 'registered',
-            'payment_class'        => null,
-            'registered_at'        => now(),
+            'patient_id'      => $patient->id,
+            'clerk_id'        => auth()->id(),
+            'visit_type'      => $this->formData['registration_type'],
+            'chief_complaint' => $this->formData['chief_complaint'],
+            'status'          => 'registered',
+            'payment_class'   => null,
+            'registered_at'   => now(),
         ]);
     }
 
     protected function createPatientAccount(Patient $patient): ?array
     {
-        if (User::where('patient_id', $patient->id)->exists()) {
-            return null;
-        }
+        if (User::where('patient_id', $patient->id)->exists()) return null;
 
         $firstName = preg_replace('/[^a-zA-Z]/', '', $patient->first_name);
         $lastName  = preg_replace('/[^a-zA-Z]/', '', $patient->family_name);
         $age       = $patient->current_age ?? $patient->age ?? 0;
-
         $baseUsername = ucfirst(strtolower($firstName)) . ucfirst(strtolower($lastName)) . $age;
 
-        // Ensure unique username
         $username = $baseUsername;
         $counter  = 1;
         while (User::where('username', $username)->exists()) {
-            $username = $baseUsername . $counter;
-            $counter++;
+            $username = $baseUsername . $counter++;
         }
 
-        // Generate a unique placeholder email (internal system use only, never shown)
-        // We need SOMETHING in email column since it's required by Laravel auth
-        $email   = 'patient_' . $patient->id . '_' . time() . '@internal';
+        $email    = 'patient_' . $patient->id . '_' . time() . '@internal';
         $password = $username;
 
         $user = User::create([
@@ -471,9 +400,6 @@ class RegisterPatient extends Page
         );
         $user->assignRole($role);
 
-        return [
-            'username' => $username,
-            'password' => $password,
-        ];
+        return ['username' => $username, 'password' => $password];
     }
 }
