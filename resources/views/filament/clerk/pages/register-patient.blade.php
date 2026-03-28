@@ -134,11 +134,17 @@
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px;">
         <div>
             <label class="lumc-label">Family Name *</label>
-            <input type="text" wire:model.live.debounce.400ms="searchFamilyName" placeholder="e.g., Dela Cruz" autofocus class="lumc-input">
+            <input type="text" wire:model.live.debounce.400ms="searchFamilyName"
+                   placeholder="e.g., Dela Cruz" autofocus
+                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                   class="lumc-input">
         </div>
         <div>
             <label class="lumc-label">First Name</label>
-            <input type="text" wire:model.live.debounce.400ms="searchFirstName" placeholder="e.g., Juan" class="lumc-input">
+            <input type="text" wire:model.live.debounce.400ms="searchFirstName"
+                   placeholder="e.g., Juan"
+                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                   class="lumc-input">
         </div>
         <div>
             <label class="lumc-label">Sex</label>
@@ -154,7 +160,11 @@
         </div>
         <div>
             <label class="lumc-label">Age <span style="font-size:.65rem;color:#9ca3af;font-weight:400;">(±2 yrs)</span></label>
-            <input type="number" wire:model.live.debounce.400ms="searchAge" placeholder="e.g., 25" min="0" max="120" class="lumc-input">
+        <input type="number" wire:model.live="searchAge"
+            placeholder="e.g., 25" min="0" max="120"
+            {{ $searchBirthday ? 'disabled' : '' }}
+            class="lumc-input"
+            style="{{ $searchBirthday ? 'background:#f3f4f6;color:#374151;cursor:not-allowed;font-weight:700;' : '' }}">
         </div>
     </div>
     @if($hasSearched)
@@ -239,27 +249,33 @@
         </div>
     </div>
 
-    {{-- Required --}}
     <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin:0 0 12px;">Required Information</p>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
         <div>
             <label class="lumc-label {{ $errors->has('formData.family_name') ? 'lumc-label-error' : '' }}">Family Name *</label>
-            <input type="text" wire:model="formData.family_name" class="lumc-input {{ $errors->has('formData.family_name') ? 'lumc-input-error' : '' }}">
+            <input type="text" wire:model="formData.family_name"
+                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                   class="lumc-input {{ $errors->has('formData.family_name') ? 'lumc-input-error' : '' }}">
             @error('formData.family_name')<p class="lumc-error">⚠️ {{ $message }}</p>@enderror
         </div>
         <div>
             <label class="lumc-label {{ $errors->has('formData.first_name') ? 'lumc-label-error' : '' }}">First Name *</label>
-            <input type="text" wire:model="formData.first_name" class="lumc-input {{ $errors->has('formData.first_name') ? 'lumc-input-error' : '' }}">
+            <input type="text" wire:model="formData.first_name"
+                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                   class="lumc-input {{ $errors->has('formData.first_name') ? 'lumc-input-error' : '' }}">
             @error('formData.first_name')<p class="lumc-error">⚠️ {{ $message }}</p>@enderror
         </div>
         <div>
             <label class="lumc-label">Middle Name</label>
-            <input type="text" wire:model="formData.middle_name" placeholder="Optional" class="lumc-input">
+            <input type="text" wire:model="formData.middle_name" placeholder="Optional"
+                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                   class="lumc-input">
         </div>
         <div>
             <label class="lumc-label {{ $errors->has('formData.sex') ? 'lumc-label-error' : '' }}">Sex *</label>
+            {{-- FIX: default empty, not pre-selected --}}
             <select wire:model="formData.sex" class="lumc-input lumc-select {{ $errors->has('formData.sex') ? 'lumc-input-error' : '' }}">
-                <option value="" disabled>Select sex…</option>
+                <option value="">Select sex…</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
             </select>
@@ -272,10 +288,18 @@
         </div>
         <div>
             <label class="lumc-label">Age <span style="font-size:.65rem;color:#9ca3af;font-weight:400;"> — if no birthday</span></label>
-            <input type="number" wire:model="formData.age" placeholder="e.g., 25" min="0" max="120"
-                   {{ $formData['birthday'] ? 'disabled' : '' }}
+            {{-- FIX: show calculated age number when birthday is set --}}
+            @if($formData['birthday'])
+            <input type="number"
+                   value="{{ $formData['age'] }}"
+                   disabled
                    class="lumc-input"
-                   style="{{ $formData['birthday'] ? 'background:#f3f4f6;color:#9ca3af;cursor:not-allowed;' : '' }}">
+                   style="background:#f3f4f6;color:#374151;cursor:not-allowed;font-weight:700;">
+            @else
+            <input type="number" wire:model.live="formData.age"
+                   placeholder="e.g., 25" min="0" max="120"
+                   class="lumc-input">
+            @endif
             @if($formData['birthday'])<p style="font-size:.7rem;color:#9ca3af;margin-top:3px;">Disabled — birthday takes priority</p>@endif
         </div>
         <div>

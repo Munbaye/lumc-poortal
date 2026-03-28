@@ -91,7 +91,15 @@ class RegisterPatient extends Page
     public function updatedSearchFirstName(): void  { if (strlen($this->searchFamilyName) >= 2) $this->runSearch(); }
     public function updatedSearchSex(): void        { if (strlen($this->searchFamilyName) >= 2) $this->runSearch(); }
     public function updatedSearchAge(): void        { if (strlen($this->searchFamilyName) >= 2) $this->runSearch(); }
-    public function updatedSearchBirthday(): void   { if (strlen($this->searchFamilyName) >= 2) $this->runSearch(); }
+    public function updatedSearchBirthday(): void
+    {
+    if ($this->searchBirthday) {
+        $this->searchAge = \Carbon\Carbon::parse($this->searchBirthday)->age;
+    } else {
+        $this->searchAge = null;
+    }
+    if (strlen($this->searchFamilyName) >= 2) $this->runSearch();
+    }
 
     // FIX: Auto-calculate age when birthday is entered
     public function updatedFormDataBirthday(): void
