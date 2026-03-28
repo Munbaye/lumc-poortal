@@ -143,7 +143,7 @@
         <div>
             <label class="lumc-label">Sex</label>
             <select wire:model.live="searchSex" class="lumc-input lumc-select">
-                <option value="" disabled>Any</option>
+                <option value="">Any</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
             </select>
@@ -309,7 +309,9 @@
         @if(($formData['civil_status'] ?? '') === 'Married')
         <div>
             <label class="lumc-label">Spouse Name</label>
-            <input type="text" wire:model="formData.spouse_name" class="lumc-input">
+            <input type="text" wire:model="formData.spouse_name"
+                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                   class="lumc-input">
         </div>
         @endif
         <div>
@@ -318,11 +320,15 @@
         </div>
         <div>
             <label class="lumc-label">Father's Name</label>
-            <input type="text" wire:model="formData.father_name" class="lumc-input">
+            <input type="text" wire:model="formData.father_name"
+                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                   class="lumc-input">
         </div>
         <div>
             <label class="lumc-label">Mother's Name</label>
-            <input type="text" wire:model="formData.mother_name" class="lumc-input">
+            <input type="text" wire:model="formData.mother_name"
+                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                   class="lumc-input">
         </div>
     </div>
 

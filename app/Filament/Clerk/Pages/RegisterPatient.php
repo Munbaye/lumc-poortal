@@ -93,6 +93,16 @@ class RegisterPatient extends Page
     public function updatedSearchAge(): void        { if (strlen($this->searchFamilyName) >= 2) $this->runSearch(); }
     public function updatedSearchBirthday(): void   { if (strlen($this->searchFamilyName) >= 2) $this->runSearch(); }
 
+    // FIX: Auto-calculate age when birthday is entered
+    public function updatedFormDataBirthday(): void
+    {
+        if ($this->formData['birthday']) {
+            $this->formData['age'] = \Carbon\Carbon::parse($this->formData['birthday'])->age;
+        } else {
+            $this->formData['age'] = null;
+        }
+    }
+
     public function runSearch(): void
     {
         if (strlen($this->searchFamilyName) < 2) {
@@ -152,7 +162,14 @@ class RegisterPatient extends Page
         $this->formData['first_name']  = $this->searchFirstName;
         $this->formData['sex']         = $this->searchSex;
         $this->formData['birthday']    = $this->searchBirthday;
-        $this->formData['age']         = $this->searchAge;
+
+        // FIX: calculate age from birthday if present, otherwise use search age
+        if ($this->searchBirthday) {
+            $this->formData['age'] = \Carbon\Carbon::parse($this->searchBirthday)->age;
+        } else {
+            $this->formData['age'] = $this->searchAge;
+        }
+
         $this->showCreateForm = true;
     }
 
