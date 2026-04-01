@@ -14,6 +14,14 @@ use Livewire\Attributes\Url;
 
 /**
  * PatientChart — main hub for admitted patients (Doctor view).
+ *
+ * Tabs:
+ *   Profile · Visit History · Vital Signs · History & Assessment · Doctor's Orders · Lab / Radiology
+ *
+ * Doctor's Orders redesign:
+ *   One free-text textarea — doctor types naturally, one order per line.
+ *   saveOrders() splits by \n → creates one DoctorsOrder row per non-blank line.
+ *   All logging, status (pending/carried/discontinued) and relationships unchanged.
  */
 class PatientChart extends Page
 {
@@ -27,15 +35,23 @@ class PatientChart extends Page
 
     public ?Visit $visit = null;
 
-    public string $activeTab      = 'orders';
-    public bool   $writingOrders  = false;
-    public array  $orderLines     = [['text' => '']];
-    public ?int   $confirmDiscontinueId = null;
+    public string $activeTab             = 'orders';
+    public bool   $writingOrders         = false;
+
+    /**
+     * Free-text order box — doctor types one order per line.
+     * Replaces the previous orderLines[] repeater array.
+     */
+    public string $orderText             = '';
+
+    public ?int   $confirmDiscontinueId  = null;
 
     // ── Result detail view state ──────────────────────────────────────────────
-    // Set to the LabRequest or RadiologyRequest ID when doctor clicks a result card.
     public ?int $viewingLabRequestId = null;
     public ?int $viewingRadRequestId = null;
+
+    // ── Patient history tab state ─────────────────────────────────────────────
+    public ?int $viewingHistoryVisitId = null;
 
     public function mount(): void
     {
@@ -61,14 +77,12 @@ class PatientChart extends Page
         }
     }
 
-    // ── Computed: all results for this visit ──────────────────────────────────
+    // ── Computed: current visit results ──────────────────────────────────────
 
     public function getLabResultsProperty()
     {
         $requestIds = LabRequest::where('visit_id', $this->visitId)
-            ->where('status', 'completed')
-            ->pluck('id');
-
+            ->where('status', 'completed')->pluck('id');
         return ResultUpload::where('request_type', 'lab')
             ->whereIn('request_id', $requestIds)
             ->with('uploadedBy')
@@ -79,9 +93,7 @@ class PatientChart extends Page
     public function getRadResultsProperty()
     {
         $requestIds = RadiologyRequest::where('visit_id', $this->visitId)
-            ->where('status', 'completed')
-            ->pluck('id');
-
+            ->where('status', 'completed')->pluck('id');
         return ResultUpload::where('request_type', 'radiology')
             ->whereIn('request_id', $requestIds)
             ->with(['uploadedBy'])
@@ -103,30 +115,105 @@ class PatientChart extends Page
         return RadiologyRequest::where('visit_id', $this->visitId)->count();
     }
 
+    // ── Patient history (past visits) ────────────────────────────────────────
+
+    public function getPastVisitsProperty()
+    {
+        if (!$this->visit) return collect();
+
+        return Visit::with([
+            'medicalHistory.doctor',
+            'vitals'        => fn ($q) => $q->orderBy('taken_at', 'desc'),
+            'doctorsOrders' => fn ($q) => $q->with('doctor')->orderBy('order_date', 'desc'),
+            'erRecord',
+            'admissionRecord',
+            'consentRecord',
+        ])
+        ->where('patient_id', $this->visit->patient_id)
+        ->where('id', '!=', $this->visitId)
+        ->orderBy('registered_at', 'desc')
+        ->get();
+    }
+
+    public function getHistoryVisitProperty(): ?Visit
+    {
+        if (!$this->viewingHistoryVisitId) return null;
+        return $this->pastVisits->firstWhere('id', $this->viewingHistoryVisitId);
+    }
+
+    public function getPastVisitsCountProperty(): int
+    {
+        if (!$this->visit) return 0;
+        return Visit::where('patient_id', $this->visit->patient_id)
+            ->where('id', '!=', $this->visitId)
+            ->count();
+    }
+
+    public function viewHistoryVisit(int $visitId): void
+    {
+        $this->viewingHistoryVisitId = $visitId;
+    }
+
+    public function closeHistoryView(): void
+    {
+        $this->viewingHistoryVisitId = null;
+    }
+
+    public function getPastVisitErUrl(int $visitId): string
+    {
+        return route('forms.er-record', ['visit' => $visitId]) . '?readonly=1';
+    }
+
+    public function getPastVisitAdmUrl(int $visitId): string
+    {
+        return route('forms.adm-record', ['visit' => $visitId]) . '?readonly=1';
+    }
+
+    public function getPastVisitConsentUrl(int $visitId): string
+    {
+        return route('forms.consent-to-care', ['visit' => $visitId]) . '?readonly=1';
+    }
+
+    public function getHistoryLabResults(int $visitId)
+    {
+        $requestIds = LabRequest::where('visit_id', $visitId)
+            ->where('status', 'completed')->pluck('id');
+        return ResultUpload::where('request_type', 'lab')
+            ->whereIn('request_id', $requestIds)
+            ->with('uploadedBy')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    public function getHistoryRadResults(int $visitId)
+    {
+        $requestIds = RadiologyRequest::where('visit_id', $visitId)
+            ->where('status', 'completed')->pluck('id');
+        return ResultUpload::where('request_type', 'radiology')
+            ->whereIn('request_id', $requestIds)
+            ->with('uploadedBy')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($upload) {
+                $upload->radRequest = RadiologyRequest::find($upload->request_id);
+                return $upload;
+            });
+    }
+
     // ── Result detail view ────────────────────────────────────────────────────
 
-    /**
-     * Open the detail view for a completed lab result.
-     * Called from the result card in the results tab.
-     */
     public function viewLabResult(int $requestId): void
     {
         $this->viewingLabRequestId = $requestId;
         $this->viewingRadRequestId = null;
     }
 
-    /**
-     * Open the detail view for a completed radiology result.
-     */
     public function viewRadResult(int $requestId): void
     {
         $this->viewingRadRequestId = $requestId;
         $this->viewingLabRequestId = null;
     }
 
-    /**
-     * Close the result detail view and return to the results list.
-     */
     public function closeResultView(): void
     {
         $this->viewingLabRequestId = null;
@@ -137,55 +224,70 @@ class PatientChart extends Page
 
     public function setTab(string $tab): void
     {
-        $this->activeTab           = $tab;
-        $this->writingOrders       = false;
-        $this->viewingLabRequestId = null;
-        $this->viewingRadRequestId = null;
+        $this->activeTab             = $tab;
+        $this->writingOrders         = false;
+        $this->viewingLabRequestId   = null;
+        $this->viewingRadRequestId   = null;
+        $this->viewingHistoryVisitId = null;
     }
 
-    // ── Orders ────────────────────────────────────────────────────────────────
-
-    public function addOrderLine(): void
-    {
-        $this->orderLines[] = ['text' => ''];
-    }
-
-    public function removeOrderLine(int $index): void
-    {
-        if (count($this->orderLines) <= 1) {
-            $this->orderLines = [['text' => '']];
-            return;
-        }
-        array_splice($this->orderLines, $index, 1);
-    }
+    // ── Orders — free-text textarea approach ─────────────────────────────────
 
     public function toggleWriteOrders(): void
     {
         $this->writingOrders = !$this->writingOrders;
         if ($this->writingOrders) {
-            $this->orderLines = [['text' => '']];
+            $this->orderText = '';   // clear on open
         }
     }
 
+    /**
+     * Append a quick-insert snippet to the textarea.
+     * Called by the quick-insert chip buttons in the blade.
+     */
+    public function quickInsert(string $text): void
+    {
+        $this->orderText = rtrim($this->orderText);
+        // Add a newline separator if there's already text
+        if ($this->orderText !== '') {
+            $this->orderText .= "\n";
+        }
+        $this->orderText .= $text;
+    }
+
+    /**
+     * Save orders from the free-text box.
+     * Splits by newline → creates one DoctorsOrder per non-blank line.
+     * All status, logging, and relationships are preserved.
+     */
     public function saveOrders(): void
     {
-        $validLines = collect($this->orderLines)
-            ->filter(fn ($line) => trim($line['text'] ?? '') !== '')
+        if (trim($this->orderText) === '') {
+            Notification::make()->title('Please type at least one order.')->warning()->send();
+            return;
+        }
+
+        // Split by newlines, trim each line, remove blank lines
+        $lines = collect(explode("\n", $this->orderText))
+            ->map(fn ($line) => trim($line))
+            ->filter(fn ($line) => $line !== '')
             ->values();
 
-        if ($validLines->isEmpty()) {
-            Notification::make()->title('Please enter at least one order.')->warning()->send();
+        if ($lines->isEmpty()) {
+            Notification::make()->title('Please type at least one order.')->warning()->send();
             return;
         }
 
         $saved = 0;
-        foreach ($validLines as $line) {
+        $orderDate = now();
+
+        foreach ($lines as $line) {
             DoctorsOrder::create([
                 'visit_id'     => $this->visitId,
                 'doctor_id'    => auth()->id(),
-                'order_text'   => trim($line['text']),
+                'order_text'   => $line,
                 'status'       => DoctorsOrder::STATUS_PENDING,
-                'order_date'   => now(),
+                'order_date'   => $orderDate,
                 'is_completed' => false,
             ]);
             $saved++;
@@ -196,14 +298,16 @@ class PatientChart extends Page
             category:     ActivityLog::CAT_CLINICAL,
             subject:      $this->visit,
             subjectLabel: $this->visit->patient->full_name . ' (' . $this->visit->patient->case_no . ')',
-            newValues:    ['orders_written' => $saved],
+            newValues:    ['orders_written' => $saved, 'doctor' => auth()->user()->name],
             panel:        'doctor',
         );
 
-        Notification::make()->title($saved . ' order' . ($saved > 1 ? 's' : '') . ' written.')->success()->send();
+        Notification::make()
+            ->title($saved . ' order' . ($saved > 1 ? 's' : '') . ' written.')
+            ->success()->send();
 
         $this->writingOrders = false;
-        $this->orderLines    = [['text' => '']];
+        $this->orderText     = '';
         $this->loadVisit();
     }
 

@@ -15,15 +15,10 @@ use Livewire\Attributes\Url;
  *
  * URL: /nurse/nurse-chart?visitId={id}
  *
- * Tabs:
- *   orders    — Doctor's Orders with "Mark as Carried" per pending order
- *   notes     — SOAP Nurse's Notes (add + list)
- *   mar       — Medication Administration Record (placeholder)
- *   vitals    — Vital Signs Monitoring Sheet (placeholder)
- *   iv        — IV Fluid Monitoring Sheet (placeholder)
- *   blood     — Blood Transfusion Sheet (placeholder)
- *   io        — Intake & Output (placeholder)
- *   handover  — Nursing Handover / Endorsement (placeholder)
+ * Doctor's Orders redesign:
+ *   - Each DoctorsOrder row = one line the doctor typed.
+ *   - Nurse marks each line individually (shift-safe).
+ *   - carryAllOrders() marks every still-pending order at once.
  */
 class NurseChart extends Page
 {
@@ -32,27 +27,20 @@ class NurseChart extends Page
     protected static ?string $title                    = 'Patient Chart';
     protected static bool    $shouldRegisterNavigation = false;
 
-    // ── URL parameter ─────────────────────────────────────────────────────────
     #[Url]
     public ?int $visitId = null;
 
-    // ── Loaded data ───────────────────────────────────────────────────────────
     public ?Visit $visit = null;
 
-    // ── Tab state ─────────────────────────────────────────────────────────────
-    public string $activeTab = 'orders';
+    public string $activeTab    = 'orders';
+    public ?int   $confirmCarryId = null;
 
-    // ── Carry order confirmation ──────────────────────────────────────────────
-    public ?int $confirmCarryId = null;
-
-    // ── SOAP note form ────────────────────────────────────────────────────────
-    public bool   $addingNote   = false;
-    public string $soapS        = '';   // Subjective
-    public string $soapO        = '';   // Objective
-    public string $soapA        = '';   // Assessment
-    public string $soapP        = '';   // Plan
-
-    // ─────────────────────────────────────────────────────────────────────────
+    // SOAP note form
+    public bool   $addingNote = false;
+    public string $soapS      = '';
+    public string $soapO      = '';
+    public string $soapA      = '';
+    public string $soapP      = '';
 
     public function mount(): void
     {
@@ -87,12 +75,12 @@ class NurseChart extends Page
 
     public function setTab(string $tab): void
     {
-        $this->activeTab     = $tab;
+        $this->activeTab      = $tab;
         $this->confirmCarryId = null;
-        $this->addingNote    = false;
+        $this->addingNote     = false;
     }
 
-    // ── Doctor's Orders — Mark as Carried ─────────────────────────────────────
+    // ── Doctor's Orders — Mark as Carried (individual) ───────────────────────
 
     public function carryOrder(int $orderId): void
     {
@@ -104,7 +92,9 @@ class NurseChart extends Page
         }
 
         if (!$order->isPending()) {
-            Notification::make()->title('Order is already ' . $order->status_label . '.')->warning()->send();
+            Notification::make()
+                ->title('Order is already ' . $order->status_label . '.')
+                ->warning()->send();
             $this->confirmCarryId = null;
             return;
         }
@@ -116,7 +106,6 @@ class NurseChart extends Page
             'completed_at' => now(),
         ]);
 
-        // Log the action
         ActivityLog::record(
             action:       'carried_doctors_order',
             category:     ActivityLog::CAT_CLINICAL,
@@ -125,18 +114,70 @@ class NurseChart extends Page
                 . ' (' . $this->visit->patient->case_no . ')'
                 . ' — Order: ' . \Str::limit($order->order_text, 60),
             newValues: [
-                'order_id'     => $order->id,
-                'order_text'   => $order->order_text,
-                'carried_by'   => auth()->user()->name,
-                'carried_at'   => now()->toDateTimeString(),
+                'order_id'   => $order->id,
+                'order_text' => $order->order_text,
+                'carried_by' => auth()->user()->name,
+                'carried_at' => now()->toDateTimeString(),
             ],
             panel: 'nurse',
         );
 
         $this->confirmCarryId = null;
         $this->loadVisit();
-
         Notification::make()->title('Order marked as carried.')->success()->send();
+    }
+
+    // ── Doctor's Orders — Mark ALL pending as Carried ────────────────────────
+
+    /**
+     * Marks every still-pending order for this visit as carried at once.
+     * Useful for simple one-time order sets (e.g., "NPO, CBC, CXR").
+     * Each order records the same nurse + same timestamp for traceability.
+     */
+    public function carryAllOrders(): void
+    {
+        $pendingOrders = DoctorsOrder::where('visit_id', $this->visitId)
+            ->where('status', DoctorsOrder::STATUS_PENDING)
+            ->get();
+
+        if ($pendingOrders->isEmpty()) {
+            Notification::make()
+                ->title('No pending orders to carry.')
+                ->info()->send();
+            return;
+        }
+
+        $now = now();
+        $count = 0;
+
+        foreach ($pendingOrders as $order) {
+            $order->update([
+                'status'       => DoctorsOrder::STATUS_CARRIED,
+                'is_completed' => true,
+                'completed_by' => auth()->id(),
+                'completed_at' => $now,
+            ]);
+            $count++;
+        }
+
+        ActivityLog::record(
+            action:       'carried_all_doctors_orders',
+            category:     ActivityLog::CAT_CLINICAL,
+            subject:      $this->visit,
+            subjectLabel: $this->visit->patient->full_name
+                . ' (' . $this->visit->patient->case_no . ')',
+            newValues: [
+                'orders_carried' => $count,
+                'carried_by'     => auth()->user()->name,
+                'carried_at'     => $now->toDateTimeString(),
+            ],
+            panel: 'nurse',
+        );
+
+        $this->loadVisit();
+        Notification::make()
+            ->title($count . ' order' . ($count > 1 ? 's' : '') . ' marked as carried.')
+            ->success()->send();
     }
 
     // ── SOAP Notes ────────────────────────────────────────────────────────────
@@ -154,27 +195,24 @@ class NurseChart extends Page
 
     public function saveNote(): void
     {
-        // At least one SOAP field must have content
         if (!filled($this->soapS) && !filled($this->soapO)
             && !filled($this->soapA) && !filled($this->soapP)) {
             Notification::make()
                 ->title('Please fill in at least one SOAP field.')
-                ->warning()
-                ->send();
+                ->warning()->send();
             return;
         }
 
         $note = NursesNote::create([
-            'visit_id'    => $this->visitId,
-            'nurse_id'    => auth()->id(),
-            'subjective'  => trim($this->soapS) ?: null,
-            'objective'   => trim($this->soapO) ?: null,
-            'assessment'  => trim($this->soapA) ?: null,
-            'plan'        => trim($this->soapP) ?: null,
-            'noted_at'    => now(),
+            'visit_id'   => $this->visitId,
+            'nurse_id'   => auth()->id(),
+            'subjective' => trim($this->soapS) ?: null,
+            'objective'  => trim($this->soapO) ?: null,
+            'assessment' => trim($this->soapA) ?: null,
+            'plan'       => trim($this->soapP) ?: null,
+            'noted_at'   => now(),
         ]);
 
-        // Log the action
         ActivityLog::record(
             action:       'added_nurses_note',
             category:     ActivityLog::CAT_CLINICAL,
@@ -182,25 +220,21 @@ class NurseChart extends Page
             subjectLabel: $this->visit->patient->full_name
                 . ' (' . $this->visit->patient->case_no . ')',
             newValues: [
-                'note_id'      => $note->id,
-                'subjective'   => $note->subjective ? \Str::limit($note->subjective, 80) : null,
-                'objective'    => $note->objective  ? \Str::limit($note->objective,  80) : null,
-                'assessment'   => $note->assessment ? \Str::limit($note->assessment, 80) : null,
-                'plan'         => $note->plan       ? \Str::limit($note->plan,       80) : null,
-                'nurse'        => auth()->user()->name,
+                'note_id'    => $note->id,
+                'subjective' => $note->subjective ? \Str::limit($note->subjective, 80) : null,
+                'objective'  => $note->objective  ? \Str::limit($note->objective,  80) : null,
+                'assessment' => $note->assessment ? \Str::limit($note->assessment, 80) : null,
+                'plan'       => $note->plan       ? \Str::limit($note->plan,       80) : null,
+                'nurse'      => auth()->user()->name,
             ],
             panel: 'nurse',
         );
 
-        // Reset and reload
         $this->addingNote = false;
         $this->soapS = $this->soapO = $this->soapA = $this->soapP = '';
         $this->loadVisit();
-
         Notification::make()->title('Nurse\'s note saved.')->success()->send();
     }
-
-    // ── Back to list ─────────────────────────────────────────────────────────
 
     public function goBack(): void
     {

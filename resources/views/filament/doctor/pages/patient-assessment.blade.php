@@ -244,38 +244,31 @@
         <span style="background:#059669;color:#fff;font-size:.68rem;font-weight:700;border-radius:4px;padding:2px 8px;">5</span>
         <h2 style="font-size:.93rem;font-weight:700;" class="text-gray-900 dark:text-white">Doctor's Orders</h2>
         <span style="font-size:.72rem;color:#059669;" class="dark:text-green-400">
-            NUR-009 — {{ $admittingService ?: 'admitting service' }} · each order checked off separately by nurse
+            NUR-009 — {{ $admittingService ?: 'admitting service' }} · one order per line
         </span>
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <input type="text" wire:model="newOrder" wire:keydown.enter.prevent="addOrder"
-               placeholder="e.g., IVF D5LR 1L x 8hrs, CBC with platelet, Chest X-ray PA, Paracetamol 500mg q6h PRN…"
-               style="flex:1;border:1px solid #bbf7d0;border-radius:6px;padding:9px 12px;font-size:.83rem;background:#fff;color:#111827;"
-               class="dark:bg-gray-800 dark:border-green-700 dark:text-white focus:outline-none focus:ring-1 focus:ring-green-400">
-        <button wire:click="addOrder" type="button"
-                style="background:#059669;color:#fff;border:none;padding:9px 18px;border-radius:6px;font-size:.83rem;font-weight:600;cursor:pointer;white-space:nowrap;"
-                onmouseover="this.style.background='#047857'" onmouseout="this.style.background='#059669'">
-            + Add
-        </button>
+
+    {{-- Big free-text box design (matches PatientChart) --}}
+    <div style="background:#f0fdf4;border:1.5px solid #34d399;border-radius:10px;padding:20px 22px;">
+        <div style="font-size:.85rem;font-weight:700;color:#065f46;margin-bottom:6px;">
+            ✏️ New Doctor's Orders — {{ now()->timezone('Asia/Manila')->format('F j, Y · H:i') }}
+        </div>
+        <p style="font-size:.76rem;color:#166534;margin-bottom:12px;">
+            Type one order per line. Press Enter for a new order. The whole block will be saved when you click "Save Assessment".
+        </p>
+
+        <textarea
+            wire:model="orderText"
+            rows="10"
+            placeholder="IVF D5LR 1L @ 30 gtts/min&#10;Paracetamol 500mg IV q6h PRN fever >38.5°C&#10;CBC with platelet count STAT&#10;Chest X-ray PA view&#10;NPO temporarily&#10;Monitor vital signs q4h&#10;O2 via nasal cannula @ 2-4 LPM, titrate to SpO2 ≥95%"
+            style="width:100%;min-height:220px;border:1px solid #a1e0c8;border-radius:8px;padding:14px;font-size:.875rem;line-height:1.75;background:#fff;color:#111827;resize:vertical;font-family:system-ui,sans-serif;"
+            class="dark:bg-gray-800 dark:border-green-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400">
+        </textarea>
+
+        <div style="font-size:.72rem;color:#166534;margin-top:6px;display:flex;align-items:center;gap:5px;">
+            💡 Each line becomes a separate order the nurse can check off individually.
+        </div>
     </div>
-    @if(count($orders) > 0)
-    <ol style="margin:0;padding:0;list-style:none;display:grid;gap:6px;">
-        @foreach($orders as $i => $order)
-        <li style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;border:1px solid {{ $order['is_completed']?'#bbf7d0':'#d1fae5' }};background:{{ $order['is_completed']?'#f0fdf4':'#f9fafb' }};"
-            class="dark:bg-gray-800 dark:border-gray-700">
-            <span style="color:#9ca3af;font-size:.73rem;min-width:22px;flex-shrink:0;">{{ $i+1 }}.</span>
-            <span style="flex:1;font-size:.83rem;" class="text-gray-800 dark:text-gray-200">{{ $order['order_text'] }}</span>
-            @if($order['id'] ?? null)
-                <span style="font-size:.7rem;color:{{ $order['is_completed']?'#16a34a':'#d97706' }};font-weight:600;flex-shrink:0;">{{ $order['is_completed']?'✓ Done':'Pending' }}</span>
-            @else
-                <button wire:click="removeOrder({{ $i }})" type="button" style="color:#9ca3af;font-size:.75rem;border:none;background:none;cursor:pointer;padding:2px 6px;flex-shrink:0;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#9ca3af'" title="Remove">✕</button>
-            @endif
-        </li>
-        @endforeach
-    </ol>
-    @else
-    <p style="font-size:.8rem;color:#9ca3af;text-align:center;padding:14px 0;">No orders yet. Type above and press Enter or click + Add.</p>
-    @endif
 </div>
 @endif
 

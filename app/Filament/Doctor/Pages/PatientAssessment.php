@@ -58,7 +58,7 @@ class PatientAssessment extends Page
     public ?bool   $willAdmit             = null;
     public ?string $outpatientDisposition = null;
 
-    // Admitting service (required when admitting) — 6 options only
+    // Admitting service
     public string $admittingService = '';
 
     public array $serviceOptions = [
@@ -70,9 +70,8 @@ class PatientAssessment extends Page
         'NICU',
     ];
 
-    // Doctor's Orders (shown only when admitting)
-    public array  $orders   = [];
-    public string $newOrder = '';
+    // ── Doctor’s Orders (New Big Free-Text Design) ─────────────────────
+    public string $orderText = '';
 
     public function mount(): void
     {
@@ -132,12 +131,10 @@ class PatientAssessment extends Page
             $this->admittingService = $this->visit->admitted_service;
         }
 
-        $this->orders = $this->visit->doctorsOrders
-            ->map(fn ($o) => [
-                'id'           => $o->id,
-                'order_text'   => $o->order_text,
-                'is_completed' => $o->is_completed,
-            ])->toArray();
+        // Load existing orders as multiline text
+        $this->orderText = $this->visit->doctorsOrders
+            ->pluck('order_text')
+            ->implode("\n");
     }
 
     public function updatedWillAdmit(): void
@@ -145,22 +142,6 @@ class PatientAssessment extends Page
         $this->outpatientDisposition = null;
         if (!$this->willAdmit) {
             $this->admittingService = '';
-            $this->newOrder         = '';
-        }
-    }
-
-    public function addOrder(): void
-    {
-        $text = trim($this->newOrder);
-        if (!$text) return;
-        $this->orders[] = ['id' => null, 'order_text' => $text, 'is_completed' => false];
-        $this->newOrder = '';
-    }
-
-    public function removeOrder(int $index): void
-    {
-        if (!($this->orders[$index]['id'] ?? null)) {
-            array_splice($this->orders, $index, 1);
         }
     }
 
@@ -183,7 +164,7 @@ class PatientAssessment extends Page
             return;
         }
 
-        // 1. Medical history
+        // 1. Save Medical History
         MedicalHistory::updateOrCreate(
             ['visit_id' => $this->visitId],
             [
@@ -219,26 +200,33 @@ class PatientAssessment extends Page
             ]
         );
 
-        // 2. Doctor's orders (only new lines)
-        if ($this->willAdmit) {
-            $newOrders = collect($this->orders)
-                ->filter(fn ($order) => !isset($order['id']) || !$order['id'])
-                ->pluck('order_text')
-                ->filter()
-                ->unique();
+        // 2. Save Doctor's Orders (New free-text method)
+        if ($this->willAdmit && trim($this->orderText) !== '') {
+            $lines = collect(explode("\n", $this->orderText))
+                ->map(fn ($line) => trim($line))
+                ->filter(fn ($line) => $line !== '')
+                ->values();
 
-            foreach ($newOrders as $text) {
-                DoctorsOrder::create([
-                    'visit_id'     => $this->visitId,
-                    'doctor_id'    => auth()->id(),
-                    'order_text'   => trim($text),
-                    'status'       => DoctorsOrder::STATUS_PENDING,
-                    'is_completed' => false,
-                ]);
+            foreach ($lines as $text) {
+                // Avoid creating duplicate orders
+                $exists = DoctorsOrder::where('visit_id', $this->visitId)
+                    ->where('order_text', $text)
+                    ->exists();
+
+                if (!$exists) {
+                    DoctorsOrder::create([
+                        'visit_id'     => $this->visitId,
+                        'doctor_id'    => auth()->id(),
+                        'order_text'   => $text,
+                        'status'       => DoctorsOrder::STATUS_PENDING,
+                        'order_date'   => now(),
+                        'is_completed' => false,
+                    ]);
+                }
             }
         }
 
-        // 3. Update visit
+        // 3. Update Visit
         $status = match ($disposition) {
             'Admitted'                      => 'admitted',
             'Discharged', 'HAMA', 'Expired' => 'discharged',
@@ -261,7 +249,7 @@ class PatientAssessment extends Page
 
         $this->visit->update($visitUpdate);
 
-        // 4. Activity log
+        // 4. Activity Log
         ActivityLog::record(
             action: match (true) {
                 $disposition === 'Admitted'   => ActivityLog::ACT_ADMITTED_PATIENT,
@@ -295,24 +283,14 @@ class PatientAssessment extends Page
                     ->actions([
                         \Filament\Notifications\Actions\Action::make('complete_admission')
                             ->label('Complete Admission')
-                            ->url(
-                                \App\Filament\Clerk\Pages\CompleteAdmission::getUrl(
-                                    ['visitId' => $this->visit->id],
-                                    panel: 'clerk'
-                                )
-                            )
+                            ->url(\App\Filament\Clerk\Pages\CompleteAdmission::getUrl(['visitId' => $this->visit->id], panel: 'clerk'))
                             ->button(),
                     ])
                     ->sendToDatabase($clerk);
             }
 
             Notification::make()->title('Admission order sent — clerk notified.')->success()->send();
-
-            // ── KEY CHANGE: redirect to Patient Queue (clerk will handle admission)
-            // The chart becomes available once the clerk completes admission.
-            // For immediate doctor reference, send back to queue with a note.
             $this->redirect(\App\Filament\Doctor\Resources\PatientQueueResource::getUrl('index'));
-
         } else {
             Notification::make()->title('Assessment saved.')->success()->send();
             $this->redirect(\App\Filament\Doctor\Resources\PatientQueueResource::getUrl('index'));
