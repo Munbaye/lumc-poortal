@@ -1,12 +1,4 @@
 <?php
-/**
- * Migration: create_nurses_notes_table
- *
- * Replaces the old nurses_notes migration (which had a single `note` text column).
- * This version adds proper SOAP-format columns.
- *
- * Run: php artisan migrate:fresh
- */
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,7 +10,6 @@ return new class extends Migration
         Schema::create('nurses_notes', function (Blueprint $table) {
             $table->id();
 
-            // Relationships
             $table->foreignId('visit_id')
                 ->constrained()
                 ->cascadeOnDelete();
@@ -27,20 +18,19 @@ return new class extends Migration
                 ->constrained('users')
                 ->nullOnDelete();
 
-            // SOAP format
-            // S — Subjective: what the patient/family reports (symptoms, complaints, feelings)
-            $table->text('subjective')->nullable();
+            // FDAR format
+            // F — Focus  : the nursing diagnosis / patient problem / concern
+            $table->text('focus')->nullable();
 
-            // O — Objective: measurable / observable data (vitals, exam findings, lab values)
-            $table->text('objective')->nullable();
+            // D — Data   : subjective and objective data supporting the focus
+            $table->text('data')->nullable();
 
-            // A — Assessment: nurse's clinical judgment and interpretation
-            $table->text('assessment')->nullable();
+            // A — Action : nursing interventions performed
+            $table->text('action')->nullable();
 
-            // P — Plan: nursing interventions and actions taken or planned
-            $table->text('plan')->nullable();
+            // R — Response : patient's response to the interventions
+            $table->text('response')->nullable();
 
-            // When the note was formally made (defaults to created_at but can be set explicitly)
             $table->timestamp('noted_at')->nullable();
 
             $table->timestamps();

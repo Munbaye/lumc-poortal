@@ -47,27 +47,27 @@ class PatientList extends Page
                 'medicalHistory.doctor',
                 'doctorsOrders' => fn ($q) => $q->where('status', 'pending'),
             ])
-            ->whereNotNull('clerk_admitted_at')
+            ->whereNotNull('doctor_admitted_at')
             ->where('status', 'admitted')
             // Search by patient name fields or case number
             ->when($this->search, function ($q) {
                 $search = '%' . $this->search . '%';
                 $q->whereHas('patient', fn ($p) =>
                     $p->where('family_name', 'like', $search)
-                      ->orWhere('first_name',  'like', $search)
-                      ->orWhere('case_no',     'like', $search)
+                    ->orWhere('first_name',  'like', $search)
+                    ->orWhere('case_no',     'like', $search)
                 );
             })
             ->when($this->serviceFilter, fn ($q) =>
                 $q->where('admitted_service', $this->serviceFilter)
             )
-            ->orderBy('clerk_admitted_at', 'asc')
+            ->orderBy('doctor_admitted_at', 'asc')  // ← sort by doctor order time
             ->paginate(20);
     }
 
     public function getServiceOptionsProperty(): array
     {
-        return Visit::whereNotNull('clerk_admitted_at')
+        return Visit::whereNotNull('doctor_admitted_at')
             ->where('status', 'admitted')
             ->whereNotNull('admitted_service')
             ->distinct()
@@ -79,7 +79,7 @@ class PatientList extends Page
 
     public function getTotalAdmittedProperty(): int
     {
-        return Visit::whereNotNull('clerk_admitted_at')
+        return Visit::whereNotNull('doctor_admitted_at')
             ->where('status', 'admitted')
             ->count();
     }
@@ -87,7 +87,7 @@ class PatientList extends Page
     public function getTotalPendingOrdersProperty(): int
     {
         return \App\Models\DoctorsOrder::whereHas('visit', fn ($q) =>
-            $q->whereNotNull('clerk_admitted_at')->where('status', 'admitted')
+            $q->whereNotNull('doctor_admitted_at')->where('status', 'admitted')
         )->where('status', 'pending')->count();
     }
 

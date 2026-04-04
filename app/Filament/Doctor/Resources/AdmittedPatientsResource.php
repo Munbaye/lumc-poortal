@@ -18,9 +18,6 @@ class AdmittedPatientsResource extends Resource
     protected static ?int    $navigationSort  = 2;
 
     /**
-     * Base query: only visits where the clerk has completed admission
-     * (clerk_admitted_at IS NOT NULL → visit is fully admitted).
-     *
      * Visibility rules:
      *   Charity  → all doctors can see
      *   Private  → only the assigned doctor
@@ -31,15 +28,15 @@ class AdmittedPatientsResource extends Resource
 
         return Visit::query()
             ->with(['patient', 'medicalHistory.doctor'])
-            ->whereNotNull('clerk_admitted_at')           // fully admitted
+            ->whereNotNull('doctor_admitted_at')
             ->where('status', 'admitted')
             ->where(function (Builder $q) use ($doctorId) {
                 $q->where('payment_class', 'Charity')
-                  ->orWhereNull('payment_class')          // safety net
-                  ->orWhere(function (Builder $q2) use ($doctorId) {
-                      $q2->where('payment_class', 'Private')
-                         ->where('assigned_doctor_id', $doctorId);
-                  });
+                ->orWhereNull('payment_class')
+                ->orWhere(function (Builder $q2) use ($doctorId) {
+                    $q2->where('payment_class', 'Private')
+                        ->where('assigned_doctor_id', $doctorId);
+                });
             });
     }
 
@@ -91,18 +88,18 @@ class AdmittedPatientsResource extends Resource
                     ->badge()
                     ->color(fn ($state) => $state === 'Private' ? 'gray' : 'success'),
 
-                Tables\Columns\TextColumn::make('clerk_admitted_at')
+                Tables\Columns\TextColumn::make('doctor_admitted_at')
                     ->label('Date Admitted')
                     ->dateTime('M j, Y H:i')
                     ->sortable()
                     ->description(fn ($record) =>
                         $record->clerk_admitted_at
-                            ? $record->clerk_admitted_at->timezone('Asia/Manila')->diffForHumans()
-                            : null
+                            ? 'Clerk admitted ' . $record->clerk_admitted_at->timezone('Asia/Manila')->diffForHumans()
+                            : '⏳ Pending clerk admission'
                     ),
 
             ])
-            ->defaultSort('clerk_admitted_at', 'asc')
+            ->defaultSort('doctor_admitted_at', 'asc')
             ->searchPlaceholder('Search by name or case no…')
             ->actions([
                 Tables\Actions\Action::make('open_chart')
@@ -132,15 +129,15 @@ class AdmittedPatientsResource extends Resource
     {
         try {
             $doctorId = auth()->id();
-            $count = Visit::whereNotNull('clerk_admitted_at')
+            $count = Visit::whereNotNull('doctor_admitted_at')    // ← was clerk_admitted_at
                 ->where('status', 'admitted')
                 ->where(function (Builder $q) use ($doctorId) {
                     $q->where('payment_class', 'Charity')
-                      ->orWhereNull('payment_class')
-                      ->orWhere(function (Builder $q2) use ($doctorId) {
-                          $q2->where('payment_class', 'Private')
-                             ->where('assigned_doctor_id', $doctorId);
-                      });
+                    ->orWhereNull('payment_class')
+                    ->orWhere(function (Builder $q2) use ($doctorId) {
+                        $q2->where('payment_class', 'Private')
+                            ->where('assigned_doctor_id', $doctorId);
+                    });
                 })
                 ->count();
             return $count > 0 ? (string) $count : null;

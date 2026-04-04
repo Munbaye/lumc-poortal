@@ -328,6 +328,21 @@ class PatientChart extends Page
         Notification::make()->title('Order discontinued.')->success()->send();
     }
 
+    public function getErRecordUrl(): string
+    {
+        return route('forms.er-record', ['visit' => $this->visitId]) . '?readonly=1';
+    }
+
+    public function getAdmRecordUrl(): string
+    {
+        return route('forms.adm-record', ['visit' => $this->visitId]) . '?readonly=1';
+    }
+
+    public function getConsentUrl(): string
+    {
+        return route('forms.consent-to-care', ['visit' => $this->visitId]) . '?readonly=1';
+    }
+
     public function getHistoryFormUrl(): string
     {
         return route('forms.history-form', ['visit' => $this->visitId]);

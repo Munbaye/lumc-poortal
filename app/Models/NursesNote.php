@@ -5,31 +5,29 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * NursesNote — stores a single SOAP-format nursing note for a visit.
+ * NursesNote — stores a single FDAR-format nursing note for a visit.
  *
- * SOAP:
- *   S — Subjective : what the patient / family reports
- *   O — Objective  : measurable / observable data
- *   A — Assessment : nurse's clinical judgment
- *   P — Plan       : nursing interventions and next steps
+ * FDAR:
+ *   F — Focus    : the nursing diagnosis / patient problem / concern
+ *   D — Data     : subjective and objective data supporting the focus
+ *   A — Action   : nursing interventions performed
+ *   R — Response : patient's response to the interventions
  */
 class NursesNote extends Model
 {
     protected $fillable = [
         'visit_id',
         'nurse_id',
-        'subjective',
-        'objective',
-        'assessment',
-        'plan',
+        'focus',
+        'data',
+        'action',
+        'response',
         'noted_at',
     ];
 
     protected $casts = [
         'noted_at' => 'datetime',
     ];
-
-    // ── Boot: set noted_at to now if not provided ─────────────────────────────
 
     protected static function boot(): void
     {
@@ -41,20 +39,16 @@ class NursesNote extends Model
         });
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
     /**
-     * True if at least one SOAP field has content.
+     * True if at least one FDAR field has content.
      */
     public function hasContent(): bool
     {
-        return filled($this->subjective)
-            || filled($this->objective)
-            || filled($this->assessment)
-            || filled($this->plan);
+        return filled($this->focus)
+            || filled($this->data)
+            || filled($this->action)
+            || filled($this->response);
     }
-
-    // ── Relationships ─────────────────────────────────────────────────────────
 
     public function visit() { return $this->belongsTo(Visit::class); }
     public function nurse() { return $this->belongsTo(User::class, 'nurse_id'); }

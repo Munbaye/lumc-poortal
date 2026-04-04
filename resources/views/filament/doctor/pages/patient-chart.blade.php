@@ -49,6 +49,23 @@
 .dark .placeholder-card .ph-title { color:#e5e7eb; }
 .placeholder-card .ph-sub { font-size:.8rem;color:#9ca3af; }
 
+/* ── Forms tab ───────────────────────────────────────────────────── */
+.form-section { margin-bottom:32px; }
+.form-section-header { display:flex;align-items:center;gap:10px;margin-bottom:12px; }
+.form-section-label { font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap; }
+.form-section-line { flex:1;border-top:1px solid #e5e7eb; }
+.dark .form-section-line { border-top-color:#374151; }
+.form-section-badge { font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap; }
+.form-section-badge-saved { background:#d1fae5;color:#065f46; }
+.form-section-badge-missing { background:#fef3c7;color:#92400e; }
+.form-iframe-wrap { border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06); }
+.dark .form-iframe-wrap { border-color:#374151; }
+.form-iframe-wrap iframe { display:block;width:100%;border:none; }
+.form-missing-card { background:#fff;border:1.5px dashed #e5e7eb;border-radius:8px;padding:24px;text-align:center; }
+.dark .form-missing-card { background:#1f2937;border-color:#374151; }
+.form-missing-icon { font-size:2rem;margin-bottom:8px; }
+.form-missing-text { font-size:.82rem;color:#9ca3af; }
+
 /* ── Document link cards ─────────────────────────────────────────── */
 .doc-card { background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:20px 22px;display:flex;align-items:center;gap:16px;cursor:pointer;text-decoration:none;transition:border-color .15s,box-shadow .15s; }
 .dark .doc-card { background:#1f2937;border-color:#374151; }
@@ -98,47 +115,22 @@
 .btn-discontinue { font-size:.7rem;color:#9ca3af;background:none;border:1px solid #e5e7eb;border-radius:5px;padding:3px 9px;cursor:pointer;margin-top:4px; }
 .btn-discontinue:hover { border-color:#dc2626;color:#dc2626; }
 
-/* ── REDESIGNED Write-order form (free textarea) ─────────────────────────────────────────── */
-.order-form-wrap {
-    background:#fff;border:1.5px solid #3b82f6;border-radius:10px;
-    padding:20px 22px;margin-bottom:20px;
-}
+/* ── Order form ──────────────────────────────────────────────────── */
+.order-form-wrap { background:#fff;border:1.5px solid #3b82f6;border-radius:10px;padding:20px 22px;margin-bottom:20px; }
 .dark .order-form-wrap { background:#1f2937;border-color:#2563eb; }
-.order-form-title {
-    font-size:.85rem;font-weight:700;color:#1d4ed8;
-    margin-bottom:6px;padding-bottom:8px;border-bottom:1px solid #eff6ff;
-    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
-}
+.order-form-title { font-size:.85rem;font-weight:700;color:#1d4ed8;margin-bottom:6px;padding-bottom:8px;border-bottom:1px solid #eff6ff;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px; }
 .dark .order-form-title { border-bottom-color:#1e3a5f; }
 .order-form-subtitle { font-size:.75rem;color:#6b7280;font-weight:400;margin-bottom:10px; }
-
-/* Quick-insert chips */
 .quick-chips { display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px; }
-.quick-chip {
-    background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;
-    font-size:.73rem;font-weight:600;padding:4px 10px;border-radius:6px;
-    cursor:pointer;line-height:1.4;
-    transition:background .12s,border-color .12s;
-}
+.quick-chip { background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:.73rem;font-weight:600;padding:4px 10px;border-radius:6px;cursor:pointer;line-height:1.4;transition:background .12s,border-color .12s; }
 .quick-chip:hover { background:#dbeafe;border-color:#93c5fd; }
 .dark .quick-chip { background:#1e3a5f;border-color:#1e40af;color:#93c5fd; }
 .dark .quick-chip:hover { background:#1e40af; }
-
-/* Free textarea */
-.order-textarea {
-    width:100%;min-height:200px;border:1px solid #d1d5db;border-radius:8px;
-    padding:12px 14px;font-size:.92rem;line-height:1.8;
-    font-family:'Segoe UI',system-ui,sans-serif;
-    color:#111827;background:#fff;outline:none;resize:vertical;
-    box-sizing:border-box;
-}
+.order-textarea { width:100%;min-height:200px;border:1px solid #d1d5db;border-radius:8px;padding:12px 14px;font-size:.92rem;line-height:1.8;font-family:'Segoe UI',system-ui,sans-serif;color:#111827;background:#fff;outline:none;resize:vertical;box-sizing:border-box; }
 .dark .order-textarea { background:#111827;border-color:#374151;color:#f3f4f6; }
 .order-textarea:focus { border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.12); }
 .order-textarea::placeholder { color:#9ca3af; }
-.order-textarea-hint {
-    font-size:.72rem;color:#9ca3af;margin-top:5px;
-    display:flex;align-items:center;gap:5px;
-}
+.order-textarea-hint { font-size:.72rem;color:#9ca3af;margin-top:5px;display:flex;align-items:center;gap:5px; }
 
 /* Buttons */
 .btn-primary { background:#1d4ed8;color:#fff;border:none;border-radius:7px;padding:9px 22px;font-size:.85rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px; }
@@ -179,7 +171,7 @@
 .dark .rrc-file-chip { background:#374151;color:#d1d5db; }
 .rrc-arrow { font-size:.9rem;color:#9ca3af; }
 .rrc-tests { display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px; }
-.rrc-test-chip { background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:4px;padding:1px 7px;font-size:.68rem;font-weight:500; }
+.rrc-test-chip { background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:4px;padding:1px 7px;font-size:.68px;font-weight:500; }
 .pending-req-card { background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px; }
 .dark .pending-req-card { background:#1f2937;border-color:#374151; }
 .pending-req-no { font-family:monospace;font-size:.75rem;color:#6b7280;font-weight:700; }
@@ -328,17 +320,22 @@
     $allVitals  = $visit->vitals ?? collect();
     $pendingCnt = $allOrders->where('status', 'pending')->count();
     $service    = $visit->admitted_service ?? $history?->service ?? '—';
-    $admittedAt = $visit->clerk_admitted_at
-        ? $visit->clerk_admitted_at->timezone('Asia/Manila')->format('M j, Y H:i')
-        : '—';
     $labResults   = $this->labResults;
     $radResults   = $this->radResults;
     $totalResults = $labResults->count() + $radResults->count();
     $pastCount    = $this->pastVisitsCount;
+
+    // Which forms exist for this visit
+    $hasErRecord    = (bool) $visit->erRecord;
+    $hasAdmRecord   = (bool) $visit->admissionRecord;
+    $hasConsent     = (bool) $visit->consentRecord;
+    $hasHistory     = (bool) $history;
+    $isErVisit      = $visit->visit_type === 'ER';
 @endphp
 
 <div class="chart-page">
 
+    {{-- ════ HEADER ════════════════════════════════════════════════ --}}
     <div class="chart-header">
         <div class="chart-header-left">
             <p class="patient-name">{{ $patient->full_name }}</p>
@@ -348,27 +345,173 @@
             <div class="h-pill"><p class="pill-label">Age / Sex</p><p class="pill-value">{{ $patient->age_display }} · {{ $patient->sex }}</p></div>
             <div class="h-pill"><p class="pill-label">Admitting Diagnosis</p><p class="pill-value" style="font-size:.78rem;max-width:200px;white-space:normal;line-height:1.3;">{{ $visit->admitting_diagnosis ?? $history?->diagnosis ?? '—' }}</p></div>
             <span class="h-service-badge">{{ $service }}</span>
-            <div class="h-pill"><p class="pill-label">Admitted</p><p class="pill-value">{{ $admittedAt }}</p></div>
-            @if($history?->doctor)<div class="h-pill"><p class="pill-label">Physician</p><p class="pill-value">Dr. {{ $history->doctor->name }}</p></div>@endif
+            <div class="h-pill">
+                <p class="pill-label">Admitted</p>
+                <p class="pill-value">
+                    @if($visit->clerk_admitted_at)
+                        {{ $visit->clerk_admitted_at->timezone('Asia/Manila')->format('M j, Y H:i') }}
+                    @elseif($visit->doctor_admitted_at)
+                        {{ $visit->doctor_admitted_at->timezone('Asia/Manila')->format('M j, Y H:i') }}
+                        <span style="font-size:.62rem;background:rgba(255,255,255,.25);padding:1px 6px;border-radius:9999px;margin-left:4px;">⏳ Pending Clerk</span>
+                    @else
+                        —
+                    @endif
+                </p>
+            </div>
         </div>
         <div><a href="{{ \App\Filament\Doctor\Resources\AdmittedPatientsResource::getUrl('index') }}" class="btn-back-header">← Admitted Patients</a></div>
     </div>
 
+    {{-- ════ TABS ═══════════════════════════════════════════════════ --}}
     <div class="chart-tabs">
-        <button wire:click="setTab('profile')"             class="chart-tab {{ $activeTab==='profile'             ? 'active':'' }}"><span class="tab-icon">👤</span> Profile</button>
-        <button wire:click="setTab('history')"             class="chart-tab {{ $activeTab==='history'             ? 'active':'' }}"><span class="tab-icon">🗂️</span> Visit History @if($pastCount > 0)<span class="tab-badge tab-badge-blue">{{ $pastCount }}</span>@endif</button>
-        <button wire:click="setTab('vitals')"              class="chart-tab {{ $activeTab==='vitals'              ? 'active':'' }}"><span class="tab-icon">📊</span> Vital Signs @if($allVitals->count() > 0)<span class="tab-badge tab-badge-warn">{{ $allVitals->count() }}</span>@endif</button>
-        <button wire:click="setTab('history_assessment')"  class="chart-tab {{ $activeTab==='history_assessment'  ? 'active':'' }}"><span class="tab-icon">📋</span> History &amp; Assessment</button>
-        <button wire:click="setTab('orders')"              class="chart-tab {{ $activeTab==='orders'              ? 'active':'' }}"><span class="tab-icon">📝</span> Doctor's Orders @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif</button>
-        <button wire:click="setTab('results')"             class="chart-tab {{ $activeTab==='results'             ? 'active':'' }}"><span class="tab-icon">🔬</span> Lab / Radiology @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif</button>
+        <button wire:click="setTab('profile')"   class="chart-tab {{ $activeTab==='profile'   ? 'active':'' }}"><span class="tab-icon">📄</span> Patient Forms</button>
+        <button wire:click="setTab('history')"   class="chart-tab {{ $activeTab==='history'   ? 'active':'' }}"><span class="tab-icon">🗂️</span> Visit History @if($pastCount > 0)<span class="tab-badge tab-badge-blue">{{ $pastCount }}</span>@endif</button>
+        <button wire:click="setTab('vitals')"    class="chart-tab {{ $activeTab==='vitals'    ? 'active':'' }}"><span class="tab-icon">📊</span> Vital Signs @if($allVitals->count() > 0)<span class="tab-badge tab-badge-warn">{{ $allVitals->count() }}</span>@endif</button>
+        <button wire:click="setTab('orders')"    class="chart-tab {{ $activeTab==='orders'    ? 'active':'' }}"><span class="tab-icon">📝</span> Doctor's Orders @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif</button>
+        <button wire:click="setTab('results')"   class="chart-tab {{ $activeTab==='results'   ? 'active':'' }}"><span class="tab-icon">🔬</span> Lab / Radiology @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif</button>
     </div>
 
     <div class="chart-content">
 
-        {{-- ══ PROFILE ══════════════════════════════════════════════════ --}}
+        {{-- ══ PATIENT FORMS ═════ --}}
         @if($activeTab === 'profile')
-        <div class="sec-head"><h2 class="sec-title">Patient Profile</h2></div>
-        <div class="placeholder-card"><div class="ph-icon">📄</div><p class="ph-title">Patient Profile Form</p><p class="ph-sub">Softcopy of the patient registration form will appear here.</p></div>
+
+        <div class="sec-head">
+            <h2 class="sec-title">Patient Forms</h2>
+            <span style="font-size:.78rem;color:#6b7280;">All forms for this visit — read-only view</span>
+        </div>
+
+        {{-- ── 1. ER Record (ER visits only) ──────────────────────── --}}
+        @if($isErVisit)
+        <div class="form-section">
+            <div class="form-section-header">
+                <span class="form-section-label">🏥 ER Record (ER-001)</span>
+                <div class="form-section-line"></div>
+                <span class="form-section-badge {{ $hasErRecord ? 'form-section-badge-saved' : 'form-section-badge-missing' }}">
+                    {{ $hasErRecord ? 'Saved' : 'Not yet filled' }}
+                </span>
+            </div>
+            @if($hasErRecord)
+            <div class="form-iframe-wrap">
+                <iframe
+                    src="{{ route('forms.er-record', ['visit' => $visit->id]) }}?readonly=1"
+                    title="ER Record"
+                    style="width:100%;min-height:1100px;border:none;display:block;"
+                    loading="lazy">
+                </iframe>
+            </div>
+            @else
+            <div class="form-missing-card">
+                <div class="form-missing-icon">📋</div>
+                <p class="form-missing-text">ER Record has not been filled out by the clerk yet.</p>
+            </div>
+            @endif
+        </div>
+        @endif
+
+        {{-- ── 2. Admission & Discharge Record ────────────────────── --}}
+        <div class="form-section">
+            <div class="form-section-header">
+                <span class="form-section-label">📋 Admission &amp; Discharge Record (ADM-001)</span>
+                <div class="form-section-line"></div>
+                <span class="form-section-badge {{ $hasAdmRecord ? 'form-section-badge-saved' : 'form-section-badge-missing' }}">
+                    {{ $hasAdmRecord ? 'Saved' : 'Not yet filled' }}
+                </span>
+            </div>
+            @if($hasAdmRecord)
+            <div class="form-iframe-wrap">
+                <iframe
+                    src="{{ route('forms.adm-record', ['visit' => $visit->id]) }}?readonly=1"
+                    title="Admission & Discharge Record"
+                    style="width:100%;min-height:1100px;border:none;display:block;"
+                    loading="lazy">
+                </iframe>
+            </div>
+            @else
+            <div class="form-missing-card">
+                <div class="form-missing-icon">📋</div>
+                <p class="form-missing-text">Admission &amp; Discharge Record has not been filled out by the clerk yet.</p>
+            </div>
+            @endif
+        </div>
+
+        {{-- ── 3. Consent to Care ──────────────────────────────────── --}}
+        <div class="form-section">
+            <div class="form-section-header">
+                <span class="form-section-label">📄 Consent to Care (NUR-002-1)</span>
+                <div class="form-section-line"></div>
+                <span class="form-section-badge {{ $hasConsent ? 'form-section-badge-saved' : 'form-section-badge-missing' }}">
+                    {{ $hasConsent ? 'Saved' : 'Not yet filled' }}
+                </span>
+            </div>
+            @if($hasConsent)
+            <div class="form-iframe-wrap">
+                <iframe
+                    src="{{ route('forms.consent-to-care', ['visit' => $visit->id]) }}?readonly=1"
+                    title="Consent to Care"
+                    style="width:100%;min-height:780px;border:none;display:block;"
+                    loading="lazy">
+                </iframe>
+            </div>
+            @else
+            <div class="form-missing-card">
+                <div class="form-missing-icon">📄</div>
+                <p class="form-missing-text">Consent to Care has not been filled out by the clerk yet.</p>
+            </div>
+            @endif
+        </div>
+
+        {{-- ── 4. History Form ─────────────────────────────────────── --}}
+        <div class="form-section">
+            <div class="form-section-header">
+                <span class="form-section-label">📝 History Form (NUR-006)</span>
+                <div class="form-section-line"></div>
+                <span class="form-section-badge {{ $hasHistory ? 'form-section-badge-saved' : 'form-section-badge-missing' }}">
+                    {{ $hasHistory ? 'Filled' : 'Not yet assessed' }}
+                </span>
+            </div>
+            @if($hasHistory)
+            <div class="form-iframe-wrap">
+                <iframe
+                    src="{{ route('forms.history-form', ['visit' => $visit->id]) }}"
+                    title="History Form"
+                    style="width:100%;min-height:1200px;border:none;display:block;"
+                    loading="lazy">
+                </iframe>
+            </div>
+            @else
+            <div class="form-missing-card">
+                <div class="form-missing-icon">📝</div>
+                <p class="form-missing-text">History Form will appear here once the patient has been assessed by a doctor.</p>
+            </div>
+            @endif
+        </div>
+
+        {{-- ── 5. Physical Examination Form ───────────────────────── --}}
+        <div class="form-section">
+            <div class="form-section-header">
+                <span class="form-section-label">🩺 Physical Examination Form (NUR-005)</span>
+                <div class="form-section-line"></div>
+                <span class="form-section-badge {{ $hasHistory ? 'form-section-badge-saved' : 'form-section-badge-missing' }}">
+                    {{ $hasHistory ? 'Filled' : 'Not yet assessed' }}
+                </span>
+            </div>
+            @if($hasHistory)
+            <div class="form-iframe-wrap">
+                <iframe
+                    src="{{ route('forms.physical-exam-form', ['visit' => $visit->id]) }}"
+                    title="Physical Examination Form"
+                    style="width:100%;min-height:1200px;border:none;display:block;"
+                    loading="lazy">
+                </iframe>
+            </div>
+            @else
+            <div class="form-missing-card">
+                <div class="form-missing-icon">🩺</div>
+                <p class="form-missing-text">Physical Examination Form will appear here once the patient has been assessed by a doctor.</p>
+            </div>
+            @endif
+        </div>
 
         {{-- ══ VISIT HISTORY ════════════════════════════════════════════ --}}
         @elseif($activeTab === 'history')
@@ -445,7 +588,7 @@
         @endif
         @endif {{-- viewingHistoryVisitId --}}
 
-        {{-- ══ VITALS ══════════════════════════════════════════════════ --}}
+        {{-- ══ VITALS ═══════════════════════════════════════════════════ --}}
         @elseif($activeTab === 'vitals')
         <div class="sec-head"><h2 class="sec-title">Vital Signs</h2><span style="font-size:.78rem;color:#6b7280;">{{ $allVitals->count() }} recording(s)</span></div>
         @if($allVitals->isEmpty())
@@ -455,15 +598,6 @@
         @foreach($allVitals as $v)<tr><td style="white-space:nowrap;font-family:monospace;font-size:.76rem;">{{ $v->taken_at->timezone('Asia/Manila')->format('M j, Y H:i') }}</td><td style="font-size:.78rem;">{{ $v->nurse_name }}</td><td>{{ $v->blood_pressure ?? '—' }}</td><td class="{{ ($v->pulse_rate && ($v->pulse_rate < 60 || $v->pulse_rate > 100)) ? 'abnormal':'' }}">{{ $v->pulse_rate ?? '—' }}</td><td class="{{ ($v->respiratory_rate && ($v->respiratory_rate < 12 || $v->respiratory_rate > 20)) ? 'abnormal':'' }}">{{ $v->respiratory_rate ?? '—' }}</td><td class="{{ ($v->temperature && ($v->temperature < 36.0 || $v->temperature > 37.5)) ? 'abnormal':'' }}">{{ $v->temperature ?? '—' }}</td><td class="{{ ($v->o2_saturation && $v->o2_saturation < 95) ? 'abnormal':'' }}">{{ $v->o2_saturation ?? '—' }}</td><td class="{{ ($v->pain_scale !== null && (int)$v->pain_scale >= 7) ? 'abnormal':'' }}">{{ $v->pain_scale ?? '—' }}</td><td>{{ $v->weight_kg ?? '—' }}</td><td>{{ $v->height_cm ?? '—' }}</td></tr>@endforeach
         </tbody></table></div>
         @endif
-
-        {{-- ══ HISTORY & ASSESSMENT ═════════════════════════════════════ --}}
-        @elseif($activeTab === 'history_assessment')
-        <div class="sec-head"><h2 class="sec-title">History &amp; Assessment Forms</h2><span style="font-size:.78rem;color:#6b7280;">Opens in new tab · Print from inside the form</span></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
-            <a href="{{ route('forms.history-form', ['visit' => $visit->id]) }}" target="_blank" rel="noopener" class="doc-card"><span class="doc-card-icon">📝</span><div class="doc-card-body"><p class="doc-card-label doc-card-label-blue">NUR-006</p><p class="doc-card-title">History Form</p><p class="doc-card-meta">Chief complaint · HPI · Past medical · Family history · Allergies</p></div><span class="doc-card-arrow">↗</span></a>
-            <a href="{{ route('forms.physical-exam-form', ['visit' => $visit->id]) }}" target="_blank" rel="noopener" class="doc-card"><span class="doc-card-icon">🩺</span><div class="doc-card-body"><p class="doc-card-label doc-card-label-blue">NUR-005</p><p class="doc-card-title">Physical Examination Form</p><p class="doc-card-meta">Head-to-toe findings · Admitting impression</p></div><span class="doc-card-arrow">↗</span></a>
-        </div>
-        <div class="placeholder-card" style="padding:28px;"><div class="ph-icon">🗂</div><p class="ph-title">Clinical Face Sheet</p><p class="ph-sub">Summary sheet with diagnosis, disposition, and management plan. Coming soon.</p></div>
 
         {{-- ══ DOCTOR'S ORDERS ══════════════════════════════════════════ --}}
         @elseif($activeTab === 'orders')
@@ -479,9 +613,6 @@
             </div>
         </div>
 
-        {{-- ════════════════════════════════════════════════════════════════
-             FREE-TEXT ORDER BOX — redesigned for natural doctor input
-        ════════════════════════════════════════════════════════════════ --}}
         @if($writingOrders)
         <div class="order-form-wrap">
             <div class="order-form-title">
@@ -495,52 +626,22 @@
                 Type one order per line — press <kbd style="background:#f3f4f6;border:1px solid #e5e7eb;border-radius:3px;padding:1px 5px;font-size:.75rem;">Enter</kbd> to start a new order.
                 Each line will be saved as a separate item the nurse can mark individually.
             </p>
-
-            {{-- Quick-insert chips ────────────────────────────────────── --}}
             <div class="quick-chips">
                 @foreach([
-                    'IVF D5LR 1L @ 30 gtts/min',
-                    'IVF PNSS 1L @ 20 gtts/min',
-                    'NPO',
-                    'DAT (Diet as Tolerated)',
-                    'O2 via nasal cannula @ 2 LPM',
-                    'O2 via mask @ 6 LPM',
-                    'Refer to Cardiologist',
-                    'CBC, Urinalysis',
-                    'Chest X-Ray, PA view',
-                    'ECG',
-                    'Monitor vital signs q4h',
-                    'Monitor I&O',
-                    'Elevate HOB 30°',
-                    'Strict aspiration precautions',
-                    'Hook to cardiac monitor',
+                    'IVF D5LR 1L @ 30 gtts/min','IVF PNSS 1L @ 20 gtts/min','NPO','DAT (Diet as Tolerated)',
+                    'O2 via nasal cannula @ 2 LPM','O2 via mask @ 6 LPM','Refer to Cardiologist',
+                    'CBC, Urinalysis','Chest X-Ray, PA view','ECG','Monitor vital signs q4h',
+                    'Monitor I&O','Elevate HOB 30°','Strict aspiration precautions','Hook to cardiac monitor',
                 ] as $chip)
-                <button type="button"
-                        wire:click="quickInsert('{{ addslashes($chip) }}')"
-                        class="quick-chip">
-                    + {{ $chip }}
-                </button>
+                <button type="button" wire:click="quickInsert('{{ addslashes($chip) }}')" class="quick-chip">+ {{ $chip }}</button>
                 @endforeach
             </div>
-
-            {{-- Free-text textarea ───────────────────────────────────── --}}
-            <textarea
-                wire:model="orderText"
-                class="order-textarea"
+            <textarea wire:model="orderText" class="order-textarea"
                 placeholder="Type your orders here — one per line.&#10;&#10;Example:&#10;IVF D5LR 1L @ 30 gtts/min&#10;Paracetamol 500mg IV q6h PRN for fever > 38.5°C&#10;CBC, Urinalysis, BUN, Creatinine STAT&#10;Chest X-Ray, PA view&#10;NPO for now&#10;Monitor vital signs q4h&#10;O2 via nasal cannula @ 2 LPM; titrate to keep SpO2 > 95%"
-                rows="12"
-            ></textarea>
-
-            <div class="order-textarea-hint">
-                <span>💡</span>
-                <span>Each line = one order the nurse marks individually. Quick-insert buttons add common orders automatically.</span>
-            </div>
-
+                rows="12"></textarea>
+            <div class="order-textarea-hint"><span>💡</span><span>Each line = one order the nurse marks individually.</span></div>
             <div style="display:flex;gap:10px;margin-top:14px;">
-                <button wire:click="saveOrders"
-                        wire:loading.attr="disabled"
-                        wire:loading.class="opacity-60"
-                        type="button" class="btn-primary">
+                <button wire:click="saveOrders" wire:loading.attr="disabled" wire:loading.class="opacity-60" type="button" class="btn-primary">
                     <span wire:loading.remove wire:target="saveOrders">💾 Save Orders</span>
                     <span wire:loading wire:target="saveOrders">Saving…</span>
                 </button>
@@ -549,13 +650,8 @@
         </div>
         @endif
 
-        {{-- ── Order list ────────────────────────────────────────────── --}}
         @if($allOrders->isEmpty() && !$writingOrders)
-        <div class="placeholder-card">
-            <div class="ph-icon">📝</div>
-            <p class="ph-title">No orders written yet</p>
-            <p class="ph-sub">Click "Write Orders" above to write your first set of orders.</p>
-        </div>
+        <div class="placeholder-card"><div class="ph-icon">📝</div><p class="ph-title">No orders written yet</p><p class="ph-sub">Click "Write Orders" above to write your first set of orders.</p></div>
         @else
         @foreach($allOrders->groupBy(fn($o) => $o->order_date?->timezone('Asia/Manila')->format('Y-m-d H:i')) as $dateKey => $group)
         <div style="margin-bottom:22px;">
@@ -569,10 +665,7 @@
                 <div>
                     <p class="order-num">{{ $i + 1 }}.</p>
                     <p class="order-text {{ $order->isDiscontinued() ? 'order-text-discontinued':'' }}">{{ $order->order_text }}</p>
-                    <p class="order-meta">
-                        {{ $order->order_date?->timezone('Asia/Manila')->format('M j, Y H:i') }}
-                        @if($order->isCarried() && $order->completed_at) · Carried {{ $order->completed_at->timezone('Asia/Manila')->format('H:i') }} @endif
-                    </p>
+                    <p class="order-meta">{{ $order->order_date?->timezone('Asia/Manila')->format('M j, Y H:i') }}@if($order->isCarried() && $order->completed_at) · Carried {{ $order->completed_at->timezone('Asia/Manila')->format('H:i') }} @endif</p>
                 </div>
                 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
                     <span class="status-badge status-{{ $order->status }}">{{ $order->status_label }}</span>

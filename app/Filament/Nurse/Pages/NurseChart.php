@@ -5,6 +5,7 @@ namespace App\Filament\Nurse\Pages;
 use App\Models\ActivityLog;
 use App\Models\DoctorsOrder;
 use App\Models\NursesNote;
+use App\Models\Vital;
 use App\Models\Visit;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -32,15 +33,28 @@ class NurseChart extends Page
 
     public ?Visit $visit = null;
 
-    public string $activeTab    = 'orders';
+    public string $activeTab     = 'orders';
     public ?int   $confirmCarryId = null;
 
-    // SOAP note form
+    // ── FDAR note form ─────────────────────────────────────────────────────────
     public bool   $addingNote = false;
-    public string $soapS      = '';
-    public string $soapO      = '';
-    public string $soapA      = '';
-    public string $soapP      = '';
+    public string $fdarF      = '';
+    public string $fdarD      = '';
+    public string $fdarA      = '';
+    public string $fdarR      = '';
+
+    // ── Vitals monitoring sheet entry form ─────────────────────────────────────
+    public bool   $addingVital    = false;
+    public string $vitalTakenAt  = '';
+    public ?float $vitalTemp     = null;
+    public string $vitalTempSite = 'Axilla';
+    public ?int   $vitalSpO2     = null;
+    public ?int   $vitalCR       = null;
+    public ?int   $vitalPR       = null;
+    public ?int   $vitalRR       = null;
+    public string $vitalNeuroVS  = '';
+    public string $vitalOthers   = '';
+    public string $vitalRemarks  = '';
 
     public function mount(): void
     {
@@ -63,6 +77,9 @@ class NurseChart extends Page
                 ->with('nurse')
                 ->orderBy('noted_at', 'desc'),
             'latestVitals',
+            'erRecord',
+            'admissionRecord',
+            'consentRecord',
         ])->find($this->visitId);
 
         if (!$this->visit) {
@@ -71,16 +88,32 @@ class NurseChart extends Page
         }
     }
 
-    // ── Tab navigation ────────────────────────────────────────────────────────
+    // ── Computed: vitals for monitoring sheet ──────────────────────────────────
+
+    public function getAllVitalsProperty()
+    {
+        return Vital::where('visit_id', $this->visitId)
+            ->with('recorder')
+            ->orderBy('taken_at', 'asc')
+            ->get();
+    }
+
+    public function getVitalsCountProperty(): int
+    {
+        return Vital::where('visit_id', $this->visitId)->count();
+    }
+
+    // ── Tab navigation ─────────────────────────────────────────────────────────
 
     public function setTab(string $tab): void
     {
         $this->activeTab      = $tab;
         $this->confirmCarryId = null;
         $this->addingNote     = false;
+        $this->addingVital    = false;
     }
 
-    // ── Doctor's Orders — Mark as Carried (individual) ───────────────────────
+    // ── Doctor's Orders — Mark as Carried (individual) ────────────────────────
 
     public function carryOrder(int $orderId): void
     {
@@ -127,13 +160,8 @@ class NurseChart extends Page
         Notification::make()->title('Order marked as carried.')->success()->send();
     }
 
-    // ── Doctor's Orders — Mark ALL pending as Carried ────────────────────────
+    // ── Doctor's Orders — Mark ALL pending as Carried ─────────────────────────
 
-    /**
-     * Marks every still-pending order for this visit as carried at once.
-     * Useful for simple one-time order sets (e.g., "NPO, CBC, CXR").
-     * Each order records the same nurse + same timestamp for traceability.
-     */
     public function carryAllOrders(): void
     {
         $pendingOrders = DoctorsOrder::where('visit_id', $this->visitId)
@@ -141,14 +169,11 @@ class NurseChart extends Page
             ->get();
 
         if ($pendingOrders->isEmpty()) {
-            Notification::make()
-                ->title('No pending orders to carry.')
-                ->info()->send();
+            Notification::make()->title('No pending orders to carry.')->info()->send();
             return;
         }
 
-        $now = now();
-        $count = 0;
+        $now = now(); $count = 0;
 
         foreach ($pendingOrders as $order) {
             $order->update([
@@ -164,13 +189,8 @@ class NurseChart extends Page
             action:       'carried_all_doctors_orders',
             category:     ActivityLog::CAT_CLINICAL,
             subject:      $this->visit,
-            subjectLabel: $this->visit->patient->full_name
-                . ' (' . $this->visit->patient->case_no . ')',
-            newValues: [
-                'orders_carried' => $count,
-                'carried_by'     => auth()->user()->name,
-                'carried_at'     => $now->toDateTimeString(),
-            ],
+            subjectLabel: $this->visit->patient->full_name . ' (' . $this->visit->patient->case_no . ')',
+            newValues: ['orders_carried' => $count, 'carried_by' => auth()->user()->name, 'carried_at' => $now->toDateTimeString()],
             panel: 'nurse',
         );
 
@@ -180,60 +200,167 @@ class NurseChart extends Page
             ->success()->send();
     }
 
-    // ── SOAP Notes ────────────────────────────────────────────────────────────
+    // ── FDAR Notes ─────────────────────────────────────────────────────────────
 
     public function toggleAddNote(): void
     {
         $this->addingNote = !$this->addingNote;
         if ($this->addingNote) {
-            $this->soapS = '';
-            $this->soapO = '';
-            $this->soapA = '';
-            $this->soapP = '';
+            $this->fdarF = $this->fdarD = $this->fdarA = $this->fdarR = '';
         }
     }
 
     public function saveNote(): void
     {
-        if (!filled($this->soapS) && !filled($this->soapO)
-            && !filled($this->soapA) && !filled($this->soapP)) {
-            Notification::make()
-                ->title('Please fill in at least one SOAP field.')
-                ->warning()->send();
+        if (!filled($this->fdarF) && !filled($this->fdarD)
+            && !filled($this->fdarA) && !filled($this->fdarR)) {
+            Notification::make()->title('Please fill in at least one FDAR field.')->warning()->send();
             return;
         }
 
         $note = NursesNote::create([
-            'visit_id'   => $this->visitId,
-            'nurse_id'   => auth()->id(),
-            'subjective' => trim($this->soapS) ?: null,
-            'objective'  => trim($this->soapO) ?: null,
-            'assessment' => trim($this->soapA) ?: null,
-            'plan'       => trim($this->soapP) ?: null,
-            'noted_at'   => now(),
+            'visit_id' => $this->visitId,
+            'nurse_id' => auth()->id(),
+            'focus'    => trim($this->fdarF) ?: null,
+            'data'     => trim($this->fdarD) ?: null,
+            'action'   => trim($this->fdarA) ?: null,
+            'response' => trim($this->fdarR) ?: null,
+            'noted_at' => now(),
         ]);
 
         ActivityLog::record(
             action:       'added_nurses_note',
             category:     ActivityLog::CAT_CLINICAL,
             subject:      $note,
-            subjectLabel: $this->visit->patient->full_name
-                . ' (' . $this->visit->patient->case_no . ')',
+            subjectLabel: $this->visit->patient->full_name . ' (' . $this->visit->patient->case_no . ')',
             newValues: [
-                'note_id'    => $note->id,
-                'subjective' => $note->subjective ? \Str::limit($note->subjective, 80) : null,
-                'objective'  => $note->objective  ? \Str::limit($note->objective,  80) : null,
-                'assessment' => $note->assessment ? \Str::limit($note->assessment, 80) : null,
-                'plan'       => $note->plan       ? \Str::limit($note->plan,       80) : null,
-                'nurse'      => auth()->user()->name,
+                'note_id'  => $note->id,
+                'F'        => $note->focus    ? \Str::limit($note->focus,    80) : null,
+                'D'        => $note->data     ? \Str::limit($note->data,     80) : null,
+                'A'        => $note->action   ? \Str::limit($note->action,   80) : null,
+                'R'        => $note->response ? \Str::limit($note->response, 80) : null,
+                'nurse'    => auth()->user()->name,
             ],
             panel: 'nurse',
         );
 
         $this->addingNote = false;
-        $this->soapS = $this->soapO = $this->soapA = $this->soapP = '';
+        $this->fdarF = $this->fdarD = $this->fdarA = $this->fdarR = '';
         $this->loadVisit();
         Notification::make()->title('Nurse\'s note saved.')->success()->send();
+    }
+
+    // ── Vitals Monitoring Sheet ────────────────────────────────────────────────
+
+    public function openAddVital(): void
+    {
+        $this->addingVital   = true;
+        $this->vitalTakenAt  = now()->timezone('Asia/Manila')->format('Y-m-d\TH:i');
+        $this->vitalTemp     = null;
+        $this->vitalTempSite = 'Axilla';
+        $this->vitalSpO2     = null;
+        $this->vitalCR       = null;
+        $this->vitalPR       = null;
+        $this->vitalRR       = null;
+        $this->vitalNeuroVS  = '';
+        $this->vitalOthers   = '';
+        $this->vitalRemarks  = '';
+    }
+
+    public function cancelAddVital(): void
+    {
+        $this->addingVital = false;
+    }
+
+    public function saveVital(): void
+    {
+        $hasData = $this->vitalTemp || $this->vitalSpO2 || $this->vitalCR
+            || $this->vitalPR || $this->vitalRR
+            || filled($this->vitalNeuroVS)
+            || filled($this->vitalOthers)
+            || filled($this->vitalRemarks);
+
+        if (!$hasData) {
+            Notification::make()
+                ->title('Please enter at least one measurement or observation.')
+                ->warning()->send();
+            return;
+        }
+
+        if (!$this->vitalTakenAt) {
+            Notification::make()->title('Date and time is required.')->warning()->send();
+            return;
+        }
+
+        $takenAt = \Carbon\Carbon::createFromFormat('Y-m-d\TH:i', $this->vitalTakenAt, 'Asia/Manila');
+
+        Vital::create([
+            'visit_id'         => $this->visitId,
+            'patient_id'       => $this->visit->patient_id,
+            'recorded_by'      => auth()->id(),
+            'nurse_name'       => auth()->user()->name,
+            'taken_at'         => $takenAt,
+            'temperature'      => $this->vitalTemp     ?: null,
+            'temperature_site' => $this->vitalTempSite ?: 'Axilla',
+            'o2_saturation'    => $this->vitalSpO2     ?: null,
+            'cardiac_rate'     => $this->vitalCR       ?: null,
+            'pulse_rate'       => $this->vitalPR       ?: null,
+            'respiratory_rate' => $this->vitalRR       ?: null,
+            'neurological_vs'  => trim($this->vitalNeuroVS) ?: null,
+            'others_vs'        => trim($this->vitalOthers)  ?: null,
+            'notes'            => trim($this->vitalRemarks) ?: null,
+        ]);
+
+        ActivityLog::record(
+            action:       ActivityLog::ACT_RECORDED_VITALS,
+            category:     ActivityLog::CAT_VITALS,
+            subject:      $this->visit,
+            subjectLabel: $this->visit->patient->full_name
+                . ' (' . $this->visit->patient->case_no . ')',
+            newValues: array_filter([
+                'recorded_by'      => auth()->user()->name,
+                'taken_at'         => $takenAt->toDateTimeString(),
+                'temperature'      => $this->vitalTemp  ? $this->vitalTemp . '°C' : null,
+                'spo2'             => $this->vitalSpO2  ? $this->vitalSpO2 . '%'  : null,
+                'cardiac_rate'     => $this->vitalCR    ? $this->vitalCR   . ' bpm' : null,
+                'pulse_rate'       => $this->vitalPR    ? $this->vitalPR   . ' bpm' : null,
+                'respiratory_rate' => $this->vitalRR    ? $this->vitalRR   . '/min' : null,
+                'neurological_vs'  => $this->vitalNeuroVS ?: null,
+                'others'           => $this->vitalOthers  ?: null,
+                'remarks'          => $this->vitalRemarks ?: null,
+            ]),
+            panel: 'nurse',
+        );
+
+        $this->addingVital = false;
+        Notification::make()->title('Vital signs recorded.')->success()->send();
+    }
+
+    // ── Patient Forms tab — URL helpers ───────────────────────────────────────
+
+    public function getErRecordUrl(): string
+    {
+        return route('forms.er-record', ['visit' => $this->visitId]) . '?readonly=1';
+    }
+
+    public function getAdmRecordUrl(): string
+    {
+        return route('forms.adm-record', ['visit' => $this->visitId]) . '?readonly=1';
+    }
+
+    public function getConsentUrl(): string
+    {
+        return route('forms.consent-to-care', ['visit' => $this->visitId]) . '?readonly=1';
+    }
+
+    public function getHistoryFormUrl(): string
+    {
+        return route('forms.history-form', ['visit' => $this->visitId]);
+    }
+
+    public function getPhysicalExamFormUrl(): string
+    {
+        return route('forms.physical-exam-form', ['visit' => $this->visitId]);
     }
 
     public function goBack(): void

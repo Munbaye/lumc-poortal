@@ -335,10 +335,16 @@
                 </td>
                 <td>
                     @if($visit->clerk_admitted_at)
-                    <p class="adm-time">{{ $visit->clerk_admitted_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
-                    <p class="adm-ago">{{ $visit->clerk_admitted_at->diffForHumans() }}</p>
+                        <p class="adm-time">{{ $visit->clerk_admitted_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
+                        <p class="adm-ago">{{ $visit->clerk_admitted_at->diffForHumans() }}</p>
                     @else
-                    <span style="color:#9ca3af;">—</span>
+                        {{-- Doctor ordered admission but clerk hasn't processed yet --}}
+                        <p class="adm-time">{{ $visit->doctor_admitted_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
+                        <p style="font-size:.7rem;margin-top:2px;">
+                            <span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:9999px;font-weight:700;font-size:.68rem;">
+                                ⏳ Pending Clerk
+                            </span>
+                        </p>
                     @endif
                 </td>
                 <td wire:click.stop>
