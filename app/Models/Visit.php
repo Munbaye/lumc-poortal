@@ -12,7 +12,7 @@ class Visit extends Model
     protected $fillable = [
         'patient_id', 'clerk_id', 'assigned_doctor_id',
         'visit_type',
-        'type_of_service',      
+        'type_of_service',
         'medico_legal',
         'notified_proper_authority',
         'chief_complaint',
@@ -36,18 +36,20 @@ class Visit extends Model
         'medico_legal'       => 'boolean',
     ];
 
-    public function patient()        { return $this->belongsTo(Patient::class); }
-    public function clerk()          { return $this->belongsTo(User::class, 'clerk_id'); }
-    public function assignedDoctor() { return $this->belongsTo(User::class, 'assigned_doctor_id'); }
-    public function vitals()         { return $this->hasMany(Vital::class); }
-    public function latestVitals()   { return $this->hasOne(Vital::class)->latestOfMany('taken_at'); }
-    public function medicalHistory() { return $this->hasOne(MedicalHistory::class); }
-    public function doctorsOrders()  { return $this->hasMany(DoctorsOrder::class); }
-    public function nursesNotes()    { return $this->hasMany(NursesNote::class); }
-    public function uploads()        { return $this->hasMany(ResultUpload::class); }
-    public function erRecord()       { return $this->hasOne(ErRecord::class); }
-    public function admissionRecord(){ return $this->hasOne(AdmissionRecord::class); }
-    public function consentRecord()  { return $this->hasOne(ConsentRecord::class); }
+    public function patient()          { return $this->belongsTo(Patient::class); }
+    public function clerk()            { return $this->belongsTo(User::class, 'clerk_id'); }
+    public function assignedDoctor()   { return $this->belongsTo(User::class, 'assigned_doctor_id'); }
+    public function vitals()           { return $this->hasMany(Vital::class); }
+    public function latestVitals()     { return $this->hasOne(Vital::class)->latestOfMany('taken_at'); }
+    public function medicalHistory()   { return $this->hasOne(MedicalHistory::class); }
+    public function doctorsOrders()    { return $this->hasMany(DoctorsOrder::class); }
+    public function nursesNotes()      { return $this->hasMany(NursesNote::class); }
+    public function uploads()          { return $this->hasMany(ResultUpload::class); }
+    public function erRecord()         { return $this->hasOne(ErRecord::class); }
+    public function admissionRecord()  { return $this->hasOne(AdmissionRecord::class); }
+    public function consentRecord()    { return $this->hasOne(ConsentRecord::class); }
+    public function labRequests()      { return $this->hasMany(LabRequest::class); }
+    public function radiologyRequests(){ return $this->hasMany(RadiologyRequest::class); }
 
     public function isPendingAdmission(): bool
     {

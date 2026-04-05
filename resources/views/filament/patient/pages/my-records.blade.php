@@ -1,90 +1,196 @@
 <x-filament-panels::page>
-<div style="max-width:900px;">
 
-{{-- Force password change redirect handled by middleware --}}
+<style>
+/* ── Base ───────────────────────────────────────────────── */
+.mr-wrap { max-width:860px; }
+
+/* ── Patient header ─────────────────────────────────────── */
+.mr-patient-bar {
+    background:#fff; border:1px solid #e5e7eb; border-radius:10px;
+    padding:16px 22px; margin-bottom:22px;
+    display:flex; flex-wrap:wrap; gap:24px; align-items:center;
+}
+.dark .mr-patient-bar { background:#111827; border-color:#374151; }
+
+.mr-patient-field p:first-child {
+    font-size:.62rem; text-transform:uppercase; letter-spacing:.08em;
+    color:#9ca3af; margin-bottom:3px;
+}
+.mr-patient-field p:last-child {
+    font-weight:600; font-size:.88rem;
+}
+
+/* ── Section heading ────────────────────────────────────── */
+.mr-section-label {
+    font-size:.72rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:.09em; color:#9ca3af;
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:14px;
+}
+.mr-section-label::after {
+    content:''; flex:1; height:1px; background:#e5e7eb;
+}
+.dark .mr-section-label::after { background:#374151; }
+
+/* ── Visit card ─────────────────────────────────────────── */
+.mr-card {
+    background:#fff; border:1px solid #e5e7eb; border-radius:10px;
+    overflow:hidden; margin-bottom:10px;
+    transition:border-color .15s, box-shadow .15s, transform .15s;
+    text-decoration:none; display:block;
+}
+.dark .mr-card { background:#111827; border-color:#374151; }
+.mr-card:hover {
+    border-color:#0369a1;
+    box-shadow:0 4px 18px rgba(3,105,161,.1);
+    transform:translateY(-1px);
+}
+.dark .mr-card:hover { border-color:#38bdf8; }
+
+/* ── Card top bar ───────────────────────────────────────── */
+.mr-card-bar {
+    background:#f9fafb; border-bottom:1px solid #e5e7eb;
+    padding:10px 18px;
+    display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+}
+.dark .mr-card-bar { background:#1f2937; border-color:#374151; }
+
+/* ── Pill badges ────────────────────────────────────────── */
+.pill {
+    display:inline-flex; align-items:center;
+    font-size:.68rem; font-weight:700; letter-spacing:.03em;
+    border-radius:4px; padding:2px 9px;
+}
+.pill-dark   { background:#111827; color:#fff; }
+.dark .pill-dark { background:#f9fafb; color:#111827; }
+.pill-er     { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
+.pill-opd    { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+.pill-sky    { background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; }
+.pill-green  { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+.pill-amber  { background:#fffbeb; color:#92400e; border:1px solid #fde68a; }
+.pill-slate  { background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; }
+.pill-orange { background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; }
+.pill-red    { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
+
+/* ── Card body ──────────────────────────────────────────── */
+.mr-card-body {
+    padding:14px 18px;
+    display:flex; flex-wrap:wrap; gap:18px; align-items:flex-start;
+}
+
+.mr-field { min-width:120px; }
+.mr-field-label {
+    font-size:.62rem; text-transform:uppercase; letter-spacing:.07em;
+    color:#9ca3af; margin-bottom:3px;
+}
+.mr-field-value { font-weight:600; font-size:.86rem; line-height:1.4; }
+
+/* ── Badge cluster ──────────────────────────────────────── */
+.mr-badge-cluster {
+    display:flex; flex-wrap:wrap; gap:5px;
+    align-items:center; margin-left:auto;
+}
+
+/* ── Arrow indicator ────────────────────────────────────── */
+.mr-arrow {
+    display:flex; align-items:center; justify-content:center;
+    width:26px; height:26px; border-radius:50%;
+    border:1.5px solid #cbd5e1; flex-shrink:0;
+    color:#94a3b8; transition:all .15s;
+}
+.mr-card:hover .mr-arrow {
+    border-color:#0369a1; background:#0369a1; color:#fff;
+}
+
+/* ── Disposition footer ─────────────────────────────────── */
+.mr-disp {
+    padding:8px 18px; font-size:.76rem; font-weight:600;
+    display:flex; align-items:center; gap:8px;
+    border-top:1px solid #e5e7eb;
+}
+.dark .mr-disp { border-top-color:#374151; }
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media(max-width:600px){
+    .mr-patient-bar { gap:14px; }
+    .mr-badge-cluster { margin-left:0; margin-top:4px; }
+    .mr-card-body { gap:12px; }
+}
+</style>
+
+<div class="mr-wrap">
 
 @if (!$this->patient)
-    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:40px;
-                text-align:center;" class="dark:bg-gray-900 dark:border-gray-700">
-        <div style="font-size:2.5rem;margin-bottom:12px;">🔗</div>
-        <p style="font-weight:700;font-size:1rem;margin-bottom:6px;"
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;
+                padding:48px;text-align:center;"
+         class="dark:bg-gray-900 dark:border-gray-700">
+        <p style="font-weight:700;font-size:.95rem;margin-bottom:6px;"
            class="text-gray-800 dark:text-white">No patient record linked to your account.</p>
-        <p style="font-size:.84rem;" class="text-gray-400 dark:text-gray-500">
+        <p style="font-size:.83rem;" class="text-gray-400">
             Please contact the LUMC registration desk to link your account.
         </p>
     </div>
 
 @else
 
-    {{-- ── Incomplete info warning ────────────────────────────────────────── --}}
+    {{-- Incomplete info warning --}}
     @if($this->patient->has_incomplete_info)
-    <div style="background:#fef2f2;border:2px solid #dc2626;border-radius:8px;padding:16px;
-                margin-bottom:20px;display:flex;align-items:center;gap:14px;">
-        <div style="font-size:1.8rem;flex-shrink:0;">⚠️</div>
-        <div>
-            <p style="font-weight:800;color:#dc2626;margin-bottom:3px;">Incomplete Patient Information</p>
-            <p style="font-size:.83rem;color:#9ca3af;">
-                Your record has missing information. Please visit the registration desk or call
-                <strong>(072) 607-5541</strong> to complete your profile. Some features may be limited.
+    <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:10px;
+                padding:14px 18px;margin-bottom:18px;display:flex;align-items:flex-start;gap:12px;">
+        <div style="flex:1;">
+            <p style="font-weight:700;font-size:.86rem;color:#b91c1c;margin-bottom:2px;">Incomplete Patient Information</p>
+            <p style="font-size:.8rem;color:#9ca3af;">
+                Your record has missing information. Please visit the registration desk
+                or call <strong style="color:#6b7280;">(072) 607-5541</strong> to complete your profile.
             </p>
         </div>
     </div>
     @endif
 
-    {{-- ── Patient header bar ─────────────────────────────────────────────── --}}
-    <div style="background:{{ $this->patient->has_incomplete_info ? '#fef2f2' : '#fff' }};
-                border:1px solid {{ $this->patient->has_incomplete_info ? '#fca5a5' : '#e5e7eb' }};
-                border-radius:8px;padding:14px 18px;margin-bottom:20px;
-                display:flex;flex-wrap:wrap;gap:20px;align-items:center;"
-         class="dark:bg-gray-900 dark:border-gray-700">
-        <div>
-            <p style="font-size:.67rem;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:2px;">Case No</p>
-            <p style="font-family:monospace;font-weight:700;font-size:.93rem;"
-               class="{{ $this->patient->has_incomplete_info ? 'text-red-700' : 'text-gray-900 dark:text-white' }}">
-                {{ $this->patient->case_no }}
-            </p>
+    {{-- Patient bar --}}
+    <div class="mr-patient-bar">
+        <div class="mr-patient-field">
+            <p>Case No</p>
+            <p style="font-family:monospace;" class="text-gray-900 dark:text-white">{{ $this->patient->case_no }}</p>
         </div>
-        <div style="flex:1;min-width:180px;">
-            <p style="font-size:.67rem;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:2px;">Patient</p>
-            <p style="font-weight:700;" class="{{ $this->patient->has_incomplete_info ? 'text-red-700' : 'text-gray-900 dark:text-white' }}">
+        <div class="mr-patient-field" style="flex:1;min-width:160px;">
+            <p>Patient</p>
+            <p class="text-gray-900 dark:text-white">
                 {{ $this->patient->full_name }}
                 @if($this->patient->has_incomplete_info)
-                    <span style="display:inline-block;background:#fef2f2;border:1px solid #fca5a5;color:#dc2626;
-                                 font-size:.62rem;font-weight:800;padding:2px 7px;border-radius:4px;margin-left:6px;">
-                        INCOMPLETE INFO
-                    </span>
+                <span style="display:inline-block;background:#fef2f2;border:1px solid #fca5a5;
+                             color:#b91c1c;font-size:.6rem;font-weight:800;
+                             padding:1px 6px;border-radius:3px;margin-left:6px;
+                             vertical-align:middle;">INCOMPLETE</span>
                 @endif
             </p>
         </div>
-        <div>
-            <p style="font-size:.67rem;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:2px;">Age / Sex</p>
-            <p style="font-weight:600;" class="text-gray-700 dark:text-gray-300">
-                {{ $this->patient->age_display }} / {{ $this->patient->sex }}
-            </p>
+        <div class="mr-patient-field">
+            <p>Age / Sex</p>
+            <p class="text-gray-700 dark:text-gray-300">{{ $this->patient->age_display }} / {{ $this->patient->sex }}</p>
         </div>
         @if($this->patient->birthday)
-        <div>
-            <p style="font-size:.67rem;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:2px;">Birthday</p>
-            <p style="font-weight:600;" class="text-gray-700 dark:text-gray-300">
-                {{ $this->patient->birthday->format('M d, Y') }}
-            </p>
+        <div class="mr-patient-field">
+            <p>Birthday</p>
+            <p class="text-gray-700 dark:text-gray-300">{{ $this->patient->birthday->format('M d, Y') }}</p>
         </div>
         @endif
-        <div>
-            <p style="font-size:.67rem;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:2px;">Total Visits</p>
-            <p style="font-weight:700;font-size:1.1rem;" class="text-gray-900 dark:text-white">
-                {{ $this->visits->count() }}
-            </p>
+        <div class="mr-patient-field" style="margin-left:auto;text-align:right;">
+            <p>Total Visits</p>
+            <p style="font-size:1.2rem;font-weight:700;" class="text-gray-900 dark:text-white">{{ $this->visits->count() }}</p>
         </div>
     </div>
 
+    {{-- Section heading --}}
+    <div class="mr-section-label">Visit History</div>
+
     @if ($this->visits->isEmpty())
-        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:40px;
-                    text-align:center;" class="dark:bg-gray-900 dark:border-gray-700">
-            <div style="font-size:2.5rem;margin-bottom:12px;">📋</div>
-            <p style="font-weight:700;font-size:1rem;margin-bottom:6px;"
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;
+                    padding:48px;text-align:center;"
+             class="dark:bg-gray-900 dark:border-gray-700">
+            <p style="font-weight:700;font-size:.95rem;margin-bottom:5px;"
                class="text-gray-800 dark:text-white">No visit records yet.</p>
-            <p style="font-size:.84rem;" class="text-gray-400 dark:text-gray-500">
+            <p style="font-size:.83rem;" class="text-gray-400">
                 Your records will appear here after your first hospital visit.
             </p>
         </div>
@@ -93,218 +199,137 @@
 
         @foreach ($this->visits as $index => $visit)
         @php
-            $vt  = $visit->latestVitals;
-            $mh  = $visit->medicalHistory;
-            $isEr = $visit->visit_type === 'ER';
+            $isEr     = $visit->visit_type === 'ER';
+            $mh       = $visit->medicalHistory;
+            $labCount = $visit->labRequests->count();
+            $radCount = $visit->radiologyRequests->count();
+            $resultCount = $visit->labRequests->flatMap->results->count()
+                         + $visit->radiologyRequests->flatMap->results->count();
+            $visitNumber = $this->visits->count() - $index;
+
             $statusLabel = match($visit->status) {
                 'registered'  => 'Registered',
-                'vitals_done' => 'Vitals Done',
+                'vitals_done' => 'Vitals Recorded',
                 'assessed'    => 'Assessed',
                 'admitted'    => 'Admitted',
                 'discharged'  => 'Discharged',
                 'referred'    => 'Referred',
                 default       => ucfirst($visit->status),
             };
-            $statusStyle = match($visit->status) {
-                'registered'  => 'background:#fefce8;color:#854d0e;',
-                'vitals_done' => 'background:#eff6ff;color:#1d4ed8;',
-                'assessed'    => 'background:#f0fdf4;color:#15803d;',
-                'admitted'    => 'background:#faf5ff;color:#6d28d9;',
-                'discharged'  => 'background:#f9fafb;color:#374151;',
-                'referred'    => 'background:#fff7ed;color:#c2410c;',
-                default       => 'background:#f9fafb;color:#374151;',
+            $statusPill = match($visit->status) {
+                'registered'  => 'pill-amber',
+                'vitals_done' => 'pill-sky',
+                'assessed'    => 'pill-green',
+                'admitted'    => 'pill-sky',
+                'discharged'  => 'pill-slate',
+                'referred'    => 'pill-orange',
+                default       => 'pill-slate',
             };
+
+            $dispPill = match($visit->disposition ?? '') {
+                'Admitted'   => 'pill-green',
+                'Discharged' => 'pill-slate',
+                'Referred'   => 'pill-orange',
+                'HAMA'       => 'pill-amber',
+                'Expired'    => 'pill-red',
+                default      => 'pill-slate',
+            };
+
+            $detailUrl = route('filament.patient.pages.view-visit-record') . '?visitId=' . $visit->id;
         @endphp
 
-        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;
-                    margin-bottom:20px;overflow:hidden;"
-             class="dark:bg-gray-900 dark:border-gray-700">
+        <a href="{{ $detailUrl }}" class="mr-card">
 
-            <div style="background:#f9fafb;border-bottom:1px solid #e5e7eb;
-                        padding:12px 18px;display:flex;flex-wrap:wrap;
-                        align-items:center;gap:12px;"
-                 class="dark:bg-gray-800 dark:border-gray-700">
-                <span style="background:#111827;color:#fff;font-size:.68rem;font-weight:700;
-                              border-radius:4px;padding:2px 8px;"
-                      class="dark:bg-white dark:text-gray-900">
-                    Visit {{ $this->visits->count() - $index }}
+            {{-- Top bar --}}
+            <div class="mr-card-bar">
+                <span class="pill pill-dark">Visit {{ $visitNumber }}</span>
+                <span class="pill {{ $isEr ? 'pill-er' : 'pill-opd' }}">
+                    {{ $isEr ? 'Emergency' : 'Outpatient' }}
                 </span>
-                <span style="display:inline-block;padding:3px 12px;border-radius:4px;
-                              font-size:.75rem;font-weight:700;
-                              background:{{ $isEr ? '#fef2f2' : '#eff6ff' }};
-                              color:{{ $isEr ? '#dc2626' : '#1d4ed8' }};">
-                    {{ $isEr ? '🚑 ER' : '📋 OPD' }}
-                </span>
-                <span style="display:inline-block;padding:3px 12px;border-radius:4px;
-                              font-size:.75rem;font-weight:700;{{ $statusStyle }}">
-                    {{ $statusLabel }}
-                </span>
+                <span class="pill {{ $statusPill }}">{{ $statusLabel }}</span>
                 @if($visit->payment_class)
-                <span style="display:inline-block;padding:3px 12px;border-radius:4px;
-                              font-size:.75rem;font-weight:700;background:#f5f3ff;color:#5b21b6;">
-                    {{ $visit->payment_class }}
-                </span>
+                <span class="pill pill-sky">{{ $visit->payment_class }}</span>
                 @endif
-                <span style="margin-left:auto;font-size:.78rem;font-weight:500;"
+                <span style="margin-left:auto;font-size:.74rem;font-weight:500;"
                       class="text-gray-400 dark:text-gray-500">
-                    {{ $visit->registered_at->format('M d, Y — H:i') }}
+                    {{ $visit->registered_at->format('M d, Y · H:i') }}
                 </span>
             </div>
 
-            <div style="padding:18px 18px 22px;">
+            {{-- Body --}}
+            <div class="mr-card-body">
 
-                <div style="margin-bottom:16px;">
-                    <p style="font-size:.67rem;text-transform:uppercase;letter-spacing:.06em;
-                              color:#9ca3af;margin-bottom:3px;">Chief Complaint</p>
-                    <p style="font-weight:600;font-size:.88rem;"
-                       class="text-gray-800 dark:text-gray-200">{{ $visit->chief_complaint }}</p>
-                    @if($visit->brought_by || $visit->condition_on_arrival)
-                    <p style="font-size:.78rem;margin-top:3px;" class="text-gray-400 dark:text-gray-500">
-                        @if($visit->brought_by)Brought by: <strong>{{ $visit->brought_by }}</strong>@endif
-                        @if($visit->condition_on_arrival)&nbsp;·&nbsp; Condition: <strong>{{ $visit->condition_on_arrival }}</strong>@endif
+                <div class="mr-field" style="flex:1;min-width:180px;">
+                    <p class="mr-field-label">Chief Complaint</p>
+                    <p class="mr-field-value" style="color:#111827;" class="dark:text-gray-100">
+                        {{ $visit->chief_complaint }}
                     </p>
-                    @endif
                 </div>
 
-                @if($vt)
-                <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px 18px;margin-bottom:14px;"
-                     class="dark:bg-gray-900 dark:border-gray-700">
-                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;"
-                         class="dark:border-gray-700">
-                        <span style="background:#111827;color:#fff;font-size:.68rem;font-weight:700;border-radius:4px;padding:2px 8px;"
-                              class="dark:bg-white dark:text-gray-900">1</span>
-                        <h2 style="font-size:.93rem;font-weight:700;" class="text-gray-900 dark:text-white">Vital Signs</h2>
-                        <span style="font-size:.72rem;color:#9ca3af;">Recorded by {{ $vt->nurse_name }} — {{ $vt->taken_at->format('M j Y H:i') }}</span>
-                    </div>
-                    <div style="display:flex;flex-wrap:wrap;gap:8px;">
-                        @php
-                            $vitalsMap = [
-                                ['BP', $vt->blood_pressure, null, null],
-                                ['PR', $vt->pulse_rate, 60, 100],
-                                ['RR', $vt->respiratory_rate, 12, 20],
-                                ['Temp', $vt->temperature, 36.0, 37.5],
-                                ['O₂', $vt->o2_saturation, 95, 100],
-                                ['Wt', $vt->weight_kg, null, null],
-                            ];
-                        @endphp
-                        @foreach($vitalsMap as [$lbl, $val, $lo, $hi])
-                        @if($val !== null)
-                        @php $abnormal = $lo && $hi && ($val < $lo || $val > $hi); $suffix = match($lbl) {'Temp'=>' °C','PR'=>' bpm','RR'=>'/min','O₂'=>'%','Wt'=>' kg',default=>''}; @endphp
-                        <div style="padding:5px 12px;border:1px solid #e5e7eb;border-radius:6px;font-size:.83rem;{{ $abnormal ? 'background:#fef2f2;border-color:#fca5a5;color:#dc2626;font-weight:700;' : '' }}"
-                             class="{{ !$abnormal ? 'dark:border-gray-700 dark:bg-gray-800' : '' }}">
-                            <span style="color:#9ca3af;font-size:.7rem;">{{ $lbl }}</span>
-                            <span style="font-weight:700;margin-left:5px;" class="dark:text-white">{{ $val }}{{ $suffix }}</span>
-                        </div>
-                        @endif
-                        @endforeach
-                        @if($vt->pain_scale !== null)
-                        @php $hp = (int)$vt->pain_scale >= 7; @endphp
-                        <div style="padding:5px 12px;border:1px solid {{ $hp?'#fca5a5':'#e5e7eb' }};border-radius:6px;font-size:.83rem;{{ $hp?'background:#fef2f2;color:#dc2626;font-weight:700;':'' }}"
-                             class="{{ !$hp?'dark:border-gray-700 dark:bg-gray-800':'' }}">
-                            <span style="color:#9ca3af;font-size:.7rem;">Pain</span>
-                            <span style="font-weight:700;margin-left:5px;" class="dark:text-white">{{ $vt->pain_scale }}/10</span>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-                @endif
-
-                @if($mh)
-                @php
-                    $peRows = [['Skin',$mh->pe_skin],['Head / EENT',$mh->pe_head_eent],['Lymph Nodes',$mh->pe_lymph_nodes],['Chest',$mh->pe_chest],['Lungs',$mh->pe_lungs],['Cardiovascular',$mh->pe_cardiovascular],['Breast',$mh->pe_breast],['Abdomen',$mh->pe_abdomen],['Rectum',$mh->pe_rectum],['Genitalia',$mh->pe_genitalia],['Musculoskeletal',$mh->pe_musculoskeletal],['Extremities',$mh->pe_extremities],['Neurology',$mh->pe_neurology]];
-                    $peRows = array_filter($peRows, fn($r) => !empty($r[1]));
-                @endphp
-                @if(count($peRows) || $mh->admitting_impression)
-                <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px 18px;margin-bottom:14px;" class="dark:bg-gray-900 dark:border-gray-700">
-                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;" class="dark:border-gray-700">
-                        <span style="background:#111827;color:#fff;font-size:.68rem;font-weight:700;border-radius:4px;padding:2px 8px;" class="dark:bg-white dark:text-gray-900">2</span>
-                        <h2 style="font-size:.93rem;font-weight:700;" class="text-gray-900 dark:text-white">Physical Examination</h2>
-                        <span style="font-size:.72rem;color:#9ca3af;">NUR-005</span>
-                    </div>
-                    <div style="display:grid;gap:5px;">
-                        @foreach($peRows as [$label, $val])
-                        <div style="display:grid;grid-template-columns:150px 1fr;align-items:baseline;gap:10px;">
-                            <p style="font-size:.77rem;font-weight:600;text-align:right;" class="text-gray-400 dark:text-gray-500">{{ $label }}</p>
-                            <p style="font-size:.83rem;" class="text-gray-700 dark:text-gray-300">{{ $val }}</p>
-                        </div>
-                        @endforeach
-                    </div>
-                    @if($mh->admitting_impression)
-                    <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f3f4f6;" class="dark:border-gray-700">
-                        <div style="display:grid;grid-template-columns:150px 1fr;align-items:baseline;gap:10px;">
-                            <p style="font-size:.77rem;font-weight:700;text-align:right;" class="text-gray-600 dark:text-gray-300">Admitting Impression</p>
-                            <p style="font-size:.83rem;font-weight:600;" class="text-gray-800 dark:text-gray-200">{{ $mh->admitting_impression }}</p>
-                        </div>
-                    </div>
+                @if($visit->assignedDoctor)
+                <div class="mr-field">
+                    <p class="mr-field-label">Physician</p>
+                    <p class="mr-field-value text-gray-800 dark:text-gray-200">
+                        Dr. {{ $visit->assignedDoctor->name }}
+                    </p>
+                    @if($visit->assignedDoctor->specialty)
+                    <p style="font-size:.74rem;" class="text-gray-400">{{ $visit->assignedDoctor->specialty }}</p>
                     @endif
                 </div>
                 @endif
 
-                @php
-                    $histRows = [['Chief Complaint',$mh->chief_complaint],['History of Present Illness',$mh->history_of_present_illness],['Past Medical History',$mh->past_medical_history],['Family History',$mh->family_history],['Occupation & Environment',$mh->occupation_environment],['Drug Therapy',$mh->drug_therapy],['Other Allergies',$mh->other_allergies]];
-                    $histRows = array_filter($histRows, fn($r) => !empty($r[1]));
-                @endphp
-                @if(count($histRows) || $mh->drug_allergies)
-                <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px 18px;margin-bottom:14px;" class="dark:bg-gray-900 dark:border-gray-700">
-                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;" class="dark:border-gray-700">
-                        <span style="background:#111827;color:#fff;font-size:.68rem;font-weight:700;border-radius:4px;padding:2px 8px;" class="dark:bg-white dark:text-gray-900">3</span>
-                        <h2 style="font-size:.93rem;font-weight:700;" class="text-gray-900 dark:text-white">Medical History</h2>
-                        <span style="font-size:.72rem;color:#9ca3af;">NUR-006</span>
-                    </div>
-                    <div style="display:grid;gap:10px;">
-                        @foreach($histRows as [$label, $val])
-                        <div>
-                            <p style="font-size:.71rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;" class="text-gray-400 dark:text-gray-500">{{ $label }}</p>
-                            <p style="font-size:.83rem;white-space:pre-line;" class="text-gray-700 dark:text-gray-300">{{ $val }}</p>
-                        </div>
-                        @endforeach
-                        @if($mh->drug_allergies)
-                        <div style="padding:10px 14px;border-radius:6px;border:1px solid {{ $mh->drug_allergies==='NKDA'?'#e5e7eb':'#fca5a5' }};background:{{ $mh->drug_allergies==='NKDA'?'#f9fafb':'#fef2f2' }};" class="{{ $mh->drug_allergies==='NKDA'?'dark:bg-gray-800 dark:border-gray-600':'dark:bg-red-900/20 dark:border-red-700' }}">
-                            <p style="font-size:.71rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;color:{{ $mh->drug_allergies==='NKDA'?'#6b7280':'#dc2626' }};">{{ $mh->drug_allergies==='NKDA'?'Drug Allergies':'⚠ Drug Allergies' }}</p>
-                            <p style="font-size:.83rem;font-weight:{{ $mh->drug_allergies==='NKDA'?'400':'700' }};color:{{ $mh->drug_allergies==='NKDA'?'#374151':'#dc2626' }};" class="{{ $mh->drug_allergies==='NKDA'?'dark:text-gray-300':'dark:text-red-400' }}">{{ $mh->drug_allergies }}</p>
-                        </div>
-                        @endif
-                    </div>
+                @if($mh && ($mh->diagnosis || $mh->admitting_impression))
+                <div class="mr-field" style="max-width:220px;">
+                    <p class="mr-field-label">Diagnosis</p>
+                    <p class="mr-field-value text-gray-800 dark:text-gray-200">
+                        {{ $mh->diagnosis ?? $mh->admitting_impression }}
+                    </p>
                 </div>
                 @endif
 
-                @if($mh->diagnosis || $mh->differential_diagnosis || $mh->plan)
-                <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px 18px;margin-bottom:14px;" class="dark:bg-gray-900 dark:border-gray-700">
-                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;" class="dark:border-gray-700">
-                        <span style="background:#111827;color:#fff;font-size:.68rem;font-weight:700;border-radius:4px;padding:2px 8px;" class="dark:bg-white dark:text-gray-900">4</span>
-                        <h2 style="font-size:.93rem;font-weight:700;" class="text-gray-900 dark:text-white">Diagnosis</h2>
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;">
-                        @if($mh->diagnosis)<div><p style="font-size:.71rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;" class="text-gray-400 dark:text-gray-500">Final Diagnosis</p><p style="font-size:.88rem;font-weight:600;" class="text-gray-800 dark:text-gray-200">{{ $mh->diagnosis }}</p></div>@endif
-                        @if($mh->differential_diagnosis)<div><p style="font-size:.71rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;" class="text-gray-400 dark:text-gray-500">Differential Diagnosis</p><p style="font-size:.83rem;" class="text-gray-700 dark:text-gray-300">{{ $mh->differential_diagnosis }}</p></div>@endif
-                    </div>
-                    @if($mh->plan)<div><p style="font-size:.71rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;" class="text-gray-400 dark:text-gray-500">Management Plan</p><p style="font-size:.83rem;white-space:pre-line;" class="text-gray-700 dark:text-gray-300">{{ $mh->plan }}</p></div>@endif
+                <div class="mr-badge-cluster">
+                    @if($labCount)
+                    <span class="pill pill-green">{{ $labCount }} Lab{{ $labCount > 1 ? 's' : '' }}</span>
+                    @endif
+                    @if($radCount)
+                    <span class="pill pill-sky">{{ $radCount }} Imaging</span>
+                    @endif
+                    @if($resultCount)
+                    <span class="pill pill-slate">{{ $resultCount }} Result{{ $resultCount > 1 ? 's' : '' }}</span>
+                    @endif
+                    <span class="mr-arrow">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </span>
                 </div>
-                @endif
-
-                @if($visit->disposition)
-                <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px 18px;" class="dark:bg-gray-900 dark:border-gray-700">
-                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;" class="dark:border-gray-700">
-                        <span style="background:#111827;color:#fff;font-size:.68rem;font-weight:700;border-radius:4px;padding:2px 8px;" class="dark:bg-white dark:text-gray-900">5</span>
-                        <h2 style="font-size:.93rem;font-weight:700;" class="text-gray-900 dark:text-white">Patient Disposition</h2>
-                    </div>
-                    @php $dispIcon = match($visit->disposition){'Discharged'=>'🏠','Admitted'=>'🏥','Referred'=>'🔄','HAMA'=>'⚠️','Expired'=>'✝',default=>'📋'}; $dispStyle = match($visit->disposition){'Admitted'=>'background:#f0fdf4;border-color:#86efac;color:#065f46;','Discharged'=>'background:#f9fafb;border-color:#d1d5db;color:#374151;','Referred'=>'background:#fff7ed;border-color:#fdba74;color:#c2410c;','HAMA'=>'background:#fefce8;border-color:#fde047;color:#854d0e;','Expired'=>'background:#fef2f2;border-color:#fca5a5;color:#991b1b;',default=>'background:#f9fafb;border-color:#e5e7eb;color:#374151;'}; @endphp
-                    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
-                        <span style="display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:6px;border:2px solid;font-size:.88rem;font-weight:700;{{ $dispStyle }}">{{ $dispIcon }} {{ $visit->disposition }}</span>
-                        @if($visit->admitted_ward)<span style="font-size:.83rem;font-weight:600;" class="text-gray-600 dark:text-gray-300">— Ward: <strong>{{ $visit->admitted_ward }}</strong></span>@endif
-                        @if($visit->admitted_service)<span style="font-size:.83rem;" class="text-gray-500 dark:text-gray-400">· Service: <strong>{{ $visit->admitted_service }}</strong></span>@endif
-                        @if($visit->discharged_at)<span style="font-size:.78rem;margin-left:auto;" class="text-gray-400 dark:text-gray-500">{{ $visit->disposition==='Admitted'?'Admitted':'Discharged' }}: {{ $visit->discharged_at->format('M d, Y H:i') }}</span>@endif
-                    </div>
-                </div>
-                @endif
-
-                @endif {{-- end @if($mh) --}}
 
             </div>
-        </div>
+
+            {{-- Disposition footer --}}
+            @if($visit->disposition)
+            <div class="mr-disp">
+                <span class="pill {{ $dispPill }}">{{ $visit->disposition }}</span>
+                @if($visit->admitted_ward)
+                <span style="font-size:.76rem;font-weight:500;" class="text-gray-500 dark:text-gray-400">
+                    Ward: {{ $visit->admitted_ward }}
+                </span>
+                @endif
+                @if($visit->discharged_at)
+                <span style="margin-left:auto;font-size:.73rem;" class="text-gray-400">
+                    {{ $visit->discharged_at->format('M d, Y') }}
+                </span>
+                @endif
+            </div>
+            @endif
+
+        </a>
         @endforeach
 
     @endif
+
 @endif
 </div>
+
 </x-filament-panels::page>

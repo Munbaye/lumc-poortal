@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\PatientResource\Pages;
@@ -15,11 +14,11 @@ use Illuminate\Support\Facades\Hash;
 
 class PatientResource extends Resource
 {
-    protected static ?string $model          = Patient::class;
-    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static ?string $model           = Patient::class;
+    protected static ?string $navigationIcon  = 'heroicon-o-users';
     protected static ?string $navigationLabel = 'Patients';
-    protected static ?string $modelLabel     = 'Patient';
-    protected static ?int    $navigationSort = 2;
+    protected static ?string $modelLabel      = 'Patient';
+    protected static ?int    $navigationSort  = 2;
 
     public static function form(Form $form): Form
     {
@@ -37,27 +36,19 @@ class PatientResource extends Resource
                 ->schema([
                     Forms\Components\TextInput::make('family_name')
                         ->label('Family Name')
-                        ->required()
-                        ->dehydrateStateUsing(fn ($s) => ucwords(strtolower($s))),
-
+                        ->required(),
                     Forms\Components\TextInput::make('first_name')
                         ->label('First Name')
-                        ->required()
-                        ->dehydrateStateUsing(fn ($s) => ucwords(strtolower($s))),
-
+                        ->required(),
                     Forms\Components\TextInput::make('middle_name')
                         ->label('Middle Name')
-                        ->nullable()
-                        ->dehydrateStateUsing(fn ($s) => $s ? ucwords(strtolower($s)) : null),
-
+                        ->nullable(),
                     Forms\Components\Select::make('sex')
                         ->options(['Male' => 'Male', 'Female' => 'Female'])
                         ->required(),
-
                     Forms\Components\DatePicker::make('birthday')
                         ->label('Birthday')
                         ->nullable(),
-
                     Forms\Components\TextInput::make('age')
                         ->label('Age (if no birthday)')
                         ->numeric()
@@ -71,14 +62,11 @@ class PatientResource extends Resource
                         ->rows(2)
                         ->nullable()
                         ->columnSpanFull(),
-
                     Forms\Components\TextInput::make('contact_number')
                         ->label('Contact Number')
                         ->nullable(),
-
                     Forms\Components\TextInput::make('occupation')
                         ->nullable(),
-
                     Forms\Components\Select::make('civil_status')
                         ->options([
                             'Single'    => 'Single',
@@ -92,12 +80,9 @@ class PatientResource extends Resource
 
             Forms\Components\Section::make('Family Information')
                 ->schema([
-                    Forms\Components\TextInput::make('father_name')
-                        ->label("Father's Name")->nullable(),
-                    Forms\Components\TextInput::make('mother_name')
-                        ->label("Mother's Name")->nullable(),
-                    Forms\Components\TextInput::make('spouse_name')
-                        ->label('Spouse Name')->nullable(),
+                    Forms\Components\TextInput::make('father_name')->label("Father's Name")->nullable(),
+                    Forms\Components\TextInput::make('mother_name')->label("Mother's Name")->nullable(),
+                    Forms\Components\TextInput::make('spouse_name')->label('Spouse Name')->nullable(),
                 ])->columns(3)->collapsed(),
 
             Forms\Components\Section::make('Registration Status')
@@ -105,16 +90,13 @@ class PatientResource extends Resource
                     Forms\Components\Select::make('registration_type')
                         ->options(['OPD' => 'OPD', 'ER' => 'ER'])
                         ->default('OPD'),
-
                     Forms\Components\Toggle::make('has_incomplete_info')
                         ->label('Has Incomplete Info')
                         ->helperText('When ON, patient name shows in red across all panels.'),
-
                     Forms\Components\Toggle::make('is_unknown')
                         ->label('Unknown / Unidentified Patient')
                         ->helperText('Turn OFF once identity is confirmed.'),
                 ])->columns(3),
-
         ]);
     }
 
@@ -126,23 +108,17 @@ class PatientResource extends Resource
                     ->label('Case No')
                     ->searchable()
                     ->sortable(),
-
                 Tables\Columns\TextColumn::make('full_name')
                     ->label('Full Name')
                     ->searchable(['family_name', 'first_name'])
                     ->sortable('family_name')
                     ->color(fn ($record) => $record->has_incomplete_info ? 'danger' : null),
-
                 Tables\Columns\TextColumn::make('sex'),
-
-                Tables\Columns\TextColumn::make('age_display')
-                    ->label('Age'),
-
+                Tables\Columns\TextColumn::make('age_display')->label('Age'),
                 Tables\Columns\TextColumn::make('registration_type')
                     ->label('Type')
                     ->badge()
                     ->color(fn ($state) => $state === 'ER' ? 'danger' : 'primary'),
-
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->getStateUsing(fn ($record) =>
@@ -150,18 +126,24 @@ class PatientResource extends Resource
                         ($record->has_incomplete_info ? 'Incomplete' : 'Complete')
                     )
                     ->badge()
-                    ->color(fn ($state) => match($state) {
+                    ->color(fn ($state) => match ($state) {
                         'Unknown'    => 'warning',
                         'Incomplete' => 'danger',
                         'Complete'   => 'success',
                     }),
+                Tables\Columns\IconColumn::make('has_portal_account')
+                    ->label('Portal')
+                    ->boolean()
+                    ->getStateUsing(fn (Patient $r) => User::where('patient_id', $r->id)->exists())
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('gray'),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_unknown')
-                    ->label('Unknown Patients'),
-                Tables\Filters\TernaryFilter::make('has_incomplete_info')
-                    ->label('Incomplete Info'),
+                Tables\Filters\TernaryFilter::make('is_unknown')->label('Unknown Patients'),
+                Tables\Filters\TernaryFilter::make('has_incomplete_info')->label('Incomplete Info'),
                 Tables\Filters\SelectFilter::make('registration_type')
                     ->options(['OPD' => 'OPD', 'ER' => 'ER']),
             ])
@@ -178,15 +160,17 @@ class PatientResource extends Resource
                     )
                     ->requiresConfirmation()
                     ->modalHeading('Create Patient Portal Account')
-                    ->modalDescription('Creates a login account. Username and password shown once after creation.')
+                    ->modalDescription('Creates a login account. Username and password will be shown once.')
                     ->action(function (Patient $record) {
                         $firstName = preg_replace('/[^a-zA-Z]/', '', $record->first_name);
                         $lastName  = preg_replace('/[^a-zA-Z]/', '', $record->family_name);
                         $age       = $record->current_age ?? $record->age ?? 0;
 
-                        $baseUsername = ucfirst(strtolower($firstName)) . ucfirst(strtolower($lastName)) . $age;
-                        $username     = $baseUsername;
-                        $counter      = 1;
+                        $baseUsername = ucfirst(strtolower($firstName))
+                                      . ucfirst(strtolower($lastName))
+                                      . $age;
+                        $username = $baseUsername;
+                        $counter  = 1;
                         while (User::where('username', $username)->exists()) {
                             $username = $baseUsername . $counter++;
                         }
@@ -195,6 +179,12 @@ class PatientResource extends Resource
 
                         $user = User::create([
                             'name'                  => $record->full_name,
+                            'first_name'            => $record->first_name,
+                            'middle_name'           => $record->middle_name,
+                            'last_name'             => $record->family_name,
+                            'gender'                => $record->sex === 'Male' ? 'Male'
+                                                     : ($record->sex === 'Female' ? 'Female' : null),
+                            'birthdate'             => $record->birthday,
                             'username'              => $username,
                             'email'                 => $email,
                             'password'              => Hash::make($username),
@@ -204,10 +194,10 @@ class PatientResource extends Resource
                             'force_password_change' => true,
                         ]);
 
-                        $role = \Spatie\Permission\Models\Role::firstOrCreate(
+                        \Spatie\Permission\Models\Role::firstOrCreate(
                             ['name' => 'patient', 'guard_name' => 'web']
                         );
-                        $user->assignRole($role);
+                        $user->assignRole('patient');
 
                         Notification::make()
                             ->title('Account created!')
@@ -230,13 +220,11 @@ class PatientResource extends Resource
                     ->action(function (Patient $record) {
                         $user = User::where('patient_id', $record->id)->first();
                         if (!$user) return;
-
                         $newPwd = $user->username ?? $user->name;
                         $user->update([
                             'password'              => Hash::make($newPwd),
                             'force_password_change' => true,
                         ]);
-
                         Notification::make()
                             ->title('Password reset!')
                             ->body("Temporary password: {$newPwd}")
@@ -252,10 +240,7 @@ class PatientResource extends Resource
             ]);
     }
 
-    public static function getRelations(): array
-    {
-        return [];
-    }
+    public static function getRelations(): array { return []; }
 
     public static function getPages(): array
     {

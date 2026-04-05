@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Filament\Patient\Pages;
 
 use App\Models\Patient;
@@ -18,12 +19,19 @@ class MyRecords extends Page
 
     public function mount(): void
     {
-        // Resolve patient via the direct FK link on the User
         $this->patient = auth()->user()?->patientRecord;
 
         if ($this->patient) {
             $this->visits = Visit::where('patient_id', $this->patient->id)
-                ->with(['latestVitals', 'medicalHistory', 'vitals'])
+                ->with([
+                    'latestVitals',
+                    'medicalHistory',
+                    'vitals',
+                    'labRequests.results',
+                    'radiologyRequests.results',
+                    'admissionRecord',
+                    'assignedDoctor',
+                ])
                 ->orderByDesc('registered_at')
                 ->get();
         } else {

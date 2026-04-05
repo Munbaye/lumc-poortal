@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -18,8 +17,7 @@ class AuthController extends Controller
         'patient' => '/patient',
     ];
 
-    // ─── PATIENT LOGIN ────────────────────────────────────────────────────────
-    // Accepts username (JuanDelaCruz25) — no @ needed
+    // ─── PATIENT LOGIN ─────────────────────────────────────────────────────────
     public function patientLogin(Request $request)
     {
         $request->validate([
@@ -27,10 +25,9 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        $loginInput = trim($request->email); // field is named 'email' in form but accepts username
+        $loginInput = trim($request->email);
         $password   = $request->password;
 
-        // Search by username field first, then name, then email
         $user = User::where('username', $loginInput)
                     ->orWhere('name', $loginInput)
                     ->orWhere('email', $loginInput)
@@ -57,7 +54,6 @@ class AuthController extends Controller
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 
-        // If forced password change, redirect back to homepage with modal open in change-password mode
         if ($user->force_password_change) {
             return redirect('/?change_password=1');
         }
@@ -65,7 +61,7 @@ class AuthController extends Controller
         return redirect('/patient/my-records');
     }
 
-    // ─── PATIENT CHANGE PASSWORD ──────────────────────────────────────────────
+    // ─── PATIENT CHANGE PASSWORD ───────────────────────────────────────────────
     public function patientChangePassword(Request $request)
     {
         $request->validate([
@@ -95,45 +91,88 @@ class AuthController extends Controller
         return redirect('/patient/my-records');
     }
 
-    // ─── STAFF LOGIN ──────────────────────────────────────────────────────────
+    // ─── STAFF LOGIN ───────────────────────────────────────────────────────────
+    // Accepts email OR username — whichever the staff member types
     public function staffLogin(Request $request)
     {
-        $credentials = $request->validate([
-            'email'    => ['required', 'email'],
+        $request->validate([
+            'email'    => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            $user = Auth::user();
+        $loginInput = trim($request->email);
 
-            if ($user->panel === 'patient') {
-                Auth::logout();
-                return back()
-                    ->withInput($request->only('email'))
-                    ->with('error', 'Patients must log in from the main website, not the Staff Portal.');
-            }
+        // Try to find by email first, then by username
+        $user = User::where('email', $loginInput)
+                    ->orWhere('username', $loginInput)
+                    ->first();
 
-            if (!$user->is_active) {
-                Auth::logout();
-                return back()
-                    ->withInput($request->only('email'))
-                    ->with('error', 'Your account has been deactivated. Contact the administrator.');
-            }
-
-            $request->session()->regenerate();
-            return redirect($this->panelRoutes[$user->panel] ?? '/admin');
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return back()
+                ->withInput($request->only('email'))
+                ->with('error', 'Invalid credentials. Please try again.');
         }
 
-        return back()
-            ->withInput($request->only('email'))
-            ->with('error', 'Invalid email or password. Please try again.');
+        if ($user->panel === 'patient') {
+            return back()
+                ->withInput($request->only('email'))
+                ->with('error', 'Patients must log in from the main website, not the Staff Portal.');
+        }
+
+        if (!$user->is_active) {
+            return back()
+                ->withInput($request->only('email'))
+                ->with('error', 'Your account has been deactivated. Contact the administrator.');
+        }
+
+        Auth::login($user, $request->boolean('remember'));
+        $request->session()->regenerate();
+
+        // Force password change: redirect back to /staff with modal flag
+        if ($user->force_password_change) {
+            return redirect('/staff?change_password=1');
+        }
+
+        return redirect($this->panelRoutes[$user->panel] ?? '/admin');
     }
 
-    // ─── LOGOUT ───────────────────────────────────────────────────────────────
-    // Checks who is logging out BEFORE destroying the session.
-    // Staff  → /staff  (our custom staff login page)
-    // Patient → /      (landing page with patient login modal)
-    // Unknown → /      (safe fallback)
+    // ─── STAFF CHANGE PASSWORD ─────────────────────────────────────────────────
+    public function staffChangePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password'     => 'required|min:8',
+            'confirm_password' => 'required|same:new_password',
+        ], [
+            'confirm_password.same' => 'Passwords do not match.',
+            'new_password.min'      => 'Password must be at least 8 characters.',
+        ]);
+
+        $user = Auth::user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return redirect('/staff?change_password=1')
+                ->with('staff_change_error', 'The current password is incorrect.');
+        }
+
+        if ($request->current_password === $request->new_password) {
+            return redirect('/staff?change_password=1')
+                ->with('staff_change_error', 'New password must differ from your current password.');
+        }
+
+        $panel = $user->panel;
+
+        $user->update([
+            'password'              => Hash::make($request->new_password),
+            'force_password_change' => false,
+        ]);
+
+        Auth::login($user);
+
+        return redirect($this->panelRoutes[$panel] ?? '/admin');
+    }
+
+    // ─── LOGOUT ────────────────────────────────────────────────────────────────
     public function logout(Request $request)
     {
         $panel = Auth::check() ? Auth::user()->panel : null;

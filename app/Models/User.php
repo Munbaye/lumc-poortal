@@ -6,19 +6,26 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Carbon\Carbon;
 
 class User extends Authenticatable implements FilamentUser
 {
     use Notifiable, HasRoles;
 
     protected $fillable = [
-        'name',       // Display name: "Juan Dela Cruz"
-        'username',   // Login username: "JuanDelaCruz25"
-        'email',      // Internal email (hidden from UI)
+        'name',
+        'first_name',
+        'middle_name',
+        'last_name',
+        'gender',
+        'birthdate',
+        'username',
+        'email',
         'password',
         'employee_id',
         'panel',
         'specialty',
+        'departments',
         'is_active',
         'patient_id',
         'force_password_change',
@@ -30,7 +37,27 @@ class User extends Authenticatable implements FilamentUser
         'email_verified_at'     => 'datetime',
         'is_active'             => 'boolean',
         'force_password_change' => 'boolean',
+        'birthdate'             => 'date',
+        'departments'           => 'array',
     ];
+
+    public function getFullNameAttribute(): string
+    {
+        if ($this->first_name || $this->last_name) {
+            $parts = array_filter([
+                $this->first_name,
+                $this->middle_name ? $this->middle_name[0] . '.' : null,
+                $this->last_name,
+            ]);
+            return implode(' ', $parts);
+        }
+        return $this->name ?? '';
+    }
+
+    public function getAgeAttribute(): ?int
+    {
+        return $this->birthdate ? Carbon::parse($this->birthdate)->age : null;
+    }
 
     public function canAccessPanel(Panel $panel): bool
     {
@@ -41,7 +68,7 @@ class User extends Authenticatable implements FilamentUser
             'doctor'  => $this->hasRole('doctor'),
             'nurse'   => $this->hasRole('nurse'),
             'clerk'   => $this->hasRole(['clerk', 'clerk-opd', 'clerk-er']),
-            'tech'    => $this->hasRole('tech'),
+            'tech'    => $this->hasRole(['tech', 'tech-rad', 'tech-med', 'tech-tech']),
             'patient' => $this->hasRole('patient'),
             default   => false,
         };
@@ -54,9 +81,10 @@ class User extends Authenticatable implements FilamentUser
 
     public function getDoctorLabelAttribute(): string
     {
+        $name = $this->full_name ?: $this->name;
         return $this->specialty
-            ? "Dr. {$this->name} ({$this->specialty})"
-            : "Dr. {$this->name}";
+            ? "Dr. {$name} ({$this->specialty})"
+            : "Dr. {$name}";
     }
 
     public function visits()    { return $this->hasMany(Visit::class, 'clerk_id'); }

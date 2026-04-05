@@ -31,10 +31,6 @@ class PatientPanelProvider extends PanelProvider
                 \Illuminate\Cookie\Middleware\EncryptCookies::class,
                 \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
                 \Illuminate\Session\Middleware\StartSession::class,
-                // AuthenticateSession REMOVED — it calls route('login') on session
-                // mismatch (e.g. after password change), which crashes because
-                // this app has no 'login' named route. PatientAuthenticate below
-                // handles auth checking instead.
                 \Illuminate\View\Middleware\ShareErrorsFromSession::class,
                 \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
                 \Illuminate\Routing\Middleware\SubstituteBindings::class,
@@ -44,6 +40,5 @@ class PatientPanelProvider extends PanelProvider
                 PatientAuthenticate::class,
             ])
             ->authGuard('web');
-            // NO ->authMiddleware() — we handle auth ourselves in PatientAuthenticate above
     }
 }
