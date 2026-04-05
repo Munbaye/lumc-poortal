@@ -6,6 +6,7 @@ use App\Http\Controllers\ConsentController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\ClerkFormController;
+use App\Http\Controllers\NurseFormController;
 
 // ── PUBLIC LANDING PAGE ────────────────────────────────────────────────────────
 Route::get('/', function () {
@@ -117,27 +118,33 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/forms/physical-exam-form/{visit}', [ChartController::class, 'physicalExamForm'])
         ->name('forms.physical-exam-form');
 
-    // ── Laboratory Request (VIEW + SAVE) ───────────────────
-    Route::get('/forms/lab-request/{visit}', [ChartController::class, 'labRequest'])
-        ->name('forms.lab-request');
+    // ── Laboratory Request ────────────────────────────────────────────────────
+    Route::get('/forms/lab-request/{visit}',  [ChartController::class, 'labRequest'])      ->name('forms.lab-request');
+    Route::post('/forms/lab-request/{visit}', [ChartController::class, 'labRequestStore']) ->name('forms.lab-request.store');
 
-    Route::post('/forms/lab-request/{visit}', [ChartController::class, 'labRequestStore'])
-        ->name('forms.lab-request.store');
+    // ── Radiology Request ─────────────────────────────────────────────────────
+    Route::get('/forms/radiology-request/{visit}',  [ChartController::class, 'radiologyRequest'])      ->name('forms.radiology-request');
+    Route::post('/forms/radiology-request/{visit}', [ChartController::class, 'radiologyRequestStore']) ->name('forms.radiology-request.store');
 
-    // ── Radiology Request (VIEW + SAVE) ────────────────────
-    Route::get('/forms/radiology-request/{visit}', [ChartController::class, 'radiologyRequest'])
-        ->name('forms.radiology-request');
+    // ── Tech Result Uploads ───────────────────────────────────────────────────
+    Route::post('/results/lab/{labRequest}/upload', [ResultController::class, 'uploadLabResult'])->name('results.lab.upload');
+    Route::post('/results/rad/{radRequest}/upload', [ResultController::class, 'uploadRadResult'])->name('results.rad.upload');
 
-    Route::post('/forms/radiology-request/{visit}', [ChartController::class, 'radiologyRequestStore'])
-        ->name('forms.radiology-request.store');
+    // ── Nursing / Clinical Printable Forms — visit-scoped ─────────────────────
+    // These now accept a {visit} route parameter so the form can display real data.
+    Route::get('/forms/vital-sign-monitoring-sheet/{visit}', [NurseFormController::class, 'vitalSignSheet'])
+        ->name('forms.vital-sign-monitoring-sheet');
 
-    // ── Tech Result Uploads ─────────────────────────────────────────────
-    Route::post('/results/lab/{labRequest}/upload',
-        [ResultController::class, 'uploadLabResult'])
-        ->name('results.lab.upload');
+    Route::get('/forms/iv-bt-sheet/{visit}', [NurseFormController::class, 'ivBtSheet'])
+        ->name('forms.iv-bt-sheet');
 
-    Route::post('/results/rad/{radRequest}/upload',
-    [ResultController::class, 'uploadRadResult'])
-    ->name('results.rad.upload');
+    // Legacy static routes kept for backward-compat (no visit = blank template)
+    Route::get('/forms/medication-records', function () {
+        return view('forms.medication-records');
+    })->name('forms.medication-records');
+
+    Route::get('/forms/nurses-notes', function () {
+        return view('forms.nurses-notes');
+    })->name('forms.nurses-notes');
 
 });

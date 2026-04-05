@@ -375,12 +375,12 @@
 
         {{-- ══ PATIENT FORMS ═════ --}}
         @if($activeTab === 'profile')
-
+ 
         <div class="sec-head">
             <h2 class="sec-title">Patient Forms</h2>
             <span style="font-size:.78rem;color:#6b7280;">All forms for this visit — read-only view</span>
         </div>
-
+ 
         {{-- ── 1. ER Record (ER visits only) ──────────────────────── --}}
         @if($isErVisit)
         <div class="form-section">
@@ -393,12 +393,10 @@
             </div>
             @if($hasErRecord)
             <div class="form-iframe-wrap">
-                <iframe
-                    src="{{ route('forms.er-record', ['visit' => $visit->id]) }}?readonly=1"
+                <iframe src="{{ route('forms.er-record', ['visit' => $visit->id]) }}?readonly=1"
                     title="ER Record"
                     style="width:100%;min-height:1100px;border:none;display:block;"
-                    loading="lazy">
-                </iframe>
+                    loading="lazy"></iframe>
             </div>
             @else
             <div class="form-missing-card">
@@ -408,7 +406,7 @@
             @endif
         </div>
         @endif
-
+ 
         {{-- ── 2. Admission & Discharge Record ────────────────────── --}}
         <div class="form-section">
             <div class="form-section-header">
@@ -420,12 +418,10 @@
             </div>
             @if($hasAdmRecord)
             <div class="form-iframe-wrap">
-                <iframe
-                    src="{{ route('forms.adm-record', ['visit' => $visit->id]) }}?readonly=1"
+                <iframe src="{{ route('forms.adm-record', ['visit' => $visit->id]) }}?readonly=1"
                     title="Admission & Discharge Record"
                     style="width:100%;min-height:1100px;border:none;display:block;"
-                    loading="lazy">
-                </iframe>
+                    loading="lazy"></iframe>
             </div>
             @else
             <div class="form-missing-card">
@@ -434,7 +430,7 @@
             </div>
             @endif
         </div>
-
+ 
         {{-- ── 3. Consent to Care ──────────────────────────────────── --}}
         <div class="form-section">
             <div class="form-section-header">
@@ -446,12 +442,10 @@
             </div>
             @if($hasConsent)
             <div class="form-iframe-wrap">
-                <iframe
-                    src="{{ route('forms.consent-to-care', ['visit' => $visit->id]) }}?readonly=1"
+                <iframe src="{{ route('forms.consent-to-care', ['visit' => $visit->id]) }}?readonly=1"
                     title="Consent to Care"
                     style="width:100%;min-height:780px;border:none;display:block;"
-                    loading="lazy">
-                </iframe>
+                    loading="lazy"></iframe>
             </div>
             @else
             <div class="form-missing-card">
@@ -460,7 +454,7 @@
             </div>
             @endif
         </div>
-
+ 
         {{-- ── 4. History Form ─────────────────────────────────────── --}}
         <div class="form-section">
             <div class="form-section-header">
@@ -472,12 +466,10 @@
             </div>
             @if($hasHistory)
             <div class="form-iframe-wrap">
-                <iframe
-                    src="{{ route('forms.history-form', ['visit' => $visit->id]) }}"
+                <iframe src="{{ route('forms.history-form', ['visit' => $visit->id]) }}"
                     title="History Form"
                     style="width:100%;min-height:1200px;border:none;display:block;"
-                    loading="lazy">
-                </iframe>
+                    loading="lazy"></iframe>
             </div>
             @else
             <div class="form-missing-card">
@@ -486,7 +478,7 @@
             </div>
             @endif
         </div>
-
+ 
         {{-- ── 5. Physical Examination Form ───────────────────────── --}}
         <div class="form-section">
             <div class="form-section-header">
@@ -498,17 +490,81 @@
             </div>
             @if($hasHistory)
             <div class="form-iframe-wrap">
-                <iframe
-                    src="{{ route('forms.physical-exam-form', ['visit' => $visit->id]) }}"
+                <iframe src="{{ route('forms.physical-exam-form', ['visit' => $visit->id]) }}"
                     title="Physical Examination Form"
                     style="width:100%;min-height:1200px;border:none;display:block;"
-                    loading="lazy">
-                </iframe>
+                    loading="lazy"></iframe>
             </div>
             @else
             <div class="form-missing-card">
                 <div class="form-missing-icon">🩺</div>
                 <p class="form-missing-text">Physical Examination Form will appear here once the patient has been assessed by a doctor.</p>
+            </div>
+            @endif
+        </div>
+ 
+        {{-- ── 6. Vital Sign Monitoring Sheet (NUR-014) ───────────── --}}
+        @php
+            $vsCount = \App\Models\Vital::where('visit_id', $visit->id)->count();
+        @endphp
+        <div class="form-section">
+            <div class="form-section-header">
+                <span class="form-section-label">📊 Vital Sign Monitoring Sheet (NUR-014)</span>
+                <div class="form-section-line"></div>
+                <span class="form-section-badge"
+                      style="{{ $vsCount > 0 ? 'background:#dbeafe;color:#1e40af;' : 'background:#f3f4f6;color:#6b7280;' }}">
+                    {{ $vsCount > 0 ? $vsCount . ' entr' . ($vsCount === 1 ? 'y' : 'ies') : 'No entries yet' }}
+                </span>
+                <a href="{{ route('forms.vital-sign-monitoring-sheet', ['visit' => $visit->id]) }}"
+                   target="_blank"
+                   style="font-size:.72rem;font-weight:700;color:#1d4ed8;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#eff6ff;border:1px solid #bfdbfe;padding:3px 10px;border-radius:5px;white-space:nowrap;margin-left:4px;">
+                    🖨️ Open / Print
+                </a>
+            </div>
+            @if($vsCount > 0)
+            <div class="form-iframe-wrap">
+                <iframe src="{{ route('forms.vital-sign-monitoring-sheet', ['visit' => $visit->id]) }}"
+                    title="Vital Sign Monitoring Sheet"
+                    style="width:100%;min-height:900px;border:none;display:block;"
+                    loading="lazy"></iframe>
+            </div>
+            @else
+            <div class="form-missing-card">
+                <div class="form-missing-icon">📊</div>
+                <p class="form-missing-text">No vital signs recorded yet. Vitals are entered by the nurse from the Nurse panel.</p>
+            </div>
+            @endif
+        </div>
+ 
+        {{-- ── 7. IV / Blood Transfusion Sheet (NUR-012) ──────────── --}}
+        @php
+            $ivCount = \App\Models\IvFluidEntry::where('visit_id', $visit->id)->count();
+        @endphp
+        <div class="form-section">
+            <div class="form-section-header">
+                <span class="form-section-label">💧 IV / Blood Transfusion Sheet (NUR-012)</span>
+                <div class="form-section-line"></div>
+                <span class="form-section-badge"
+                      style="{{ $ivCount > 0 ? 'background:#ccfbf1;color:#0f766e;' : 'background:#f3f4f6;color:#6b7280;' }}">
+                    {{ $ivCount > 0 ? $ivCount . ' entr' . ($ivCount === 1 ? 'y' : 'ies') : 'No entries yet' }}
+                </span>
+                <a href="{{ route('forms.iv-bt-sheet', ['visit' => $visit->id]) }}"
+                   target="_blank"
+                   style="font-size:.72rem;font-weight:700;color:#0f766e;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#f0fdfa;border:1px solid #99f6e4;padding:3px 10px;border-radius:5px;white-space:nowrap;margin-left:4px;">
+                    🖨️ Open / Print
+                </a>
+            </div>
+            @if($ivCount > 0)
+            <div class="form-iframe-wrap">
+                <iframe src="{{ route('forms.iv-bt-sheet', ['visit' => $visit->id]) }}"
+                    title="IV / Blood Transfusion Sheet"
+                    style="width:100%;min-height:900px;border:none;display:block;"
+                    loading="lazy"></iframe>
+            </div>
+            @else
+            <div class="form-missing-card">
+                <div class="form-missing-icon">💧</div>
+                <p class="form-missing-text">No IV / blood transfusion entries yet. These are entered by the nurse from the Nurse panel.</p>
             </div>
             @endif
         </div>

@@ -30,6 +30,7 @@
 .tab-badge { background:#ef4444; color:#fff; font-size:.62rem; font-weight:700; padding:1px 5px; border-radius:9999px; min-width:17px; text-align:center; }
 .tab-badge-green { background:#059669; }
 .tab-badge-blue  { background:#2563eb; }
+.tab-badge-teal  { background:#0d9488; }
 
 .chart-content { padding:22px 26px; background:#f9fafb; min-height:480px; }
 .dark .chart-content { background:#111827; }
@@ -168,7 +169,264 @@
 .dark .vs-val-na { color:#4b5563; }
 .vs-nurse-tag { display:inline-flex; align-items:center; gap:3px; font-size:.67rem; color:#6b7280; margin-top:3px; }
 
+/* ══════════════════════════════════════════════════════════════════
+   IV FLUID / BLOOD TRANSFUSION SHEET
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Form card */
+.iv-entry-form {
+    background: #fff;
+    border: 1.5px solid #0d9488;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+}
+.dark .iv-entry-form { background:#1f2937; border-color:#0f766e; }
+
+.iv-form-title {
+    font-size: .85rem;
+    font-weight: 700;
+    color: #0f766e;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #ccfbf1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.dark .iv-form-title { border-bottom-color:#134e4a; }
+
+/* Form grid — add mode */
+.iv-form-grid {
+    display: grid;
+    grid-template-columns: 160px 120px 100px 1fr 200px 1fr;
+    gap: 12px;
+    align-items: end;
+    margin-bottom: 14px;
+}
+@media(max-width:1100px) {
+    .iv-form-grid { grid-template-columns: repeat(3,1fr); }
+}
+@media(max-width:700px) {
+    .iv-form-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* Edit form grid — narrower, only editable cols */
+.iv-edit-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 12px;
+    align-items: end;
+    margin-bottom: 14px;
+}
+@media(max-width:700px) {
+    .iv-edit-grid { grid-template-columns: 1fr; }
+}
+
+.iv-field { display:flex; flex-direction:column; gap:4px; }
+.iv-label {
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #6b7280;
+}
+.dark .iv-label { color:#9ca3af; }
+
+.iv-input {
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    padding: 8px 10px;
+    font-size: .875rem;
+    background: #fff;
+    color: #111827;
+    outline: none;
+    width: 100%;
+    font-family: inherit;
+}
+.dark .iv-input { background:#374151; border-color:#4b5563; color:#f3f4f6; }
+.iv-input:focus { border-color:#0d9488; box-shadow:0 0 0 2px rgba(13,148,136,.12); }
+.iv-input::placeholder { color:#9ca3af; }
+
+.iv-input[readonly] {
+    background: #f9fafb;
+    color: #6b7280;
+    cursor: not-allowed;
+}
+.dark .iv-input[readonly] { background:#111827; color:#4b5563; }
+
+.iv-textarea {
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    padding: 8px 10px;
+    font-size: .83rem;
+    background: #fff;
+    color: #111827;
+    outline: none;
+    width: 100%;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.5;
+    min-height: 60px;
+}
+.dark .iv-textarea { background:#374151; border-color:#4b5563; color:#f3f4f6; }
+.iv-textarea:focus { border-color:#0d9488; box-shadow:0 0 0 2px rgba(13,148,136,.12); }
+.iv-textarea::placeholder { color:#9ca3af; }
+
+.iv-help {
+    font-size: .67rem;
+    color: #9ca3af;
+    margin-top: 1px;
+    line-height: 1.4;
+}
+
+/* Table */
+.iv-sheet-wrap {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: auto;
+}
+.dark .iv-sheet-wrap { background:#1f2937; border-color:#374151; }
+
+.iv-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .8rem;
+    min-width: 900px;
+}
+.iv-table thead tr { background:#f0fdfa; }
+.dark .iv-table thead tr { background:#042f2e; }
+
+.iv-table th {
+    padding: 10px 12px;
+    text-align: left;
+    font-size: .67rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: #0f766e;
+    border-bottom: 2px solid #99f6e4;
+    white-space: nowrap;
+}
+.dark .iv-table th { color:#5eead4; border-bottom-color:#134e4a; }
+
+.iv-table th.col-center { text-align:center; }
+.iv-table th.col-narrow { min-width:80px; }
+.iv-table th.col-medium { min-width:120px; }
+.iv-table th.col-wide   { min-width:180px; }
+.iv-table th.col-action { min-width:90px; text-align:center; }
+
+.iv-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0fdfa;
+    color: #374151;
+    vertical-align: top;
+    line-height: 1.5;
+}
+.dark .iv-table td { border-bottom-color:#042f2e; color:#d1d5db; }
+.iv-table tr:last-child td { border-bottom: none; }
+.iv-table tr:hover td { background:#f0fdfa; }
+.dark .iv-table tr:hover td { background:rgba(13,148,136,.04); }
+
+.iv-table td.col-center { text-align:center; }
+
+/* Bottle number badge */
+.iv-bottle-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #ccfbf1;
+    color: #0f766e;
+    font-size: .8rem;
+    font-weight: 800;
+}
+.dark .iv-bottle-badge { background:#134e4a; color:#5eead4; }
+
+/* Solution chip */
+.iv-solution-text {
+    font-size: .85rem;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.5;
+}
+.dark .iv-solution-text { color:#f3f4f6; }
+
+/* Consumed cell */
+.iv-consumed-yes { font-size:.82rem; color:#059669; font-weight:600; }
+.iv-consumed-no  { font-size:.75rem; color:#d1d5db; font-style:italic; }
+.dark .iv-consumed-no { color:#374151; }
+
+/* Nurse sig */
+.iv-nurse-sig {
+    font-size: .75rem;
+    color: #374151;
+    font-style: italic;
+}
+.dark .iv-nurse-sig { color:#9ca3af; }
+.iv-edit-meta {
+    font-size: .65rem;
+    color: #9ca3af;
+    margin-top: 3px;
+}
+
+/* Edit inline row */
+.iv-table tr.is-editing td { background:#f0fdfa !important; }
+.dark .iv-table tr.is-editing td { background:rgba(13,148,136,.06) !important; }
+.iv-inline-edit { display:flex; flex-direction:column; gap:6px; }
+
 /* Buttons */
+.btn-add-iv {
+    background: #0d9488;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 9px 18px;
+    font-size: .83rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-add-iv:hover { background:#0f766e; }
+
+.btn-primary-teal {
+    background: #0d9488;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 8px 20px;
+    font-size: .83rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.btn-primary-teal:hover { background:#0f766e; }
+.btn-primary-teal:disabled { opacity:.6; cursor:not-allowed; }
+
+.btn-edit-iv {
+    background: #f0fdfa;
+    color: #0f766e;
+    border: 1px solid #99f6e4;
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: .75rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.btn-edit-iv:hover { background:#ccfbf1; }
+.dark .btn-edit-iv { background:#134e4a; color:#5eead4; border-color:#0f766e; }
+.dark .btn-edit-iv:hover { background:#0f766e; }
+
+/* General shared buttons */
 .btn-add-vital { background:#2563eb; color:#fff; border:none; border-radius:7px; padding:9px 18px; font-size:.83rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
 .btn-add-vital:hover { background:#1d4ed8; }
 .btn-primary-blue { background:#2563eb; color:#fff; border:none; border-radius:7px; padding:9px 22px; font-size:.85rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
@@ -208,7 +466,8 @@
     $admittedAt  = $visit->clerk_admitted_at
         ? $visit->clerk_admitted_at->timezone('Asia/Manila')->format('M j, Y H:i')
         : '—';
-    $vitalsCount = $this->vitalsCount;
+    $vitalsCount   = $this->vitalsCount;
+    $ivCount       = $this->ivEntriesCount;
 @endphp
 
 <div class="chart-page">
@@ -244,10 +503,12 @@
             📊 Vital Signs
             @if($vitalsCount > 0)<span class="tab-badge tab-badge-blue">{{ $vitalsCount }}</span>@endif
         </button>
+        <button wire:click="setTab('iv')"       class="chart-tab {{ $activeTab==='iv'       ? 'active':'' }}">
+            💧 IV Fluid / Blood
+            @if($ivCount > 0)<span class="tab-badge tab-badge-teal">{{ $ivCount }}</span>@endif
+        </button>
         <button wire:click="setTab('forms')"    class="chart-tab {{ $activeTab==='forms'    ? 'active':'' }}">📄 Patient Forms</button>
         <button wire:click="setTab('mar')"      class="chart-tab {{ $activeTab==='mar'      ? 'active':'' }}">💊 MAR</button>
-        <button wire:click="setTab('iv')"       class="chart-tab {{ $activeTab==='iv'       ? 'active':'' }}">💧 IV Fluid</button>
-        <button wire:click="setTab('blood')"    class="chart-tab {{ $activeTab==='blood'    ? 'active':'' }}">🩸 Blood Transfusion</button>
         <button wire:click="setTab('io')"       class="chart-tab {{ $activeTab==='io'       ? 'active':'' }}">📏 I &amp; O</button>
         <button wire:click="setTab('handover')" class="chart-tab {{ $activeTab==='handover' ? 'active':'' }}">🔄 Handover</button>
     </div>
@@ -325,9 +586,7 @@
         @foreach($allNotes as $note)<div class="note-card" wire:key="note-{{ $note->id }}"><div class="note-header"><div><p class="note-nurse">{{ $note->nurse?->name ?? 'Unknown Nurse' }}</p><p class="note-time">{{ $note->noted_at?->timezone('Asia/Manila')->format('F j, Y · H:i') }} &nbsp;·&nbsp; {{ $note->noted_at?->diffForHumans() }}</p></div><span style="font-size:.7rem;background:#f3f4f6;padding:2px 8px;border-radius:4px;color:#6b7280;font-weight:700;">FDAR</span></div>@if($note->focus)<div class="note-soap-row"><div class="note-soap-letter soap-f" style="font-size:.68rem;">F</div><div><p class="note-soap-label">Focus</p><p class="note-soap-text">{{ $note->focus }}</p></div></div>@endif@if($note->data)<div class="note-soap-row"><div class="note-soap-letter soap-d" style="font-size:.68rem;">D</div><div><p class="note-soap-label">Data</p><p class="note-soap-text">{{ $note->data }}</p></div></div>@endif@if($note->action)<div class="note-soap-row"><div class="note-soap-letter soap-a" style="font-size:.68rem;">A</div><div><p class="note-soap-label">Action</p><p class="note-soap-text">{{ $note->action }}</p></div></div>@endif@if($note->response)<div class="note-soap-row"><div class="note-soap-letter soap-r" style="font-size:.68rem;">R</div><div><p class="note-soap-label">Response</p><p class="note-soap-text">{{ $note->response }}</p></div></div>@endif</div>@endforeach
         @endif
 
-        {{-- ══════════════════════════════════════════════════════════
-             VITAL SIGNS MONITORING SHEET
-        ══════════════════════════════════════════════════════════════ --}}
+        {{-- ══ VITAL SIGNS MONITORING SHEET══════════════════════════════════════════ --}}
         @elseif($activeTab === 'vitals')
         @php $allVitals = $this->allVitals; @endphp
 
@@ -336,9 +595,7 @@
             <div style="display:flex;align-items:center;gap:10px;">
                 <span style="font-size:.78rem;color:#6b7280;">{{ $allVitals->count() }} entr{{ $allVitals->count() === 1 ? 'y':'ies' }}</span>
                 @if(!$addingVital)
-                <button wire:click="openAddVital" type="button" class="btn-add-vital">
-                    ➕ Add New Entry
-                </button>
+                <button wire:click="openAddVital" type="button" class="btn-add-vital">➕ Add New Entry</button>
                 @endif
             </div>
         </div>
@@ -346,75 +603,20 @@
         {{-- ── ADD ENTRY FORM ─────────────────────────────────────── --}}
         @if($addingVital)
         <div class="vs-entry-form">
-            <p class="vs-form-title">
-                ➕ New Entry
-                <span style="font-weight:400;color:#6b7280;font-size:.78rem;">{{ auth()->user()->name }}</span>
-            </p>
-
+            <p class="vs-form-title">➕ New Entry <span style="font-weight:400;color:#6b7280;font-size:.78rem;">{{ auth()->user()->name }}</span></p>
             <div class="vs-single-row">
-
-                <div class="vs-field">
-                    <label class="vs-label">Date &amp; Time *</label>
-                    <input type="datetime-local"
-                        wire:model="vitalTakenAt"
-                        class="vs-input">
-                </div>
-
-                <div class="vs-field">
-                    <label class="vs-label">SpO₂ (%)</label>
-                    <input type="number" wire:model="vitalSpO2"
-                        min="0" max="100" class="vs-input">
-                </div>
-
-                <div class="vs-field">
-                    <label class="vs-label">CR (bpm)</label>
-                    <input type="number" wire:model="vitalCR"
-                        min="0" max="300" class="vs-input">
-                </div>
-
-                <div class="vs-field">
-                    <label class="vs-label">PR /min</label>
-                    <input type="number" wire:model="vitalPR"
-                        min="0" max="300" class="vs-input">
-                </div>
-
-                <div class="vs-field">
-                    <label class="vs-label">RR /min</label>
-                    <input type="number" wire:model="vitalRR"
-                        min="0" max="80" class="vs-input">
-                </div>
-
-                <div class="vs-field">
-                    <label class="vs-label">Temp. (°C)</label>
-                    <input type="number" step="0.1" wire:model="vitalTemp"
-                        min="30" max="45" class="vs-input">
-                </div>
-
-                <div class="vs-field">
-                    <label class="vs-label">Neurological VS</label>
-                    <textarea wire:model="vitalNeuroVS" rows="2"
-                            class="vs-textarea"></textarea>
-                </div>
-
-                <div class="vs-field">
-                    <label class="vs-label">Others</label>
-                    <textarea wire:model="vitalOthers" rows="2"
-                            class="vs-textarea"></textarea>
-                </div>
-
-                <div class="vs-field">
-                    <label class="vs-label">Remarks</label>
-                    <textarea wire:model="vitalRemarks" rows="2"
-                            class="vs-textarea"></textarea>
-                </div>
-
+                <div class="vs-field"><label class="vs-label">Date &amp; Time *</label><input type="datetime-local" wire:model="vitalTakenAt" class="vs-input"></div>
+                <div class="vs-field"><label class="vs-label">SpO₂ (%)</label><input type="number" wire:model="vitalSpO2" min="0" max="100" class="vs-input"></div>
+                <div class="vs-field"><label class="vs-label">CR (bpm)</label><input type="number" wire:model="vitalCR" min="0" max="300" class="vs-input"></div>
+                <div class="vs-field"><label class="vs-label">PR /min</label><input type="number" wire:model="vitalPR" min="0" max="300" class="vs-input"></div>
+                <div class="vs-field"><label class="vs-label">RR /min</label><input type="number" wire:model="vitalRR" min="0" max="80" class="vs-input"></div>
+                <div class="vs-field"><label class="vs-label">Temp. (°C)</label><input type="number" step="0.1" wire:model="vitalTemp" min="30" max="45" class="vs-input"></div>
+                <div class="vs-field"><label class="vs-label">Neurological VS</label><textarea wire:model="vitalNeuroVS" rows="2" class="vs-textarea"></textarea></div>
+                <div class="vs-field"><label class="vs-label">Others</label><textarea wire:model="vitalOthers" rows="2" class="vs-textarea"></textarea></div>
+                <div class="vs-field"><label class="vs-label">Remarks</label><textarea wire:model="vitalRemarks" rows="2" class="vs-textarea"></textarea></div>
             </div>
-
             <div style="display:flex;gap:10px;align-items:center;padding-top:12px;border-top:1px solid #dbeafe;">
-                <button wire:click="saveVital"
-                        wire:loading.attr="disabled"
-                        wire:loading.class="opacity-60"
-                        type="button" class="btn-primary-blue">
+                <button wire:click="saveVital" wire:loading.attr="disabled" wire:loading.class="opacity-60" type="button" class="btn-primary-blue">
                     <span wire:loading.remove wire:target="saveVital">💾 Save Entry</span>
                     <span wire:loading wire:target="saveVital">Saving…</span>
                 </button>
@@ -425,13 +627,8 @@
 
         {{-- ── MONITORING SHEET TABLE ─────────────────────────────── --}}
         @if($allVitals->isEmpty())
-        <div class="empty-state">
-            <div class="empty-icon">📊</div>
-            <p class="empty-title">No vital signs recorded yet</p>
-            <p class="empty-sub">Click "Add New Entry" to record the first vital signs.<br>Registration vitals (taken by the clerk at triage) will appear here automatically.</p>
-        </div>
+        <div class="empty-state"><div class="empty-icon">📊</div><p class="empty-title">No vital signs recorded yet</p><p class="empty-sub">Click "Add New Entry" to record the first vital signs.</p></div>
         @else
-
         <div class="vs-sheet-wrap">
             <table class="vs-table">
                 <thead>
@@ -457,76 +654,252 @@
                     $abnTemp = $v->temperature   !== null && ($v->temperature < 36.0 || $v->temperature > 37.5);
                 @endphp
                 <tr class="{{ $isReg ? 'vs-row-reg' : '' }}" wire:key="vs-{{ $v->id }}">
-
-                    {{-- Date / Time / Nurse --}}
                     <td class="col-left">
-                        <p style="font-family:monospace;font-size:.76rem;color:#6b7280;">
-                            {{ $v->taken_at->timezone('Asia/Manila')->format('M j, Y') }}
-                        </p>
-                        <p style="font-family:monospace;font-size:.9rem;font-weight:700;color:#111827;margin-top:1px;">
-                            {{ $v->taken_at->timezone('Asia/Manila')->format('H:i') }}
-                        </p>
+                        <p style="font-family:monospace;font-size:.76rem;color:#6b7280;">{{ $v->taken_at->timezone('Asia/Manila')->format('M j, Y') }}</p>
+                        <p style="font-family:monospace;font-size:.9rem;font-weight:700;color:#111827;margin-top:1px;">{{ $v->taken_at->timezone('Asia/Manila')->format('H:i') }}</p>
                         <p class="vs-nurse-tag">🧑‍⚕️ {{ $v->nurse_name }}</p>
                         @if($isReg)<span class="vs-reg-badge">Triage / Registration</span>@endif
                     </td>
+                    <td>@if($v->o2_saturation !== null)<span class="vs-val {{ $abnO2 ? 'vs-abnormal':'' }}">{{ $v->o2_saturation }}</span>@else<span class="vs-val-na">—</span>@endif</td>
+                    <td>@if($v->cardiac_rate)<span class="vs-val">{{ $v->cardiac_rate }}</span>@else<span class="vs-val-na">—</span>@endif</td>
+                    <td>@if($v->pulse_rate)<span class="vs-val {{ $abnPR ? 'vs-abnormal':'' }}">{{ $v->pulse_rate }}</span>@else<span class="vs-val-na">—</span>@endif</td>
+                    <td>@if($v->respiratory_rate)<span class="vs-val {{ $abnRR ? 'vs-abnormal':'' }}">{{ $v->respiratory_rate }}</span>@else<span class="vs-val-na">—</span>@endif</td>
+                    <td>@if($v->temperature)<span class="vs-val {{ $abnTemp ? 'vs-abnormal':'' }}">{{ $v->temperature }}</span>@if($v->temperature_site)<p style="font-size:.6rem;color:#9ca3af;margin-top:1px;">{{ $v->temperature_site }}</p>@endif@else<span class="vs-val-na">—</span>@endif</td>
+                    <td class="col-text">@if($v->neurological_vs)<span style="font-size:.78rem;white-space:pre-line;color:#374151;line-height:1.5;">{{ $v->neurological_vs }}</span>@else<span class="vs-val-na">—</span>@endif</td>
+                    <td class="col-text">@if($v->others_vs)<span style="font-size:.78rem;white-space:pre-line;color:#374151;line-height:1.5;">{{ $v->others_vs }}</span>@else<span class="vs-val-na">—</span>@endif</td>
+                    <td class="col-text">@if($v->notes)<span style="font-size:.78rem;white-space:pre-line;color:#374151;line-height:1.5;">{{ $v->notes }}</span>@else<span class="vs-val-na">—</span>@endif</td>
+                </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;font-size:.69rem;color:#9ca3af;align-items:center;padding:6px 2px;">
+            <span><span style="display:inline-block;width:10px;height:10px;background:#fffbeb;border:1px solid #fde68a;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Triage / Registration row</span>
+            <span><span style="color:#dc2626;font-weight:700;">Red</span> = abnormal (SpO₂ &lt;95% · PR &lt;60 or &gt;100 · RR &lt;12 or &gt;20 · Temp &lt;36.0 or &gt;37.5°C)</span>
+        </div>
+        @endif
 
-                    {{-- SpO₂ --}}
-                    <td>
-                        @if($v->o2_saturation !== null)
-                            <span class="vs-val {{ $abnO2 ? 'vs-abnormal':'' }}">{{ $v->o2_saturation }}</span>
-                        @else<span class="vs-val-na">—</span>@endif
+        {{-- ══════════════════════════════════════════════════════════
+             IV FLUID / BLOOD TRANSFUSION SHEET
+        ══════════════════════════════════════════════════════════════ --}}
+        @elseif($activeTab === 'iv')
+        @php $allIvEntries = $this->allIvEntries; @endphp
+
+        <div class="sec-head">
+            <h2 class="sec-title">💧 Intravenous Fluid Sheet / Blood Transfusion Sheet</h2>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:.78rem;color:#6b7280;">{{ $allIvEntries->count() }} entr{{ $allIvEntries->count() === 1 ? 'y':'ies' }}</span>
+                @if(!$addingIv && $editingIvId === null)
+                <button wire:click="openAddIv" type="button" class="btn-add-iv">➕ Add New Entry</button>
+                @endif
+            </div>
+        </div>
+
+        {{-- ── ADD ENTRY FORM ─────────────────────────────────────── --}}
+        @if($addingIv)
+        <div class="iv-entry-form">
+            <p class="iv-form-title">
+                ➕ New IV / Blood Transfusion Entry
+                <span style="font-weight:400;color:#6b7280;font-size:.78rem;">{{ auth()->user()->name }}</span>
+            </p>
+
+            <div class="iv-form-grid">
+
+                <div class="iv-field">
+                    <label class="iv-label">Date Started *</label>
+                    <input type="date"
+                           wire:model="ivDateStarted"
+                           class="iv-input">
+                    <span class="iv-help">YYYY-MM-DD</span>
+                </div>
+
+                <div class="iv-field">
+                    <label class="iv-label">Time Started *</label>
+                    <input type="time"
+                           wire:model="ivTimeStarted"
+                           class="iv-input">
+                    <span class="iv-help">24-hr format</span>
+                </div>
+
+                <div class="iv-field">
+                    <label class="iv-label">Bottle / Bag #</label>
+                    <input type="number"
+                           wire:model="ivBottleNumber"
+                           min="1" max="999"
+                           class="iv-input">
+                </div>
+
+                <div class="iv-field" style="grid-column: span 1;">
+                    <label class="iv-label">IV Solution / Blood Product, Amount &amp; Rate *</label>
+                    <input type="text"
+                           wire:model="ivSolution"
+                           class="iv-input"
+                           placeholder="e.g. D5LR 1L @ 30 gtts/min (125 mL/hr) or PRBC 350mL">
+                    <span class="iv-help">Include volume and regulation rate</span>
+                </div>
+
+                <div class="iv-field">
+                    <label class="iv-label">Date &amp; Time Consumed</label>
+                    <input type="datetime-local"
+                           wire:model="ivConsumedAt"
+                           class="iv-input">
+                    <span class="iv-help">Leave blank if still running</span>
+                </div>
+
+                <div class="iv-field">
+                    <label class="iv-label">Remarks</label>
+                    <textarea wire:model="ivRemarks" rows="2"
+                              class="iv-textarea"
+                              placeholder="e.g. Site: R forearm, 21G; patient tolerated well"></textarea>
+                </div>
+
+            </div>
+
+            <div style="display:flex;gap:10px;align-items:center;padding-top:12px;border-top:1px solid #ccfbf1;">
+                <button wire:click="saveIvEntry"
+                        wire:loading.attr="disabled"
+                        wire:loading.class="opacity-60"
+                        type="button" class="btn-primary-teal">
+                    <span wire:loading.remove wire:target="saveIvEntry">💾 Save Entry</span>
+                    <span wire:loading wire:target="saveIvEntry">Saving…</span>
+                </button>
+                <button wire:click="cancelAddIv" type="button" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+        @endif
+
+        {{-- ── SHEET TABLE ────────────────────────────────────────── --}}
+        @if($allIvEntries->isEmpty())
+        <div class="empty-state">
+            <div class="empty-icon">💧</div>
+            <p class="empty-title">No IV / Blood Transfusion entries yet</p>
+            <p class="empty-sub">Click "Add New Entry" to record the first IV fluid or blood product.</p>
+        </div>
+        @else
+
+        <div class="iv-sheet-wrap">
+            <table class="iv-table">
+                <thead>
+                    <tr>
+                        <th class="col-narrow col-center">Bottle<br>#</th>
+                        <th class="col-medium">Date Started</th>
+                        <th class="col-narrow col-center">Time<br>Started</th>
+                        <th class="col-wide">IV Solution / Blood Product<br>Amount &amp; Regulation Rate</th>
+                        <th class="col-medium">Date &amp; Time<br>Consumed</th>
+                        <th class="col-wide">Remarks</th>
+                        <th class="col-medium">Nurse Signature</th>
+                        <th class="col-action col-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach($allIvEntries as $entry)
+                @php $isEditing = $editingIvId === $entry->id; @endphp
+                <tr wire:key="iv-{{ $entry->id }}" class="{{ $isEditing ? 'is-editing' : '' }}">
+
+                    {{-- Bottle # --}}
+                    <td class="col-center">
+                        <span class="iv-bottle-badge">{{ $entry->bottle_number }}</span>
                     </td>
 
-                    {{-- CR --}}
+                    {{-- Date Started (immutable) --}}
                     <td>
-                        @if($v->cardiac_rate)
-                            <span class="vs-val">{{ $v->cardiac_rate }}</span>
-                        @else<span class="vs-val-na">—</span>@endif
+                        <span style="font-family:monospace;font-size:.83rem;font-weight:600;color:#111827;">
+                            {{ $entry->date_started->format('M j, Y') }}
+                        </span>
+                        <p style="font-family:monospace;font-size:.67rem;color:#9ca3af;">
+                            {{ $entry->date_started->format('D') }}
+                        </p>
                     </td>
 
-                    {{-- PR --}}
-                    <td>
-                        @if($v->pulse_rate)
-                            <span class="vs-val {{ $abnPR ? 'vs-abnormal':'' }}">{{ $v->pulse_rate }}</span>
-                        @else<span class="vs-val-na">—</span>@endif
+                    {{-- Time Started (immutable) --}}
+                    <td class="col-center">
+                        <span style="font-family:monospace;font-size:.88rem;font-weight:700;color:#0f766e;">
+                            {{ \Carbon\Carbon::parse($entry->time_started)->format('H:i') }}
+                        </span>
                     </td>
 
-                    {{-- RR --}}
+                    {{-- IV Solution (immutable) --}}
                     <td>
-                        @if($v->respiratory_rate)
-                            <span class="vs-val {{ $abnRR ? 'vs-abnormal':'' }}">{{ $v->respiratory_rate }}</span>
-                        @else<span class="vs-val-na">—</span>@endif
+                        <span class="iv-solution-text">{{ $entry->iv_solution }}</span>
                     </td>
 
-                    {{-- Temp --}}
+                    {{-- Date & Time Consumed — EDITABLE --}}
                     <td>
-                        @if($v->temperature)
-                            <span class="vs-val {{ $abnTemp ? 'vs-abnormal':'' }}">{{ $v->temperature }}</span>
-                            @if($v->temperature_site)
-                            <p style="font-size:.6rem;color:#9ca3af;margin-top:1px;">{{ $v->temperature_site }}</p>
+                        @if($isEditing)
+                        <div class="iv-inline-edit">
+                            <input type="datetime-local"
+                                   wire:model="ivConsumedAt"
+                                   class="iv-input"
+                                   style="font-size:.8rem;padding:6px 8px;">
+                            <span class="iv-help">Leave blank = still running</span>
+                        </div>
+                        @else
+                            @if($entry->consumed_at)
+                            <span class="iv-consumed-yes">
+                                {{ $entry->consumed_at->timezone('Asia/Manila')->format('M j, Y') }}<br>
+                                {{ $entry->consumed_at->timezone('Asia/Manila')->format('H:i') }}
+                            </span>
+                            @else
+                            <span class="iv-consumed-no">Still running</span>
                             @endif
-                        @else<span class="vs-val-na">—</span>@endif
+                        @endif
                     </td>
 
-                    {{-- Neurological VS --}}
-                    <td class="col-text">
-                        @if($v->neurological_vs)
-                            <span style="font-size:.78rem;white-space:pre-line;color:#374151;line-height:1.5;">{{ $v->neurological_vs }}</span>
-                        @else<span class="vs-val-na">—</span>@endif
+                    {{-- Remarks — EDITABLE --}}
+                    <td>
+                        @if($isEditing)
+                        <div class="iv-inline-edit">
+                            <textarea wire:model="ivRemarks" rows="2"
+                                      class="iv-textarea"
+                                      style="font-size:.8rem;min-height:50px;"
+                                      placeholder="Remarks…"></textarea>
+                        </div>
+                        @else
+                            @if($entry->remarks)
+                            <span style="font-size:.8rem;white-space:pre-line;color:#374151;line-height:1.5;">{{ $entry->remarks }}</span>
+                            @else
+                            <span class="vs-val-na">—</span>
+                            @endif
+                        @endif
                     </td>
 
-                    {{-- Others --}}
-                    <td class="col-text">
-                        @if($v->others_vs)
-                            <span style="font-size:.78rem;white-space:pre-line;color:#374151;line-height:1.5;">{{ $v->others_vs }}</span>
-                        @else<span class="vs-val-na">—</span>@endif
+                    {{-- Nurse Signature --}}
+                    <td>
+                        <span class="iv-nurse-sig">{{ $entry->nurse_name }}</span>
+                        <p style="font-size:.67rem;color:#9ca3af;margin-top:2px;">
+                            {{ $entry->created_at->timezone('Asia/Manila')->format('M j, Y H:i') }}
+                        </p>
+                        @if($entry->editor_name)
+                        <p class="iv-edit-meta">
+                            ✎ Edited by {{ $entry->editor_name }}<br>
+                            {{ $entry->edited_at?->timezone('Asia/Manila')->format('M j, Y H:i') }}
+                        </p>
+                        @endif
                     </td>
 
-                    {{-- Remarks --}}
-                    <td class="col-text">
-                        @if($v->notes)
-                            <span style="font-size:.78rem;white-space:pre-line;color:#374151;line-height:1.5;">{{ $v->notes }}</span>
-                        @else<span class="vs-val-na">—</span>@endif
+                    {{-- Action --}}
+                    <td class="col-center">
+                        @if($isEditing)
+                        <div style="display:flex;flex-direction:column;gap:5px;align-items:center;">
+                            <button wire:click="saveIvEdit"
+                                    wire:loading.attr="disabled"
+                                    wire:loading.class="opacity-60"
+                                    type="button" class="btn-primary-teal"
+                                    style="padding:5px 12px;font-size:.75rem;">
+                                <span wire:loading.remove wire:target="saveIvEdit">💾 Save</span>
+                                <span wire:loading wire:target="saveIvEdit">…</span>
+                            </button>
+                            <button wire:click="cancelEditIv" type="button"
+                                    class="btn-cancel-sm" style="font-size:.72rem;">
+                                Cancel
+                            </button>
+                        </div>
+                        @elseif($editingIvId === null)
+                        <button wire:click="openEditIv({{ $entry->id }})" type="button"
+                                class="btn-edit-iv">
+                            ✎ Edit
+                        </button>
+                        @endif
                     </td>
 
                 </tr>
@@ -536,13 +909,11 @@
         </div>
 
         {{-- Legend --}}
-        <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;font-size:.69rem;color:#9ca3af;align-items:center;padding:6px 2px;">
-            <span><span style="display:inline-block;width:10px;height:10px;background:#fffbeb;border:1px solid #fde68a;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Triage / Registration row (recorded at patient registration)</span>
-            <span><span style="color:#dc2626;font-weight:700;">Red</span> = abnormal &nbsp;(SpO₂ &lt;95% · PR &lt;60 or &gt;100 · RR &lt;12 or &gt;20 · Temp &lt;36.0 or &gt;37.5°C)</span>
-            <span>Sp = SpO₂ · CR = Cardiac Rate · PR = Pulse Rate · RR = Respiratory Rate</span>
+        <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;font-size:.69rem;color:#9ca3af;padding:6px 2px;">
+            <span>✎ Edit allows updating <strong>Date &amp; Time Consumed</strong> and <strong>Remarks</strong> only.</span>
+            <span>Other columns are locked after saving to preserve the original record.</span>
         </div>
-
-        @endif {{-- allVitals --}}
+        @endif
 
         {{-- ══ PATIENT FORMS ══════════════════════════════════════ --}}
         @elseif($activeTab === 'forms')
@@ -553,12 +924,12 @@
             $hasHistory   = (bool) $visit->medicalHistory;
             $isErVisit    = $visit->visit_type === 'ER';
         @endphp
-
+ 
         <div class="sec-head">
             <h2 class="sec-title">Patient Forms</h2>
             <span style="font-size:.78rem;color:#6b7280;">All forms for this visit — read-only view</span>
         </div>
-
+ 
         {{-- 1. ER Record --}}
         @if($isErVisit)
         <div style="margin-bottom:32px;">
@@ -581,7 +952,7 @@
             @endif
         </div>
         @endif
-
+ 
         {{-- 2. Admission & Discharge Record --}}
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
@@ -602,7 +973,7 @@
             </div>
             @endif
         </div>
-
+ 
         {{-- 3. Consent to Care --}}
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
@@ -623,7 +994,7 @@
             </div>
             @endif
         </div>
-
+ 
         {{-- 4. History Form --}}
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
@@ -644,7 +1015,7 @@
             </div>
             @endif
         </div>
-
+ 
         {{-- 5. Physical Examination Form --}}
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
@@ -665,16 +1036,56 @@
             </div>
             @endif
         </div>
+ 
+        {{-- 6. Vital Sign Monitoring Sheet (NUR-014) — always shown, data-driven --}}
+        <div style="margin-bottom:32px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">📊 Vital Sign Monitoring Sheet (NUR-014)</span>
+                <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
+                @php $vsCount = $this->vitalsCount; @endphp
+                <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $vsCount > 0 ? 'background:#dbeafe;color:#1e40af;' : 'background:#f3f4f6;color:#6b7280;' }}">
+                    {{ $vsCount > 0 ? $vsCount . ' entr' . ($vsCount === 1 ? 'y' : 'ies') : 'No entries yet' }}
+                </span>
+                <a href="{{ route('forms.vital-sign-monitoring-sheet', ['visit' => $visit->id]) }}"
+                   target="_blank"
+                   style="font-size:.72rem;font-weight:700;color:#2563eb;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#eff6ff;border:1px solid #bfdbfe;padding:3px 10px;border-radius:5px;">
+                    🖨️ Open / Print
+                </a>
+            </div>
+            <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+                <iframe src="{{ route('forms.vital-sign-monitoring-sheet', ['visit' => $visit->id]) }}"
+                    title="Vital Sign Monitoring Sheet"
+                    style="width:100%;min-height:900px;border:none;display:block;"
+                    loading="lazy"></iframe>
+            </div>
+        </div>
+ 
+        {{-- 7. IV / Blood Transfusion Sheet (NUR-012) — always shown, data-driven --}}
+        <div style="margin-bottom:32px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">💧 IV / Blood Transfusion Sheet (NUR-012)</span>
+                <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
+                @php $ivCnt = $this->ivEntriesCount; @endphp
+                <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $ivCnt > 0 ? 'background:#ccfbf1;color:#0f766e;' : 'background:#f3f4f6;color:#6b7280;' }}">
+                    {{ $ivCnt > 0 ? $ivCnt . ' entr' . ($ivCnt === 1 ? 'y' : 'ies') : 'No entries yet' }}
+                </span>
+                <a href="{{ route('forms.iv-bt-sheet', ['visit' => $visit->id]) }}"
+                   target="_blank"
+                   style="font-size:.72rem;font-weight:700;color:#0f766e;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#f0fdfa;border:1px solid #99f6e4;padding:3px 10px;border-radius:5px;">
+                    🖨️ Open / Print
+                </a>
+            </div>
+            <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+                <iframe src="{{ route('forms.iv-bt-sheet', ['visit' => $visit->id]) }}"
+                    title="IV / Blood Transfusion Sheet"
+                    style="width:100%;min-height:900px;border:none;display:block;"
+                    loading="lazy"></iframe>
+            </div>
+        </div>
 
         {{-- ══ PLACEHOLDER TABS ════════════════════════════════════ --}}
         @elseif($activeTab === 'mar')
         @include('filament.nurse.pages.partials.placeholder', ['icon'=>'💊','title'=>'Medication Administration Record (MAR)','desc'=>'Track all medications administered — drug name, dose, route, time, and nurse signature. Alerts for missed or overdue medications.','full'=>true])
-
-        @elseif($activeTab === 'iv')
-        @include('filament.nurse.pages.partials.placeholder', ['icon'=>'💧','title'=>'IV Fluid Monitoring Sheet','desc'=>'Track IV fluid orders, bottle numbers, infusion rates, intake totals, and site assessments per shift.','full'=>true])
-
-        @elseif($activeTab === 'blood')
-        @include('filament.nurse.pages.partials.placeholder', ['icon'=>'🩸','title'=>'Blood Transfusion Sheet','desc'=>'Record blood product transfusions — pre/intra/post-transfusion vital signs, adverse reaction monitoring.','full'=>true])
 
         @elseif($activeTab === 'io')
         @include('filament.nurse.pages.partials.placeholder', ['icon'=>'📏','title'=>'Intake & Output Record','desc'=>'Monitor all fluid intake (oral, IV, NG) and output (urine, drain, emesis, stool) with shift and 24-hour totals.','full'=>true])
