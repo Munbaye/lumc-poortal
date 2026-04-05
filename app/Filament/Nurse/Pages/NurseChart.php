@@ -4,6 +4,7 @@ namespace App\Filament\Nurse\Pages;
 
 use App\Models\ActivityLog;
 use App\Models\DoctorsOrder;
+use App\Models\IvFluidEntry;
 use App\Models\NursesNote;
 use App\Models\Vital;
 use App\Models\Visit;
@@ -33,7 +34,7 @@ class NurseChart extends Page
 
     public ?Visit $visit = null;
 
-    public string $activeTab     = 'orders';
+    public string $activeTab      = 'orders';
     public ?int   $confirmCarryId = null;
 
     // ── FDAR note form ─────────────────────────────────────────────────────────
@@ -55,6 +56,18 @@ class NurseChart extends Page
     public string $vitalNeuroVS  = '';
     public string $vitalOthers   = '';
     public string $vitalRemarks  = '';
+
+    // ── IV Fluid / Blood Transfusion form ──────────────────────────────────────
+    public bool   $addingIv         = false;
+    public string $ivDateStarted    = '';
+    public string $ivTimeStarted    = '';
+    public int    $ivBottleNumber   = 1;
+    public string $ivSolution       = '';
+
+    // Edit mode
+    public ?int   $editingIvId      = null;
+    public string $ivConsumedAt     = '';   // datetime-local string
+    public string $ivRemarks        = '';
 
     public function mount(): void
     {
@@ -103,6 +116,22 @@ class NurseChart extends Page
         return Vital::where('visit_id', $this->visitId)->count();
     }
 
+    // ── Computed: IV fluid entries ─────────────────────────────────────────────
+
+    public function getAllIvEntriesProperty()
+    {
+        return IvFluidEntry::where('visit_id', $this->visitId)
+            ->orderBy('date_started', 'asc')
+            ->orderBy('time_started', 'asc')
+            ->orderBy('bottle_number', 'asc')
+            ->get();
+    }
+
+    public function getIvEntriesCountProperty(): int
+    {
+        return IvFluidEntry::where('visit_id', $this->visitId)->count();
+    }
+
     // ── Tab navigation ─────────────────────────────────────────────────────────
 
     public function setTab(string $tab): void
@@ -111,6 +140,8 @@ class NurseChart extends Page
         $this->confirmCarryId = null;
         $this->addingNote     = false;
         $this->addingVital    = false;
+        $this->addingIv       = false;
+        $this->editingIvId    = null;
     }
 
     // ── Doctor's Orders — Mark as Carried (individual) ────────────────────────
@@ -334,6 +365,157 @@ class NurseChart extends Page
 
         $this->addingVital = false;
         Notification::make()->title('Vital signs recorded.')->success()->send();
+    }
+
+    // ── IV Fluid / Blood Transfusion ───────────────────────────────────────────
+
+    public function openAddIv(): void
+    {
+        $this->addingIv      = true;
+        $this->editingIvId   = null;
+        $this->ivDateStarted = now()->timezone('Asia/Manila')->format('Y-m-d');
+        $this->ivTimeStarted = now()->timezone('Asia/Manila')->format('H:i');
+
+        // Auto-suggest next bottle number
+        $lastBottle = IvFluidEntry::where('visit_id', $this->visitId)->max('bottle_number');
+        $this->ivBottleNumber = $lastBottle ? ($lastBottle + 1) : 1;
+
+        $this->ivSolution    = '';
+        $this->ivConsumedAt  = '';
+        $this->ivRemarks     = '';
+    }
+
+    public function cancelAddIv(): void
+    {
+        $this->addingIv    = false;
+        $this->editingIvId = null;
+    }
+
+    public function saveIvEntry(): void
+    {
+        if (!filled($this->ivDateStarted)) {
+            Notification::make()->title('Date Started is required.')->warning()->send();
+            return;
+        }
+        if (!filled($this->ivTimeStarted)) {
+            Notification::make()->title('Time Started is required.')->warning()->send();
+            return;
+        }
+        if (!filled($this->ivSolution)) {
+            Notification::make()->title('IV Solution / Blood Product is required.')->warning()->send();
+            return;
+        }
+        if (!$this->ivBottleNumber || $this->ivBottleNumber < 1) {
+            Notification::make()->title('Bottle/Bag Number must be at least 1.')->warning()->send();
+            return;
+        }
+
+        $consumedAt = null;
+        if (filled($this->ivConsumedAt)) {
+            $consumedAt = \Carbon\Carbon::createFromFormat('Y-m-d\TH:i', $this->ivConsumedAt, 'Asia/Manila');
+        }
+
+        $entry = IvFluidEntry::create([
+            'visit_id'      => $this->visitId,
+            'patient_id'    => $this->visit->patient_id,
+            'recorded_by'   => auth()->id(),
+            'date_started'  => $this->ivDateStarted,
+            'time_started'  => $this->ivTimeStarted . ':00',
+            'bottle_number' => $this->ivBottleNumber,
+            'iv_solution'   => trim($this->ivSolution),
+            'consumed_at'   => $consumedAt,
+            'remarks'       => trim($this->ivRemarks) ?: null,
+            'nurse_name'    => auth()->user()->name,
+        ]);
+
+        ActivityLog::record(
+            action:       'added_iv_fluid_entry',
+            category:     ActivityLog::CAT_CLINICAL,
+            subject:      $entry,
+            subjectLabel: $this->visit->patient->full_name . ' (' . $this->visit->patient->case_no . ')',
+            newValues: array_filter([
+                'entry_id'      => $entry->id,
+                'bottle_number' => $entry->bottle_number,
+                'iv_solution'   => $entry->iv_solution,
+                'date_started'  => $entry->date_started->format('Y-m-d'),
+                'time_started'  => $entry->time_started,
+                'consumed_at'   => $consumedAt?->toDateTimeString(),
+                'remarks'       => $entry->remarks,
+                'nurse'         => auth()->user()->name,
+            ]),
+            panel: 'nurse',
+        );
+
+        $this->addingIv = false;
+        Notification::make()->title('IV / Blood transfusion entry saved.')->success()->send();
+    }
+
+    public function openEditIv(int $entryId): void
+    {
+        $entry = IvFluidEntry::where('visit_id', $this->visitId)->find($entryId);
+        if (!$entry) {
+            Notification::make()->title('Entry not found.')->danger()->send();
+            return;
+        }
+
+        $this->editingIvId  = $entryId;
+        $this->addingIv     = false;
+
+        // Pre-fill only the editable fields
+        $this->ivConsumedAt = $entry->consumed_at
+            ? $entry->consumed_at->timezone('Asia/Manila')->format('Y-m-d\TH:i')
+            : '';
+        $this->ivRemarks    = $entry->remarks ?? '';
+    }
+
+    public function saveIvEdit(): void
+    {
+        $entry = IvFluidEntry::where('visit_id', $this->visitId)->find($this->editingIvId);
+        if (!$entry) {
+            Notification::make()->title('Entry not found.')->danger()->send();
+            $this->editingIvId = null;
+            return;
+        }
+
+        $consumedAt = null;
+        if (filled($this->ivConsumedAt)) {
+            $consumedAt = \Carbon\Carbon::createFromFormat('Y-m-d\TH:i', $this->ivConsumedAt, 'Asia/Manila');
+        }
+
+        $old = [
+            'consumed_at' => $entry->consumed_at?->toDateTimeString(),
+            'remarks'     => $entry->remarks,
+        ];
+
+        $entry->update([
+            'consumed_at' => $consumedAt,
+            'remarks'     => trim($this->ivRemarks) ?: null,
+            'edited_by'   => auth()->id(),
+            'editor_name' => auth()->user()->name,
+            'edited_at'   => now(),
+        ]);
+
+        ActivityLog::record(
+            action:       'edited_iv_fluid_entry',
+            category:     ActivityLog::CAT_CLINICAL,
+            subject:      $entry,
+            subjectLabel: $this->visit->patient->full_name . ' (' . $this->visit->patient->case_no . ')',
+            oldValues: $old,
+            newValues: [
+                'consumed_at' => $consumedAt?->toDateTimeString(),
+                'remarks'     => $entry->remarks,
+                'edited_by'   => auth()->user()->name,
+            ],
+            panel: 'nurse',
+        );
+
+        $this->editingIvId = null;
+        Notification::make()->title('Entry updated.')->success()->send();
+    }
+
+    public function cancelEditIv(): void
+    {
+        $this->editingIvId = null;
     }
 
     // ── Patient Forms tab — URL helpers ───────────────────────────────────────
