@@ -43,6 +43,8 @@ class AdmittedPatientsResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([])
+
             ->query(static::getEloquentQuery())
             ->columns([
 
@@ -99,8 +101,28 @@ class AdmittedPatientsResource extends Resource
                     ),
 
             ])
+
+            ->emptyStateHeading(fn (\Livewire\Component $livewire) =>
+                $livewire->viewFilter === 'all'
+                    ? 'No patients found'
+                    : 'No admitted patients'
+            )
+
             ->defaultSort('doctor_admitted_at', 'asc')
             ->searchPlaceholder('Search by name or case no…')
+
+            // Added SelectFilter to switch between "Admitted Only" and "All Patients"
+            ->filters([
+                \Filament\Tables\Filters\SelectFilter::make('viewFilter')
+                    ->label('Show')
+                    ->options([
+                        'admitted' => '🏥 Admitted Only',
+                        'all'      => '🗂️ All Patients',
+                    ])
+                    ->default('admitted')
+                    ->query(fn (Builder $query, array $data) => $query), // query is handled in ListAdmittedPatients
+            ])
+
             ->actions([
                 Tables\Actions\Action::make('open_chart')
                     ->label('Open Chart')

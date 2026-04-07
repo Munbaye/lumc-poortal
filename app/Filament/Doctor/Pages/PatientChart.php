@@ -67,7 +67,6 @@ class PatientChart extends Page
         $this->visit = Visit::with([
             'patient',
             'medicalHistory.doctor',
-            'vitals'        => fn ($q) => $q->orderBy('taken_at', 'desc'),
             'doctorsOrders' => fn ($q) => $q->with('doctor')->orderBy('order_date', 'desc'),
         ])->find($this->visitId);
 
@@ -77,8 +76,7 @@ class PatientChart extends Page
         }
     }
 
-    // ── Computed: current visit results ──────────────────────────────────────
-
+    // Computed Properties
     public function getLabResultsProperty()
     {
         $requestIds = LabRequest::where('visit_id', $this->visitId)
@@ -115,124 +113,16 @@ class PatientChart extends Page
         return RadiologyRequest::where('visit_id', $this->visitId)->count();
     }
 
-    // ── Patient history (past visits) ────────────────────────────────────────
-
-    public function getPastVisitsProperty()
-    {
-        if (!$this->visit) return collect();
-
-        return Visit::with([
-            'medicalHistory.doctor',
-            'vitals'        => fn ($q) => $q->orderBy('taken_at', 'desc'),
-            'doctorsOrders' => fn ($q) => $q->with('doctor')->orderBy('order_date', 'desc'),
-            'erRecord',
-            'admissionRecord',
-            'consentRecord',
-        ])
-        ->where('patient_id', $this->visit->patient_id)
-        ->where('id', '!=', $this->visitId)
-        ->orderBy('registered_at', 'desc')
-        ->get();
-    }
-
-    public function getHistoryVisitProperty(): ?Visit
-    {
-        if (!$this->viewingHistoryVisitId) return null;
-        return $this->pastVisits->firstWhere('id', $this->viewingHistoryVisitId);
-    }
-
-    public function getPastVisitsCountProperty(): int
-    {
-        if (!$this->visit) return 0;
-        return Visit::where('patient_id', $this->visit->patient_id)
-            ->where('id', '!=', $this->visitId)
-            ->count();
-    }
-
-    public function viewHistoryVisit(int $visitId): void
-    {
-        $this->viewingHistoryVisitId = $visitId;
-    }
-
-    public function closeHistoryView(): void
-    {
-        $this->viewingHistoryVisitId = null;
-    }
-
-    public function getPastVisitErUrl(int $visitId): string
-    {
-        return route('forms.er-record', ['visit' => $visitId]) . '?readonly=1';
-    }
-
-    public function getPastVisitAdmUrl(int $visitId): string
-    {
-        return route('forms.adm-record', ['visit' => $visitId]) . '?readonly=1';
-    }
-
-    public function getPastVisitConsentUrl(int $visitId): string
-    {
-        return route('forms.consent-to-care', ['visit' => $visitId]) . '?readonly=1';
-    }
-
-    public function getHistoryLabResults(int $visitId)
-    {
-        $requestIds = LabRequest::where('visit_id', $visitId)
-            ->where('status', 'completed')->pluck('id');
-        return ResultUpload::where('request_type', 'lab')
-            ->whereIn('request_id', $requestIds)
-            ->with('uploadedBy')
-            ->orderBy('created_at', 'desc')
-            ->get();
-    }
-
-    public function getHistoryRadResults(int $visitId)
-    {
-        $requestIds = RadiologyRequest::where('visit_id', $visitId)
-            ->where('status', 'completed')->pluck('id');
-        return ResultUpload::where('request_type', 'radiology')
-            ->whereIn('request_id', $requestIds)
-            ->with('uploadedBy')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($upload) {
-                $upload->radRequest = RadiologyRequest::find($upload->request_id);
-                return $upload;
-            });
-    }
-
-    // ── Result detail view ────────────────────────────────────────────────────
-
-    public function viewLabResult(int $requestId): void
-    {
-        $this->viewingLabRequestId = $requestId;
-        $this->viewingRadRequestId = null;
-    }
-
-    public function viewRadResult(int $requestId): void
-    {
-        $this->viewingRadRequestId = $requestId;
-        $this->viewingLabRequestId = null;
-    }
-
-    public function closeResultView(): void
-    {
-        $this->viewingLabRequestId = null;
-        $this->viewingRadRequestId = null;
-    }
-
-    // ── Tab navigation ────────────────────────────────────────────────────────
-
+    // Tab Navigation
     public function setTab(string $tab): void
     {
-        $this->activeTab             = $tab;
-        $this->writingOrders         = false;
-        $this->viewingLabRequestId   = null;
-        $this->viewingRadRequestId   = null;
-        $this->viewingHistoryVisitId = null;
+        $this->activeTab           = $tab;
+        $this->writingOrders       = false;
+        $this->viewingLabRequestId = null;
+        $this->viewingRadRequestId = null;
     }
 
-    // ── Orders — free-text textarea approach ─────────────────────────────────
-
+    // Orders Methods (unchanged)
     public function toggleWriteOrders(): void
     {
         $this->writingOrders = !$this->writingOrders;
@@ -248,7 +138,6 @@ class PatientChart extends Page
     public function quickInsert(string $text): void
     {
         $this->orderText = rtrim($this->orderText);
-        // Add a newline separator if there's already text
         if ($this->orderText !== '') {
             $this->orderText .= "\n";
         }
@@ -273,10 +162,7 @@ class PatientChart extends Page
             ->filter(fn ($line) => $line !== '')
             ->values();
 
-        if ($lines->isEmpty()) {
-            Notification::make()->title('Please type at least one order.')->warning()->send();
-            return;
-        }
+        if ($lines->isEmpty()) return;
 
         $saved = 0;
         $orderDate = now();
@@ -351,5 +237,12 @@ class PatientChart extends Page
     public function getPhysicalExamFormUrl(): string
     {
         return route('forms.physical-exam-form', ['visit' => $this->visitId]);
+    }
+
+    public function getPatientHistoryUrl(): string
+    {
+        return \App\Filament\Doctor\Pages\PatientHistory::getUrl([
+            'patientId' => $this->visit?->patient_id,
+        ]);
     }
 }

@@ -81,19 +81,6 @@
 .doc-card-label-green  { background:#f0fdf4;color:#065f46; }
 .doc-card-label-purple { background:#faf5ff;color:#6d28d9; }
 
-/* Vitals */
-.vitals-wrap { background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:auto; }
-.dark .vitals-wrap { background:#1f2937;border-color:#374151; }
-.vitals-table { width:100%;border-collapse:collapse;font-size:.82rem; }
-.vitals-table th { background:#f3f4f6;padding:8px 11px;text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;border-bottom:1px solid #e5e7eb; }
-.dark .vitals-table th { background:#111827;color:#9ca3af;border-bottom-color:#374151; }
-.vitals-table td { padding:9px 11px;border-bottom:1px solid #f3f4f6;color:#374151; }
-.dark .vitals-table td { border-bottom-color:#1f2937;color:#d1d5db; }
-.vitals-table tr:last-child td { border-bottom:none; }
-.vitals-table tr:hover td { background:#f9fafb; }
-.dark .vitals-table tr:hover td { background:rgba(255,255,255,.03); }
-.abnormal { color:#dc2626 !important;font-weight:700; }
-
 /* ── Orders ─────────────────────────────────────────────────────── */
 .order-group-header { display:flex;align-items:center;gap:10px;margin-bottom:8px; }
 .order-group-label { font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;white-space:nowrap; }
@@ -261,76 +248,25 @@
 .rv-interp-box { background:#fff;border:1.5px solid #c4b5fd;border-radius:8px;padding:14px 16px;margin-top:14px; }
 .rv-interp-label { font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6d28d9;margin-bottom:8px; }
 .rv-interp-text { font-family:'Times New Roman',serif;font-size:.95rem;line-height:1.8;color:#111827;white-space:pre-wrap; }
-
-/* History tab styles */
-.hx-table-wrap { background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden; }
-.dark .hx-table-wrap { background:#1f2937;border-color:#374151; }
-.hx-table { width:100%;border-collapse:collapse;font-size:.82rem; }
-.hx-table thead { background:#f3f4f6; }
-.dark .hx-table thead { background:#111827; }
-.hx-table th { padding:9px 12px;text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;font-weight:700;border-bottom:1px solid #e5e7eb;white-space:nowrap; }
-.dark .hx-table th { border-bottom-color:#374151;color:#9ca3af; }
-.hx-table td { padding:11px 12px;border-bottom:1px solid #f3f4f6;vertical-align:middle; }
-.dark .hx-table td { border-bottom-color:#1f2937;color:#d1d5db; }
-.hx-table tr:last-child td { border-bottom:none; }
-.hx-row { cursor:pointer;transition:background .12s; }
-.hx-row:hover td { background:#eff6ff; }
-.dark .hx-row:hover td { background:rgba(29,78,216,.08); }
-.hx-badge { display:inline-block;padding:2px 9px;border-radius:9999px;font-size:.68rem;font-weight:700;white-space:nowrap; }
-.hx-badge-opd        { background:#eff6ff;color:#1d4ed8; }
-.hx-badge-er         { background:#fee2e2;color:#991b1b; }
-.hx-badge-admitted   { background:#d1fae5;color:#065f46; }
-.hx-badge-discharged { background:#f3f4f6;color:#374151; }
-.hx-badge-referred   { background:#fef3c7;color:#92400e; }
-.hx-badge-assessed   { background:#e0f2fe;color:#0c4a6e; }
-.hx-badge-registered { background:#fef9c3;color:#854d0e; }
-.hx-date { font-family:monospace;font-size:.78rem;color:#374151;font-weight:600; }
-.dark .hx-date { color:#d1d5db; }
-.hx-ago  { font-size:.68rem;color:#9ca3af; }
-.hx-cc   { font-size:.82rem;color:#374151;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-.dark .hx-cc { color:#e5e7eb; }
-.hx-dx   { font-size:.78rem;color:#6b7280;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-.hx-arrow { font-size:1rem;color:#9ca3af; }
-.hx-row:hover .hx-arrow { color:#1d4ed8; }
-.hx-banner { border-radius:10px;padding:16px 22px;margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:14px; }
-.hx-banner-opd    { background:linear-gradient(135deg,#1e40af,#3b82f6); }
-.hx-banner-er     { background:linear-gradient(135deg,#7f1d1d,#dc2626); }
-.hx-banner-other  { background:linear-gradient(135deg,#064e3b,#059669); }
-.hx-ban-title { font-size:1rem;font-weight:800;color:#fff; }
-.hx-ban-case  { font-family:monospace;font-size:.75rem;color:rgba(255,255,255,.75);margin-top:1px; }
-.hx-ban-pill  { background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);border-radius:6px;padding:4px 12px;font-size:.75rem;color:#fff;font-weight:600; }
-.hx-section-label { font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;margin:20px 0 8px;display:flex;align-items:center;gap:8px; }
-.hx-section-line { flex:1;border-top:1px solid #e5e7eb; }
-.dark .hx-section-line { border-top-color:#374151; }
-.hx-iframe-wrap { border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;margin-bottom:6px; }
-.hx-iframe-wrap iframe { display:block;width:100%;border:none; }
-.btn-hx-back { display:inline-flex;align-items:center;gap:6px;font-size:.82rem;color:#6b7280;background:none;border:1px solid #e5e7eb;border-radius:6px;cursor:pointer;margin-bottom:16px;padding:7px 14px; }
-.btn-hx-back:hover { border-color:#1d4ed8;color:#1d4ed8; }
-.hx-file-link-lab { display:inline-flex;align-items:center;gap:5px;color:#1d4ed8;font-size:.82rem;font-weight:600;text-decoration:none;padding:5px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;margin:3px; }
-.hx-file-link-lab:hover { background:#dbeafe; }
-.hx-file-link-rad { display:inline-flex;align-items:center;gap:5px;color:#6d28d9;font-size:.82rem;font-weight:600;text-decoration:none;padding:5px 12px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:6px;margin:3px; }
-.hx-file-link-rad:hover { background:#ede9fe; }
 </style>
 
 @if($visit && $visit->patient)
 @php
-    $patient    = $visit->patient;
-    $history    = $visit->medicalHistory;
-    $allOrders  = $visit->doctorsOrders ?? collect();
-    $allVitals  = $visit->vitals ?? collect();
-    $pendingCnt = $allOrders->where('status', 'pending')->count();
-    $service    = $visit->admitted_service ?? $history?->service ?? '—';
+    $patient      = $visit->patient;
+    $history      = $visit->medicalHistory;
+    $allOrders    = $visit->doctorsOrders ?? collect();
+    $pendingCnt   = $allOrders->where('status', 'pending')->count();
+    $service      = $visit->admitted_service ?? $history?->service ?? '—';
     $labResults   = $this->labResults;
     $radResults   = $this->radResults;
     $totalResults = $labResults->count() + $radResults->count();
-    $pastCount    = $this->pastVisitsCount;
 
-    // Which forms exist for this visit
-    $hasErRecord    = (bool) $visit->erRecord;
-    $hasAdmRecord   = (bool) $visit->admissionRecord;
-    $hasConsent     = (bool) $visit->consentRecord;
-    $hasHistory     = (bool) $history;
-    $isErVisit      = $visit->visit_type === 'ER';
+    // Form existence flags
+    $hasErRecord  = (bool) $visit->erRecord;
+    $hasAdmRecord = (bool) $visit->admissionRecord;
+    $hasConsent   = (bool) $visit->consentRecord;
+    $hasHistory   = (bool) $history;
+    $isErVisit    = $visit->visit_type === 'ER';
 @endphp
 
 <div class="chart-page">
@@ -359,16 +295,26 @@
                 </p>
             </div>
         </div>
-        <div><a href="{{ \App\Filament\Doctor\Resources\AdmittedPatientsResource::getUrl('index') }}" class="btn-back-header">← Admitted Patients</a></div>
+
+        <div style="display:flex;gap:8px;">
+            <a href="{{ $this->getPatientHistoryUrl() }}" class="btn-back-header">🗂️ All Visits →</a>
+            <a href="{{ \App\Filament\Doctor\Resources\AdmittedPatientsResource::getUrl('index') }}" class="btn-back-header">← Admitted Patients</a>
+        </div>
     </div>
 
     {{-- ════ TABS ═══════════════════════════════════════════════════ --}}
     <div class="chart-tabs">
-        <button wire:click="setTab('profile')"   class="chart-tab {{ $activeTab==='profile'   ? 'active':'' }}"><span class="tab-icon">📄</span> Patient Forms</button>
-        <button wire:click="setTab('history')"   class="chart-tab {{ $activeTab==='history'   ? 'active':'' }}"><span class="tab-icon">🗂️</span> Visit History @if($pastCount > 0)<span class="tab-badge tab-badge-blue">{{ $pastCount }}</span>@endif</button>
-        <button wire:click="setTab('vitals')"    class="chart-tab {{ $activeTab==='vitals'    ? 'active':'' }}"><span class="tab-icon">📊</span> Vital Signs @if($allVitals->count() > 0)<span class="tab-badge tab-badge-warn">{{ $allVitals->count() }}</span>@endif</button>
-        <button wire:click="setTab('orders')"    class="chart-tab {{ $activeTab==='orders'    ? 'active':'' }}"><span class="tab-icon">📝</span> Doctor's Orders @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif</button>
-        <button wire:click="setTab('results')"   class="chart-tab {{ $activeTab==='results'   ? 'active':'' }}"><span class="tab-icon">🔬</span> Lab / Radiology @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif</button>
+        <button wire:click="setTab('profile')" class="chart-tab {{ $activeTab==='profile' ? 'active':'' }}">
+            <span class="tab-icon">📄</span> Patient Forms
+        </button>
+        <button wire:click="setTab('orders')" class="chart-tab {{ $activeTab==='orders' ? 'active':'' }}">
+            <span class="tab-icon">📝</span> Doctor's Orders 
+            @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif
+        </button>
+        <button wire:click="setTab('results')" class="chart-tab {{ $activeTab==='results' ? 'active':'' }}">
+            <span class="tab-icon">🔬</span> Lab / Radiology 
+            @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif
+        </button>
     </div>
 
     <div class="chart-content">
@@ -376,102 +322,13 @@
         {{-- ══ PATIENT FORMS ═════ --}}
         @if($activeTab === 'profile')
 
-        <div class="sec-head">
-            <h2 class="sec-title">Patient Forms</h2>
-            <span style="font-size:.78rem;color:#6b7280;">All forms for this visit — read-only view</span>
-        </div>
-
-        {{-- Shared component — edit PatientFormsPanel.php to add new forms --}}
-        <x-patient-forms-panel :visitId="$visit->id" panel="doctor" />
-
-        {{-- ══ VISIT HISTORY ════════════════════════════════════════════ --}}
-        @elseif($activeTab === 'history')
-        @php $pastVisits = $this->pastVisits; @endphp
-
-        @if($viewingHistoryVisitId)
-        @php
-            $hv        = $this->historyVisit;
-            $hvHx      = $hv?->medicalHistory;
-            $hvVitals  = $hv?->vitals ?? collect();
-            $hvOrders  = $hv?->doctorsOrders ?? collect();
-            $hvLab     = $this->getHistoryLabResults($viewingHistoryVisitId);
-            $hvRad     = $this->getHistoryRadResults($viewingHistoryVisitId);
-            $hvLabByReq = $hvLab->groupBy('request_id');
-            $hvRadByReq = $hvRad->groupBy('request_id');
-            $hvTypeClass = match($hv?->visit_type) { 'ER' => 'hx-banner-er', default => ($hv?->status === 'admitted' ? 'hx-banner-other' : 'hx-banner-opd') };
-            $hvDays = ($hv?->clerk_admitted_at && $hv?->discharged_at) ? $hv->clerk_admitted_at->diffInDays($hv->discharged_at) : null;
-        @endphp
-        <button type="button" wire:click="closeHistoryView" class="btn-hx-back">← Back to Visit History</button>
-        @if($hv)
-        <div class="hx-banner {{ $hvTypeClass }}">
-            <div>
-                <p class="hx-ban-title">@if($hv->visit_type === 'ER') 🚑 ER Visit @else 📋 {{ ucfirst($hv->visit_type) }} Visit @endif — {{ $hv->registered_at->timezone('Asia/Manila')->format('F j, Y') }}</p>
-                <p class="hx-ban-case">{{ $hv->registered_at->timezone('Asia/Manila')->format('H:i') }} · {{ $hv->registered_at->diffForHumans() }}@if($hvDays !== null) · {{ $hvDays }} day(s) admitted @endif</p>
+            <div class="sec-head">
+                <h2 class="sec-title">Patient Forms</h2>
             </div>
-            <div style="display:flex;flex-wrap:wrap;gap:7px;align-items:center;">
-                @if($hvHx?->doctor)<span class="hx-ban-pill">Dr. {{ $hvHx->doctor->name }}</span>@endif
-                @if($hv->admitted_service ?? $hvHx?->service)<span class="hx-ban-pill">{{ $hv->admitted_service ?? $hvHx->service }}</span>@endif
-                @if($hv->payment_class)<span class="hx-ban-pill">{{ $hv->payment_class }}</span>@endif
-                <span class="hx-ban-pill" style="background:rgba(255,255,255,.3);">{{ ucfirst(str_replace('_',' ',$hv->status)) }}</span>
-            </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
-            @if($hv->chief_complaint)<div style="background:#fff;border:1px solid #e5e7eb;border-radius:7px;padding:12px 16px;"><p style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:4px;">Chief Complaint</p><p style="font-size:.88rem;color:#111827;font-weight:600;">{{ $hv->chief_complaint }}</p></div>@endif
-            @if($hv->admitting_diagnosis ?? $hvHx?->diagnosis)<div style="background:#fff;border:1px solid #e5e7eb;border-radius:7px;padding:12px 16px;"><p style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:4px;">Admitting / Final Diagnosis</p><p style="font-size:.88rem;color:#111827;font-weight:600;">{{ $hv->admitting_diagnosis ?? $hvHx?->diagnosis ?? '—' }}</p></div>@endif
-        </div>
-        @if($hv->erRecord)<div class="hx-section-label"><span>🏥 Emergency Room Record (ER-001)</span><div class="hx-section-line"></div><span style="background:#d1fae5;color:#065f46;font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;">Saved</span></div><div class="hx-iframe-wrap"><iframe src="{{ $this->getPastVisitErUrl($hv->id) }}" title="ER Record — Past Visit" style="width:100%;min-height:1100px;border:none;display:block;" loading="lazy"></iframe></div>@endif
-        @if($hv->admissionRecord)<div class="hx-section-label" style="margin-top:28px;"><span>📋 Admission &amp; Discharge Record (ADM-001)</span><div class="hx-section-line"></div><span style="background:#d1fae5;color:#065f46;font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;">Saved</span></div><div class="hx-iframe-wrap"><iframe src="{{ $this->getPastVisitAdmUrl($hv->id) }}" title="ADM Record — Past Visit" style="width:100%;min-height:1100px;border:none;display:block;" loading="lazy"></iframe></div>@endif
-        @if($hv->consentRecord)<div class="hx-section-label" style="margin-top:28px;"><span>📄 Consent to Care (NUR-002-1)</span><div class="hx-section-line"></div><span style="background:#d1fae5;color:#065f46;font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;">Saved</span></div><div class="hx-iframe-wrap"><iframe src="{{ $this->getPastVisitConsentUrl($hv->id) }}" title="Consent — Past Visit" style="width:100%;min-height:780px;border:none;display:block;" loading="lazy"></iframe></div>@endif
-        @if($hvVitals->isNotEmpty())<div class="hx-section-label" style="margin-top:28px;"><span>📊 Vital Signs ({{ $hvVitals->count() }} recording(s))</span><div class="hx-section-line"></div></div><div class="vitals-wrap"><table class="vitals-table"><thead><tr><th>Date / Time</th><th>Nurse</th><th>BP</th><th>PR (bpm)</th><th>RR (/min)</th><th>Temp (°C)</th><th>O₂ Sat (%)</th><th>Pain /10</th><th>Wt (kg)</th><th>Ht (cm)</th></tr></thead><tbody>@foreach($hvVitals as $v)<tr><td style="white-space:nowrap;font-family:monospace;font-size:.76rem;">{{ $v->taken_at->timezone('Asia/Manila')->format('M j, Y H:i') }}</td><td style="font-size:.78rem;">{{ $v->nurse_name }}</td><td>{{ $v->blood_pressure ?? '—' }}</td><td class="{{ ($v->pulse_rate && ($v->pulse_rate < 60 || $v->pulse_rate > 100)) ? 'abnormal':'' }}">{{ $v->pulse_rate ?? '—' }}</td><td class="{{ ($v->respiratory_rate && ($v->respiratory_rate < 12 || $v->respiratory_rate > 20)) ? 'abnormal':'' }}">{{ $v->respiratory_rate ?? '—' }}</td><td class="{{ ($v->temperature && ($v->temperature < 36.0 || $v->temperature > 37.5)) ? 'abnormal':'' }}">{{ $v->temperature ?? '—' }}</td><td class="{{ ($v->o2_saturation && $v->o2_saturation < 95) ? 'abnormal':'' }}">{{ $v->o2_saturation ?? '—' }}</td><td class="{{ ($v->pain_scale !== null && (int)$v->pain_scale >= 7) ? 'abnormal':'' }}">{{ $v->pain_scale ?? '—' }}</td><td>{{ $v->weight_kg ?? '—' }}</td><td>{{ $v->height_cm ?? '—' }}</td></tr>@endforeach</tbody></table></div>@endif
-        @if($hvOrders->isNotEmpty())<div class="hx-section-label" style="margin-top:28px;"><span>📝 Doctor's Orders ({{ $hvOrders->count() }})</span><div class="hx-section-line"></div></div>@foreach($hvOrders->groupBy(fn($o) => $o->order_date?->timezone('Asia/Manila')->format('Y-m-d H:i')) as $dateKey => $group)<div style="margin-bottom:18px;"><div class="order-group-header"><p class="order-group-label">{{ \Carbon\Carbon::parse($dateKey)->timezone('Asia/Manila')->format('F j, Y H:i') }}</p><div class="order-group-line"></div>@if($group->first()->doctor)<p class="order-group-doc">Dr. {{ $group->first()->doctor->name }}</p>@endif</div>@foreach($group as $i => $order)<div class="order-item"><div><p class="order-num">{{ $i + 1 }}.</p><p class="order-text {{ $order->isDiscontinued() ? 'order-text-discontinued':'' }}">{{ $order->order_text }}</p><p class="order-meta">{{ $order->order_date?->timezone('Asia/Manila')->format('M j, Y H:i') }}</p></div><span class="status-badge status-{{ $order->status }}">{{ $order->status_label }}</span></div>@endforeach</div>@endforeach@endif
-        @if($hvLabByReq->isNotEmpty() || $hvRadByReq->isNotEmpty())<div class="hx-section-label" style="margin-top:28px;"><span>🔬 Lab &amp; Radiology Results</span><div class="hx-section-line"></div><span style="background:#d1fae5;color:#065f46;font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;">{{ $hvLabByReq->count() + $hvRadByReq->count() }} request(s) completed</span></div>@foreach($hvLabByReq as $reqId => $uploads)@php $lReq = \App\Models\LabRequest::find($reqId); @endphp<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;margin-bottom:8px;border-left:3px solid #059669;"><p style="font-family:monospace;font-size:.75rem;color:#059669;font-weight:700;margin-bottom:3px;">🧪 {{ $lReq?->request_no ?? 'Lab' }}</p>@if($lReq?->clinical_diagnosis)<p style="font-size:.8rem;color:#374151;margin-bottom:6px;">{{ $lReq->clinical_diagnosis }}</p>@endif<div style="display:flex;flex-wrap:wrap;">@foreach($uploads as $u)<a href="{{ $u->file_url }}" target="_blank" class="hx-file-link-lab">{{ $u->file_type_icon }} {{ $u->file_name }}</a>@endforeach</div></div>@endforeach@foreach($hvRadByReq as $reqId => $uploads)@php $rReq = $uploads->first()?->radRequest; @endphp<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;margin-bottom:8px;border-left:3px solid #6d28d9;"><p style="font-family:monospace;font-size:.75rem;color:#6d28d9;font-weight:700;margin-bottom:3px;">🩻 {{ $rReq?->request_no ?? 'Radiology' }}</p>@if($rReq?->examination_desired)<p style="font-size:.8rem;color:#374151;margin-bottom:6px;">{{ $rReq->examination_desired }}</p>@endif<div style="display:flex;flex-wrap:wrap;">@foreach($uploads as $u)<a href="{{ $u->file_url }}" target="_blank" class="hx-file-link-rad">{{ $u->file_type_icon }} {{ $u->file_name }}</a>@endforeach</div>@if($rReq?->radiologist_interpretation)<div style="margin-top:8px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:6px;padding:8px 12px;"><p style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6d28d9;margin-bottom:4px;">Radiologist Interpretation</p><p style="font-size:.85rem;color:#374151;line-height:1.6;white-space:pre-wrap;">{{ $rReq->radiologist_interpretation }}</p></div>@endif</div>@endforeach@endif
-        @if(!$hv->erRecord && !$hv->admissionRecord && !$hv->consentRecord && $hvVitals->isEmpty() && $hvOrders->isEmpty() && $hvLabByReq->isEmpty() && $hvRadByReq->isEmpty())<div class="placeholder-card"><div class="ph-icon">📂</div><p class="ph-title">No detailed records for this visit</p><p class="ph-sub">This visit may have been registered but not completed before the system was updated.</p></div>@endif
-        @endif {{-- $hv --}}
-
-        @else
-        <div class="sec-head"><h2 class="sec-title">Visit History — {{ $patient->full_name }}</h2><span style="font-size:.78rem;color:#6b7280;">{{ $pastVisits->count() }} previous visit(s)</span></div>
-        @if($pastVisits->isEmpty())
-        <div class="placeholder-card"><div class="ph-icon">🗂️</div><p class="ph-title">No previous visits on record</p><p class="ph-sub">This is the patient's first visit to La Union Medical Center.</p></div>
-        @else
-        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:10px 16px;margin-bottom:14px;font-size:.82rem;color:#1e40af;">💡 Click any row to view the full medical chart for that visit — including all forms, vitals, orders, and lab results.</div>
-        <div class="hx-table-wrap"><table class="hx-table"><thead><tr><th>Date</th><th>Type</th><th>Chief Complaint</th><th>Admitting / Final Dx</th><th>Physician</th><th>Outcome</th><th>Days</th><th>Records</th><th></th></tr></thead><tbody>
-        @foreach($pastVisits as $pv)
-        @php
-            $pvHx = $pv->medicalHistory;
-            $pvDays = ($pv->clerk_admitted_at && $pv->discharged_at) ? $pv->clerk_admitted_at->diffInDays($pv->discharged_at) : null;
-            $pvDx = $pv->admitting_diagnosis ?? $pvHx?->diagnosis ?? null;
-            $pvBadge = match($pv->status) { 'admitted'=>'hx-badge-admitted','discharged'=>'hx-badge-discharged','referred'=>'hx-badge-referred','assessed'=>'hx-badge-assessed','registered'=>'hx-badge-registered',default=>'hx-badge-discharged' };
-        @endphp
-        <tr class="hx-row" wire:click="viewHistoryVisit({{ $pv->id }})" wire:key="hxv-{{ $pv->id }}">
-            <td><p class="hx-date">{{ $pv->registered_at->timezone('Asia/Manila')->format('M j, Y') }}</p><p class="hx-ago">{{ $pv->registered_at->timezone('Asia/Manila')->format('H:i') }} · {{ $pv->registered_at->diffForHumans() }}</p></td>
-            <td><span class="hx-badge {{ $pv->visit_type === 'ER' ? 'hx-badge-er' : 'hx-badge-opd' }}">{{ $pv->visit_type === 'ER' ? '🚑 ER' : '📋 OPD' }}</span>@if($pv->admitted_service ?? $pvHx?->service)<p style="font-size:.68rem;color:#9ca3af;margin-top:3px;">{{ $pv->admitted_service ?? $pvHx->service }}</p>@endif</td>
-            <td><p class="hx-cc">{{ $pv->chief_complaint ?? '—' }}</p></td>
-            <td><p class="hx-dx" title="{{ $pvDx }}">{{ $pvDx ? \Str::limit($pvDx, 45) : '—' }}</p></td>
-            <td>@if($pvHx?->doctor?->name)<p style="font-size:.78rem;color:#374151;font-weight:600;">Dr. {{ $pvHx->doctor->name }}</p>@else<p style="font-size:.72rem;color:#9ca3af;">—</p>@endif</td>
-            <td><span class="hx-badge {{ $pvBadge }}">{{ ucfirst(str_replace('_',' ',$pv->status)) }}</span>@if($pv->payment_class)<p style="font-size:.68rem;color:#9ca3af;margin-top:3px;">{{ $pv->payment_class }}</p>@endif</td>
-            <td style="text-align:center;">@if($pvDays !== null)<span style="font-size:.85rem;font-weight:700;color:#374151;">{{ $pvDays }}</span>@else<span style="font-size:.75rem;color:#9ca3af;">—</span>@endif</td>
-            <td><div style="display:flex;gap:4px;flex-wrap:wrap;">@if($pv->erRecord)<span style="font-size:.62rem;background:#f0fdf4;color:#065f46;padding:1px 5px;border-radius:4px;font-weight:700;">ER</span>@endif@if($pv->admissionRecord)<span style="font-size:.62rem;background:#eff6ff;color:#1d4ed8;padding:1px 5px;border-radius:4px;font-weight:700;">ADM</span>@endif@if($pv->consentRecord)<span style="font-size:.62rem;background:#fffbeb;color:#92400e;padding:1px 5px;border-radius:4px;font-weight:700;">CTC</span>@endif@if($pv->vitals->isNotEmpty())<span style="font-size:.62rem;background:#f3f4f6;color:#374151;padding:1px 5px;border-radius:4px;font-weight:700;">VS</span>@endif@if($pv->doctorsOrders->isNotEmpty())<span style="font-size:.62rem;background:#f5f3ff;color:#5b21b6;padding:1px 5px;border-radius:4px;font-weight:700;">Rx</span>@endif</div></td>
-            <td><span class="hx-arrow">→</span></td>
-        </tr>
-        @endforeach
-        </tbody></table></div>
-        <p style="font-size:.72rem;color:#9ca3af;margin-top:8px;">Record tags: <strong>ER</strong> = ER-001, <strong>ADM</strong> = Admission Record, <strong>CTC</strong> = Consent to Care, <strong>VS</strong> = Vital Signs, <strong>Rx</strong> = Doctor's Orders</p>
-        @endif
-        @endif {{-- viewingHistoryVisitId --}}
-
-        {{-- ══ VITALS ═══════════════════════════════════════════════════ --}}
-        @elseif($activeTab === 'vitals')
-        <div class="sec-head"><h2 class="sec-title">Vital Signs</h2><span style="font-size:.78rem;color:#6b7280;">{{ $allVitals->count() }} recording(s)</span></div>
-        @if($allVitals->isEmpty())
-        <div class="placeholder-card"><div class="ph-icon">📊</div><p class="ph-title">No vital signs recorded yet</p><p class="ph-sub">Vitals are recorded by the nurse from the Nurse panel.</p></div>
-        @else
-        <div class="vitals-wrap"><table class="vitals-table"><thead><tr><th>Date / Time</th><th>Nurse</th><th>BP</th><th>PR (bpm)</th><th>RR (/min)</th><th>Temp (°C)</th><th>O₂ Sat (%)</th><th>Pain /10</th><th>Wt (kg)</th><th>Ht (cm)</th></tr></thead><tbody>
-        @foreach($allVitals as $v)<tr><td style="white-space:nowrap;font-family:monospace;font-size:.76rem;">{{ $v->taken_at->timezone('Asia/Manila')->format('M j, Y H:i') }}</td><td style="font-size:.78rem;">{{ $v->nurse_name }}</td><td>{{ $v->blood_pressure ?? '—' }}</td><td class="{{ ($v->pulse_rate && ($v->pulse_rate < 60 || $v->pulse_rate > 100)) ? 'abnormal':'' }}">{{ $v->pulse_rate ?? '—' }}</td><td class="{{ ($v->respiratory_rate && ($v->respiratory_rate < 12 || $v->respiratory_rate > 20)) ? 'abnormal':'' }}">{{ $v->respiratory_rate ?? '—' }}</td><td class="{{ ($v->temperature && ($v->temperature < 36.0 || $v->temperature > 37.5)) ? 'abnormal':'' }}">{{ $v->temperature ?? '—' }}</td><td class="{{ ($v->o2_saturation && $v->o2_saturation < 95) ? 'abnormal':'' }}">{{ $v->o2_saturation ?? '—' }}</td><td class="{{ ($v->pain_scale !== null && (int)$v->pain_scale >= 7) ? 'abnormal':'' }}">{{ $v->pain_scale ?? '—' }}</td><td>{{ $v->weight_kg ?? '—' }}</td><td>{{ $v->height_cm ?? '—' }}</td></tr>@endforeach
-        </tbody></table></div>
-        @endif
+            <x-patient-forms-panel :visitId="$visit->id" panel="doctor" />
 
         {{-- ══ DOCTOR'S ORDERS ══════════════════════════════════════════ --}}
-        @elseif($activeTab === 'orders')
+            @elseif($activeTab === 'orders')
 
         <div class="sec-head">
             <h2 class="sec-title">Doctor's Orders</h2>
