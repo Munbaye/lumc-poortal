@@ -7,16 +7,11 @@ use Filament\Pages\Page;
 use Livewire\WithPagination;
 
 /**
- * PatientList — default landing page for the Nurse panel.
+ * PatientList — landing page for the Nurse panel.
  *
- * Shows all fully admitted patients (clerk_admitted_at IS NOT NULL, status = admitted).
- * Nurses see every admitted patient across all services/wards.
- *
- * Features:
- *   - Live search by patient name or case number
- *   - Service filter dropdown
- *   - Pending orders badge per patient
- *   - Click row → NurseChart page
+ * Default view: admitted patients (doctor_admitted_at IS NOT NULL, status = admitted).
+ * Nurses can switch to "All Patients" to see every status (OPD, ER, registered,
+ * vitals_done, assessed, discharged, referred).
  */
 class PatientList extends Page
 {
@@ -24,64 +19,69 @@ class PatientList extends Page
 
     protected static ?string $navigationIcon  = 'heroicon-o-queue-list';
     protected static ?string $navigationLabel = 'Patient List';
-    protected static ?string $title           = 'Admitted Patients';
+    protected static ?string $title           = 'Patient List';
     protected static string  $view            = 'filament.nurse.pages.patient-list';
     protected static ?int    $navigationSort  = 1;
 
-    // ── Search & filter state ─────────────────────────────────────────────────
-    public string  $search          = '';
-    public string  $serviceFilter   = '';
+    // ── Filter state ──────────────────────────────────────────────────────────
+    public string $search        = '';
+    public string $serviceFilter = '';
+    public string $viewFilter    = 'admitted'; // 'admitted' | 'all'
 
-    // ── Reset pagination on filter change ────────────────────────────────────
-
-    public function updatedSearch(): void    { $this->resetPage(); }
+    // ── Pagination reset ──────────────────────────────────────────────────────
+    public function updatedSearch(): void       { $this->resetPage(); }
     public function updatedServiceFilter(): void { $this->resetPage(); }
+    public function updatedViewFilter(): void    { $this->resetPage(); }
 
     // ── Data ──────────────────────────────────────────────────────────────────
 
     public function getAdmittedPatientsProperty()
     {
-        return Visit::query()
+        $query = Visit::query()
             ->with([
                 'patient',
                 'medicalHistory.doctor',
                 'doctorsOrders' => fn ($q) => $q->where('status', 'pending'),
-            ])
-            ->whereNotNull('doctor_admitted_at')
-            ->where('status', 'admitted')
-            // Search by patient name fields or case number
+            ]);
+
+        if ($this->viewFilter === 'admitted') {
+            $query->whereNotNull('doctor_admitted_at')->where('status', 'admitted');
+        } else {
+            // All patients — any status, order newest first
+            $query->orderBy('registered_at', 'desc');
+        }
+
+        return $query
             ->when($this->search, function ($q) {
                 $search = '%' . $this->search . '%';
                 $q->whereHas('patient', fn ($p) =>
                     $p->where('family_name', 'like', $search)
-                    ->orWhere('first_name',  'like', $search)
-                    ->orWhere('case_no',     'like', $search)
+                      ->orWhere('first_name',  'like', $search)
+                      ->orWhere('case_no',     'like', $search)
                 );
             })
             ->when($this->serviceFilter, fn ($q) =>
                 $q->where('admitted_service', $this->serviceFilter)
             )
-            ->orderBy('doctor_admitted_at', 'asc')  // ← sort by doctor order time
+            ->when($this->viewFilter === 'admitted', fn ($q) =>
+                $q->orderBy('doctor_admitted_at', 'asc')
+            )
             ->paginate(20);
     }
 
     public function getServiceOptionsProperty(): array
     {
-        return Visit::whereNotNull('doctor_admitted_at')
-            ->where('status', 'admitted')
-            ->whereNotNull('admitted_service')
-            ->distinct()
-            ->pluck('admitted_service')
-            ->sort()
-            ->values()
-            ->toArray();
+        $q = Visit::whereNotNull('admitted_service')->distinct();
+        if ($this->viewFilter === 'admitted') {
+            $q->whereNotNull('doctor_admitted_at')->where('status', 'admitted');
+        }
+        return $q->pluck('admitted_service')->sort()->values()->toArray();
     }
 
+    // Stats — always based on admitted
     public function getTotalAdmittedProperty(): int
     {
-        return Visit::whereNotNull('doctor_admitted_at')
-            ->where('status', 'admitted')
-            ->count();
+        return Visit::whereNotNull('doctor_admitted_at')->where('status', 'admitted')->count();
     }
 
     public function getTotalPendingOrdersProperty(): int
@@ -91,12 +91,10 @@ class PatientList extends Page
         )->where('status', 'pending')->count();
     }
 
-    // ── Navigation to patient chart ───────────────────────────────────────────
+    // ── Navigation ────────────────────────────────────────────────────────────
 
     public function openChart(int $visitId): void
     {
-        $this->redirect(
-            NurseChart::getUrl(['visitId' => $visitId])
-        );
+        $this->redirect(NurseChart::getUrl(['visitId' => $visitId]));
     }
 }

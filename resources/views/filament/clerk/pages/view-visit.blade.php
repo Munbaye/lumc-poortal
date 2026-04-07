@@ -14,32 +14,6 @@
     background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.22);
     border-radius:6px; padding:4px 12px; font-size:.78rem; color:#e0f2fe; font-weight:600;
 }
-
-/* ── Section labels ──────────────────────────────────────────── */
-.form-section { margin-bottom:28px; }
-.form-section-label {
-    font-size:.72rem; font-weight:700; text-transform:uppercase;
-    letter-spacing:.07em; color:#6b7280; margin-bottom:8px;
-    display:flex; align-items:center; gap:8px;
-}
-.form-section-line { flex:1; border-top:1px solid #e5e7eb; }
-.dark .form-section-line { border-top-color:#374151; }
-
-/* ── Iframe wrapper ──────────────────────────────────────────── */
-.form-iframe-wrap {
-    border:1px solid #e5e7eb; border-radius:8px;
-    overflow:hidden; background:#fff;
-}
-.form-iframe-wrap iframe { display:block; width:100%; border:none; }
-
-/* ── Not-filled placeholder ──────────────────────────────────── */
-.not-filled {
-    background:#f9fafb; border:1.5px dashed #e5e7eb;
-    border-radius:8px; padding:32px; text-align:center;
-}
-.dark .not-filled { background:#1f2937; border-color:#374151; }
-
-/* ── Back button ─────────────────────────────────────────────── */
 .btn-back {
     display:inline-flex; align-items:center; gap:6px;
     background:none; border:1px solid #e5e7eb; border-radius:7px;
@@ -49,15 +23,15 @@
 .btn-back:hover { background:#f3f4f6; }
 .dark .btn-back { color:#e5e7eb; border-color:#374151; }
 .dark .btn-back:hover { background:#374151; }
-
-/* ── Open-in-new-tab small button ────────────────────────────── */
-.btn-open {
-    display:inline-flex; align-items:center; gap:4px;
-    background:none; border:1px solid #e5e7eb; border-radius:6px;
-    padding:3px 10px; font-size:.72rem; font-weight:600;
-    color:#374151; cursor:pointer; text-decoration:none;
+.btn-history {
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3);
+    color:#fff; font-size:.78rem; font-weight:600;
+    padding:7px 14px; border-radius:6px; text-decoration:none; white-space:nowrap;
 }
-.btn-open:hover { background:#f3f4f6; }
+.btn-history:hover { background:rgba(255,255,255,.25); }
+.sec-head { font-size:.9rem;font-weight:700;color:#111827;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #e5e7eb; }
+.dark .sec-head { color:#f3f4f6;border-bottom-color:#374151; }
 </style>
 
 @php
@@ -81,10 +55,10 @@
             @if($patient?->sex) · {{ $patient->sex }}@endif
         </p>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
         @if($svc)<span class="vv-pill">{{ $svc }}</span>@endif
         <span class="vv-pill" style="{{ $record->visit_type==='ER'?'background:rgba(220,38,38,.3);':'' }}">
-            {{ $record->visit_type==='ER'?'🚑 ER':'📋 OPD' }}
+            {{ $record->visit_type==='ER' ? '🚑 ER' : '📋 OPD' }}
         </span>
         @if($history?->doctor)
             <span class="vv-pill">Dr. {{ $history->doctor->name }}</span>
@@ -97,116 +71,17 @@
             {{ $record->registered_at->timezone('Asia/Manila')->format('M j, Y H:i') }}
         </span>
         @endif
-    </div>
-</div>
-
-{{-- ══════════════════════════════════════════════════════════════
-     SECTION 1 — ER RECORD (ER-001)
-     ══════════════════════════════════════════════════════════════ --}}
-<div class="form-section">
-    <div class="form-section-label">
-        <span>🏥 Emergency Room Record (ER-001)</span>
-        <div class="form-section-line"></div>
-        @if($this->hasErRecord())
-            <span style="background:#d1fae5;color:#065f46;font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;">Saved</span>
-            <a href="{{ $this->getErRecordUrl() }}" target="_blank" rel="noopener" class="btn-open">🖨️ Print ↗</a>
-        @else
-            <span style="background:#fef3c7;color:#92400e;font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;">Not yet filled</span>
-        @endif
-    </div>
-
-    @if($this->hasErRecord())
-    <div class="form-iframe-wrap">
-        <iframe
-            src="{{ $this->getErRecordUrl() }}"
-            title="ER Record — {{ $patient?->case_no }}"
-            style="width:100%;min-height:1100px;border:none;display:block;"
-            loading="lazy"
-        ></iframe>
-    </div>
-    @else
-    <div class="not-filled">
-        <p style="font-size:1.8rem;margin-bottom:8px;">📋</p>
-        <p style="font-size:.88rem;font-weight:700;color:#374151;margin:0 0 4px;">ER Record not yet filled</p>
-        <p style="font-size:.78rem;color:#9ca3af;margin:0;">Filled by the clerk during the admission process.</p>
-    </div>
-    @endif
-</div>
-
-{{-- ══════════════════════════════════════════════════════════════
-     SECTION 2 — ADMISSION & DISCHARGE RECORD (ADM-001)
-     ══════════════════════════════════════════════════════════════ --}}
-<div class="form-section">
-    <div class="form-section-label">
-        <span>📋 Admission &amp; Discharge Record (ADM-001)</span>
-        <div class="form-section-line"></div>
-        @if($this->hasAdmRecord())
-            <span style="background:#d1fae5;color:#065f46;font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;">Saved</span>
-            <a href="{{ $this->getAdmRecordUrl() }}" target="_blank" rel="noopener" class="btn-open">🖨️ Print ↗</a>
-        @else
-            <span style="background:#fef3c7;color:#92400e;font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;">Not yet filled</span>
-        @endif
-    </div>
-
-    @if($this->hasAdmRecord())
-    <div class="form-iframe-wrap">
-        <iframe
-            src="{{ $this->getAdmRecordUrl() }}"
-            title="ADM Record — {{ $patient?->case_no }}"
-            style="width:100%;min-height:1100px;border:none;display:block;"
-            loading="lazy"
-        ></iframe>
-    </div>
-    @else
-    <div class="not-filled">
-        <p style="font-size:1.8rem;margin-bottom:8px;">📄</p>
-        <p style="font-size:.88rem;font-weight:700;color:#374151;margin:0 0 4px;">Admission Record not yet filled</p>
-        <p style="font-size:.78rem;color:#9ca3af;margin:0;">Filled by the clerk during the admission process.</p>
-    </div>
-    @endif
-</div>
-
-{{-- ══════════════════════════════════════════════════════════════
-     SECTION 3 — CONSENT TO CARE (NUR-002-1)
-     Same visual treatment as the two forms above.
-     Uses ?readonly=1 to hide the Save toolbar, showing the clean paper form.
-     "Print ↗" button opens the editable version in a new tab for printing.
-     ══════════════════════════════════════════════════════════════ --}}
-<div class="form-section">
-    <div class="form-section-label">
-        <span>📄 Consent to Care (NUR-002-1)</span>
-        <div class="form-section-line"></div>
-        @if($this->hasConsentRecord())
-            <span style="background:#d1fae5;color:#065f46;font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;">Saved</span>
-            <a href="{{ $this->getConsentUrl() }}" target="_blank" rel="noopener" class="btn-open">🖨️ Print ↗</a>
-        @else
-            <span style="background:#fef3c7;color:#92400e;font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;">Not yet filled</span>
-            <a href="{{ $this->getConsentUrl() }}" target="_blank" rel="noopener" class="btn-open">📝 Fill now ↗</a>
-        @endif
-    </div>
-
-    @if($this->hasConsentRecord())
-    <div class="form-iframe-wrap">
-        <iframe
-            src="{{ $this->getConsentReadonlyUrl() }}"
-            title="Consent to Care — {{ $patient?->case_no }}"
-            style="width:100%;min-height:900px;border:none;display:block;"
-            loading="lazy"
-        ></iframe>
-    </div>
-    @else
-    <div class="not-filled">
-        <p style="font-size:1.8rem;margin-bottom:8px;">✍️</p>
-        <p style="font-size:.88rem;font-weight:700;color:#374151;margin:0 0 4px;">Consent to Care not yet signed</p>
-        <p style="font-size:.78rem;color:#9ca3af;margin:0 0 12px;">
-            Generated during admission. Once saved it will appear here as a full read-only document.
-        </p>
-        <a href="{{ $this->getConsentUrl() }}" target="_blank" rel="noopener"
-           style="display:inline-flex;align-items:center;gap:6px;background:#b45309;color:#fff;border:none;border-radius:7px;padding:9px 18px;font-size:.82rem;font-weight:700;text-decoration:none;">
-            📋 Open Consent to Care ↗
+        @if($patient)
+        <a href="{{ $this->getPatientHistoryUrl() }}" class="btn-history">
+            🗂️ All Visits for This Patient →
         </a>
+        @endif
     </div>
-    @endif
 </div>
+
+<p class="sec-head">Patient Forms — Read-Only View</p>
+
+{{-- ══ Shared forms component — edit PatientFormsPanel.php to add new forms ══ --}}
+<x-patient-forms-panel :visitId="$record->id" panel="clerk" />
 
 </x-filament-panels::page>

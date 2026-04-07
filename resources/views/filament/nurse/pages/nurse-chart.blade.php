@@ -453,6 +453,129 @@
 .ph-title { font-size:.92rem; font-weight:700; color:#374151; margin-bottom:5px; }
 .dark .ph-title { color:#e5e7eb; }
 .ph-desc { font-size:.8rem; color:#9ca3af; margin-bottom:16px; line-height:1.6; }
+
+/* ── MAR (Medication Administration Record) ──────────────────────── */
+.mar-wrap { overflow-x: auto; background:#fff; border:1px solid #e5e7eb; border-radius:10px; }
+.dark .mar-wrap { background:#1f2937; border-color:#374151; }
+ 
+.mar-table { border-collapse:collapse; font-size:.78rem; min-width:700px; }
+ 
+/* Sticky medication column */
+.mar-table .col-med {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: #f8fafc;
+    min-width: 160px;
+    max-width: 200px;
+    border-right: 2px solid #d1d5db !important;
+}
+.dark .mar-table .col-med { background:#1e2937; border-right-color:#374151 !important; }
+ 
+/* Sticky shift column */
+.mar-table .col-shift {
+    position: sticky;
+    left: 160px;          /* same as col-med min-width */
+    z-index: 2;
+    min-width: 48px;
+    max-width: 52px;
+    border-right: 1.5px solid #d1d5db !important;
+}
+.dark .mar-table .col-shift { border-right-color:#374151 !important; }
+ 
+.mar-table th, .mar-table td {
+    border: 1px solid #e5e7eb;
+    padding: 0;
+    vertical-align: middle;
+    text-align: center;
+}
+.dark .mar-table th, .dark .mar-table td { border-color:#374151; }
+ 
+.mar-table thead th {
+    background: #f3f4f6;
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #6b7280;
+    padding: 7px 6px;
+    white-space: nowrap;
+}
+.dark .mar-table thead th { background:#111827; color:#9ca3af; }
+ 
+/* Shift badge cells */
+.mar-shift-73   { background:#eff6ff; color:#1d4ed8; font-size:.7rem; font-weight:700; padding:4px 6px; }
+.mar-shift-311  { background:#f5f3ff; color:#5b21b6; font-size:.7rem; font-weight:700; padding:4px 6px; }
+.mar-shift-117  { background:#f0fdfa; color:#0f766e; font-size:.7rem; font-weight:700; padding:4px 6px; }
+.dark .mar-shift-73  { background:#1e3a5f; color:#93c5fd; }
+.dark .mar-shift-311 { background:#2e1065; color:#c4b5fd; }
+.dark .mar-shift-117 { background:#042f2e; color:#5eead4; }
+ 
+/* Medication group: top border thicker between groups */
+.mar-table tr.mar-group-start td { border-top: 2px solid #d1d5db !important; }
+.dark .mar-table tr.mar-group-start td { border-top-color:#4b5563 !important; }
+ 
+/* Inline inputs */
+.mar-cell-input {
+    width: 100%;
+    min-width: 52px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-size: .78rem;
+    font-family: monospace;
+    color: #111827;
+    outline: none;
+    padding: 2px 3px;
+}
+.dark .mar-cell-input { color:#f3f4f6; }
+.mar-cell-input:focus {
+    background: #fffbeb;
+    border: 1.5px solid #f59e0b !important;
+    border-radius: 3px;
+}
+.dark .mar-cell-input:focus { background:#292524; }
+ 
+/* Medication name input */
+.mar-med-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: .78rem;
+    font-weight: 600;
+    color: #111827;
+    padding: 6px 8px;
+    outline: none;
+    font-family: inherit;
+    text-align: left;
+}
+.dark .mar-med-input { color:#f3f4f6; }
+.mar-med-input:focus { background:#fffbeb; border-radius:3px; }
+.dark .mar-med-input:focus { background:#292524; }
+ 
+/* "Add date" mini row */
+.mar-add-date-row td { background:#f0fdf4; border-top:2px solid #86efac; }
+.dark .mar-add-date-row td { background:#022c22; }
+ 
+/* Add med button */
+.btn-mar-add-med {
+    background:#f43f5e; color:#fff; border:none; border-radius:7px;
+    padding:7px 16px; font-size:.78rem; font-weight:700; cursor:pointer;
+    display:inline-flex; align-items:center; gap:5px;
+}
+.btn-mar-add-med:hover { background:#e11d48; }
+ 
+.btn-mar-del {
+    background:none; border:none; color:#d1d5db; cursor:pointer;
+    font-size:.75rem; padding:2px 5px; border-radius:3px;
+}
+.btn-mar-del:hover { color:#ef4444; background:#fee2e2; }
+.dark .btn-mar-del:hover { background:#450a0a; color:#fca5a5; }
+ 
+.mar-date-header { font-size:.67rem; font-weight:700; color:#374151; white-space:nowrap; }
+.dark .mar-date-header { color:#e5e7eb; }
+.mar-date-sub { font-size:.58rem; color:#9ca3af; display:block; }
 </style>
 
 @if($visit && $visit->patient)
@@ -484,6 +607,7 @@
             <span class="svc-pill">{{ $service }}</span>
             <div class="h-pill"><p class="pl">Admitted</p><p class="pv">{{ $admittedAt }}</p></div>
             @if($history?->doctor)<div class="h-pill"><p class="pl">Physician</p><p class="pv">Dr. {{ $history->doctor->name }}</p></div>@endif
+            <a href="{{ $this->getPatientHistoryUrl() }}" class="btn-back-hdr">🗂️ All Visits →</a>
         </div>
         <button wire:click="goBack" type="button" class="btn-back-hdr">← Patient List</button>
     </div>
@@ -568,22 +692,165 @@
         @elseif($activeTab === 'notes')
         <div class="sec-head">
             <h2 class="sec-title">Nurse's Notes</h2>
-            <button wire:click="toggleAddNote" type="button" class="btn-add-note {{ $addingNote ? 'is-cancel':'' }}">@if($addingNote) ✕ Cancel @else ✏️ Add FDAR Note @endif</button>
+            <button wire:click="toggleAddNote" type="button"
+                    class="btn-add-note {{ $addingNote ? 'is-cancel':'' }}">
+                @if($addingNote) ✕ Cancel @else ✏️ Add FDAR Note @endif
+            </button>
         </div>
+ 
         @if($addingNote)
         <div class="soap-form">
-            <p class="soap-form-title">New FDAR Note &nbsp;·&nbsp; <span style="font-weight:400;color:#6b7280;">{{ now()->timezone('Asia/Manila')->format('F j, Y H:i') }} &nbsp;·&nbsp; {{ auth()->user()->name }}</span></p>
-            <div class="soap-row"><div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><div class="soap-letter soap-f">F</div><span style="font-size:.62rem;color:#1e40af;font-weight:700;">Focus</span></div><div><span class="soap-label">Focus — nursing diagnosis or patient problem / concern</span><textarea wire:model="fdarF" rows="2" class="soap-textarea" placeholder="e.g., Acute pain related to hypertensive crisis."></textarea></div></div>
-            <div class="soap-row"><div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><div class="soap-letter soap-d">D</div><span style="font-size:.62rem;color:#166534;font-weight:700;">Data</span></div><div><span class="soap-label">Data — supporting subjective and objective findings</span><textarea wire:model="fdarD" rows="3" class="soap-textarea" placeholder="e.g., Patient c/o headache 8/10. BP 185/100, PR 98, Temp 37.1°C, O2 95%."></textarea></div></div>
-            <div class="soap-row"><div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><div class="soap-letter soap-a">A</div><span style="font-size:.62rem;color:#854d0e;font-weight:700;">Action</span></div><div><span class="soap-label">Action — nursing interventions performed</span><textarea wire:model="fdarA" rows="3" class="soap-textarea" placeholder="e.g., Administered Captopril 25mg SL as ordered. O2 via face mask applied. Monitoring BP q1h."></textarea></div></div>
-            <div class="soap-row"><div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><div class="soap-letter soap-r">R</div><span style="font-size:.62rem;color:#5b21b6;font-weight:700;">Response</span></div><div><span class="soap-label">Response — patient's response to interventions</span><textarea wire:model="fdarR" rows="3" class="soap-textarea" placeholder="e.g., BP decreased to 160/95 after 30 minutes. Headache improved to 5/10. Patient resting comfortably."></textarea></div></div>
-            <div style="display:flex;gap:10px;margin-top:14px;"><button wire:click="saveNote" wire:loading.attr="disabled" wire:loading.class="opacity-60" type="button" class="btn-primary"><span wire:loading.remove wire:target="saveNote">💾 Save Note</span><span wire:loading wire:target="saveNote">Saving…</span></button><button wire:click="toggleAddNote" type="button" class="btn-secondary">Cancel</button></div>
+            <p class="soap-form-title">
+                New FDAR Note &nbsp;·&nbsp;
+                <span style="font-weight:400;color:#6b7280;">
+                    {{ now()->timezone('Asia/Manila')->format('F j, Y H:i') }}
+                    &nbsp;·&nbsp; {{ auth()->user()->name }}
+                </span>
+            </p>
+ 
+            {{-- ── Shift selector ───────────────────────────────────── --}}
+            <div style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #ffe4e6;">
+                <span class="soap-label" style="display:block;margin-bottom:6px;">
+                    Shift *
+                    <span style="font-size:.68rem;color:#ef4444;font-weight:600;">(required)</span>
+                </span>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    @foreach(['7-3' => '7AM – 3PM', '3-11' => '3PM – 11PM', '11-7' => '11PM – 7AM'] as $val => $label)
+                    <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+                                  background:{{ $fdarShift === $val ? '#ffe4e6' : '#f9fafb' }};
+                                  border:2px solid {{ $fdarShift === $val ? '#f43f5e' : '#e5e7eb' }};
+                                  border-radius:7px;padding:7px 16px;font-size:.82rem;font-weight:700;
+                                  color:{{ $fdarShift === $val ? '#be123c' : '#374151' }};
+                                  transition:border-color .12s,background .12s;">
+                        <input type="radio"
+                               wire:model="fdarShift"
+                               value="{{ $val }}"
+                               style="accent-color:#f43f5e;">
+                        {{ $val }} &nbsp;<span style="font-weight:400;font-size:.75rem;">{{ $label }}</span>
+                    </label>
+                    @endforeach
+                </div>
+                @if(filled($fdarShift))
+                <p style="font-size:.7rem;color:#059669;margin-top:5px;font-weight:600;">
+                    ✓ Shift {{ $fdarShift }} selected
+                </p>
+                @endif
+            </div>
+ 
+            {{-- ── FDAR fields ─────────────────────────────────────── --}}
+            <div class="soap-row">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+                    <div class="soap-letter soap-f">F</div>
+                    <span style="font-size:.62rem;color:#1e40af;font-weight:700;">Focus</span>
+                </div>
+                <div>
+                    <span class="soap-label">Focus — nursing diagnosis or patient problem / concern</span>
+                    <textarea wire:model="fdarF" rows="2" class="soap-textarea"
+                        placeholder="e.g., Acute pain related to hypertensive crisis."></textarea>
+                </div>
+            </div>
+ 
+            <div class="soap-row">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+                    <div class="soap-letter soap-d">D</div>
+                    <span style="font-size:.62rem;color:#166534;font-weight:700;">Data</span>
+                </div>
+                <div>
+                    <span class="soap-label">Data — supporting subjective and objective findings</span>
+                    <textarea wire:model="fdarD" rows="3" class="soap-textarea"
+                        placeholder="e.g., Patient c/o headache 8/10. BP 185/100, PR 98, Temp 37.1°C, O2 95%."></textarea>
+                </div>
+            </div>
+ 
+            <div class="soap-row">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+                    <div class="soap-letter soap-a">A</div>
+                    <span style="font-size:.62rem;color:#854d0e;font-weight:700;">Action</span>
+                </div>
+                <div>
+                    <span class="soap-label">Action — nursing interventions performed</span>
+                    <textarea wire:model="fdarA" rows="3" class="soap-textarea"
+                        placeholder="e.g., Administered Captopril 25mg SL as ordered. O2 via face mask applied. Monitoring BP q1h."></textarea>
+                </div>
+            </div>
+ 
+            <div class="soap-row">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+                    <div class="soap-letter soap-r">R</div>
+                    <span style="font-size:.62rem;color:#5b21b6;font-weight:700;">Response</span>
+                </div>
+                <div>
+                    <span class="soap-label">Response — patient's response to interventions</span>
+                    <textarea wire:model="fdarR" rows="3" class="soap-textarea"
+                        placeholder="e.g., BP decreased to 160/95 after 30 minutes. Headache improved to 5/10. Patient resting comfortably."></textarea>
+                </div>
+            </div>
+ 
+            <div style="display:flex;gap:10px;margin-top:14px;">
+                <button wire:click="saveNote"
+                        wire:loading.attr="disabled"
+                        wire:loading.class="opacity-60"
+                        type="button" class="btn-primary">
+                    <span wire:loading.remove wire:target="saveNote">💾 Save Note</span>
+                    <span wire:loading wire:target="saveNote">Saving…</span>
+                </button>
+                <button wire:click="toggleAddNote" type="button" class="btn-secondary">Cancel</button>
+            </div>
         </div>
         @endif
+ 
         @if($allNotes->isEmpty() && !$addingNote)
-        <div class="empty-state"><div class="empty-icon">📝</div><p class="empty-title">No nurse's notes yet</p><p class="empty-sub">Click "Add FDAR Note" above to write the first nursing note.</p></div>
+        <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <p class="empty-title">No nurse's notes yet</p>
+            <p class="empty-sub">Click "Add FDAR Note" above to write the first nursing note.</p>
+        </div>
         @else
-        @foreach($allNotes as $note)<div class="note-card" wire:key="note-{{ $note->id }}"><div class="note-header"><div><p class="note-nurse">{{ $note->nurse?->name ?? 'Unknown Nurse' }}</p><p class="note-time">{{ $note->noted_at?->timezone('Asia/Manila')->format('F j, Y · H:i') }} &nbsp;·&nbsp; {{ $note->noted_at?->diffForHumans() }}</p></div><span style="font-size:.7rem;background:#f3f4f6;padding:2px 8px;border-radius:4px;color:#6b7280;font-weight:700;">FDAR</span></div>@if($note->focus)<div class="note-soap-row"><div class="note-soap-letter soap-f" style="font-size:.68rem;">F</div><div><p class="note-soap-label">Focus</p><p class="note-soap-text">{{ $note->focus }}</p></div></div>@endif@if($note->data)<div class="note-soap-row"><div class="note-soap-letter soap-d" style="font-size:.68rem;">D</div><div><p class="note-soap-label">Data</p><p class="note-soap-text">{{ $note->data }}</p></div></div>@endif@if($note->action)<div class="note-soap-row"><div class="note-soap-letter soap-a" style="font-size:.68rem;">A</div><div><p class="note-soap-label">Action</p><p class="note-soap-text">{{ $note->action }}</p></div></div>@endif@if($note->response)<div class="note-soap-row"><div class="note-soap-letter soap-r" style="font-size:.68rem;">R</div><div><p class="note-soap-label">Response</p><p class="note-soap-text">{{ $note->response }}</p></div></div>@endif</div>@endforeach
+        @foreach($allNotes as $note)
+        <div class="note-card" wire:key="note-{{ $note->id }}">
+            <div class="note-header">
+                <div>
+                    <p class="note-nurse">{{ $note->nurse?->name ?? 'Unknown Nurse' }}</p>
+                    <p class="note-time">
+                        {{ $note->noted_at?->timezone('Asia/Manila')->format('F j, Y · H:i') }}
+                        &nbsp;·&nbsp; {{ $note->noted_at?->diffForHumans() }}
+                    </p>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    @if($note->shift)
+                    <span style="font-size:.7rem;font-weight:700;background:#fef3c7;color:#92400e;padding:2px 9px;border-radius:9999px;border:1px solid #fde68a;">
+                        Shift {{ $note->shift }}
+                    </span>
+                    @endif
+                    <span style="font-size:.7rem;background:#f3f4f6;padding:2px 8px;border-radius:4px;color:#6b7280;font-weight:700;">FDAR</span>
+                </div>
+            </div>
+            @if($note->focus)
+            <div class="note-soap-row">
+                <div class="note-soap-letter soap-f" style="font-size:.68rem;">F</div>
+                <div><p class="note-soap-label">Focus</p><p class="note-soap-text">{{ $note->focus }}</p></div>
+            </div>
+            @endif
+            @if($note->data)
+            <div class="note-soap-row">
+                <div class="note-soap-letter soap-d" style="font-size:.68rem;">D</div>
+                <div><p class="note-soap-label">Data</p><p class="note-soap-text">{{ $note->data }}</p></div>
+            </div>
+            @endif
+            @if($note->action)
+            <div class="note-soap-row">
+                <div class="note-soap-letter soap-a" style="font-size:.68rem;">A</div>
+                <div><p class="note-soap-label">Action</p><p class="note-soap-text">{{ $note->action }}</p></div>
+            </div>
+            @endif
+            @if($note->response)
+            <div class="note-soap-row">
+                <div class="note-soap-letter soap-r" style="font-size:.68rem;">R</div>
+                <div><p class="note-soap-label">Response</p><p class="note-soap-text">{{ $note->response }}</p></div>
+            </div>
+            @endif
+        </div>
+        @endforeach
         @endif
 
         {{-- ══ VITAL SIGNS MONITORING SHEET══════════════════════════════════════════ --}}
@@ -1037,7 +1304,7 @@
             @endif
         </div>
  
-        {{-- 6. Vital Sign Monitoring Sheet (NUR-014) — always shown, data-driven --}}
+        {{-- 6. Vital Sign Monitoring Sheet (NUR-014) --}}
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
                 <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">📊 Vital Sign Monitoring Sheet (NUR-014)</span>
@@ -1060,7 +1327,7 @@
             </div>
         </div>
  
-        {{-- 7. IV / Blood Transfusion Sheet (NUR-012) — always shown, data-driven --}}
+        {{-- 7. IV / Blood Transfusion Sheet (NUR-012) --}}
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
                 <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">💧 IV / Blood Transfusion Sheet (NUR-012)</span>
@@ -1082,10 +1349,203 @@
                     loading="lazy"></iframe>
             </div>
         </div>
+ 
+        {{-- 8. Nurse's Notes (NUR-010) ──────────────────────── --}}
+        <div style="margin-bottom:32px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">📝 Nurse's Notes (NUR-010)</span>
+                <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
+                @php $notesCount = $allNotes->count(); @endphp
+                <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $notesCount > 0 ? 'background:#ede9fe;color:#5b21b6;' : 'background:#f3f4f6;color:#6b7280;' }}">
+                    {{ $notesCount > 0 ? $notesCount . ' note' . ($notesCount === 1 ? '' : 's') : 'No notes yet' }}
+                </span>
+                <a href="{{ route('forms.nurses-notes', ['visit' => $visit->id]) }}"
+                   target="_blank"
+                   style="font-size:.72rem;font-weight:700;color:#5b21b6;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#faf5ff;border:1px solid #ddd6fe;padding:3px 10px;border-radius:5px;">
+                    🖨️ Open / Print
+                </a>
+            </div>
+            <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+                <iframe src="{{ route('forms.nurses-notes', ['visit' => $visit->id]) }}"
+                    title="Nurse's Notes"
+                    style="width:100%;min-height:900px;border:none;display:block;"
+                    loading="lazy"></iframe>
+            </div>
+        </div>
+
+        {{-- 9. Medication Administration Record (NUR-011) --}}
+        <div style="margin-bottom:32px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">💊 Medication Administration Record (NUR-011)</span>
+                <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
+                @php $marCount = $this->marEntriesCount; @endphp
+                <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $marCount > 0 ? 'background:#fff1f2;color:#be123c;' : 'background:#f3f4f6;color:#6b7280;' }}">
+                    {{ $marCount > 0 ? $marCount . ' medication' . ($marCount === 1 ? '' : 's') : 'No entries yet' }}
+                </span>
+                <a href="{{ route('forms.medication-records', ['visit' => $visit->id]) }}"
+                   target="_blank"
+                   style="font-size:.72rem;font-weight:700;color:#be123c;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#fff1f2;border:1px solid #fecdd3;padding:3px 10px;border-radius:5px;white-space:nowrap;">
+                    🖨️ Open / Print
+                </a>
+            </div>
+            @if($marCount > 0)
+            <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+                <iframe src="{{ route('forms.medication-records', ['visit' => $visit->id]) }}"
+                    title="Medication Administration Record"
+                    style="width:100%;min-height:900px;border:none;display:block;"
+                    loading="lazy"></iframe>
+            </div>
+            @else
+            <div style="background:#fff;border:1.5px dashed #e5e7eb;border-radius:8px;padding:24px;text-align:center;">
+                <p style="font-size:.82rem;color:#9ca3af;">No medications recorded yet. Go to the 💊 MAR tab to add medications and date columns.</p>
+            </div>
+            @endif
+        </div>
+
+        {{-- ══ MAR TAB CONTENT ══════════════════════════════════════════ --}}
+        @elseif($activeTab === 'mar')
+        @php
+            $marDates   = $this->marDateColumns->dates ?? [];
+            $marEntries = $this->marEntries;
+        @endphp
+ 
+        <div class="sec-head">
+            <h2 class="sec-title">💊 Medication Administration Record (MAR)</h2>
+            <span style="font-size:.78rem;color:#6b7280;">
+                {{ count($marDates) }} date col{{ count($marDates) === 1 ? '' : 's' }}
+                &nbsp;·&nbsp; {{ $marEntries->count() }} medication{{ $marEntries->count() === 1 ? '' : 's' }}
+            </span>
+        </div>
+ 
+        {{-- ── Date column manager ─────────────────────────────── --}}
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+            <span style="font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">Date Columns:</span>
+            @foreach($marDates as $d)
+            <span style="display:inline-flex;align-items:center;gap:4px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:.75rem;font-weight:600;color:#374151;font-family:monospace;">
+                {{ \Carbon\Carbon::parse($d)->format('M j') }}
+                <button wire:click="marRemoveDate('{{ $d }}')"
+                        type="button"
+                        style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.7rem;padding:0 2px;line-height:1;"
+                        title="Remove date column">✕</button>
+            </span>
+            @endforeach
+            <div style="display:flex;align-items:center;gap:6px;">
+                <input type="date"
+                       wire:model="marNewDate"
+                       style="border:1px solid #d1d5db;border-radius:6px;padding:5px 8px;font-size:.78rem;color:#111827;background:#fff;outline:none;">
+                <button wire:click="marAddDate" type="button"
+                        style="background:#059669;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.78rem;font-weight:700;cursor:pointer;">
+                    + Add Date
+                </button>
+            </div>
+        </div>
+ 
+        @if(empty($marDates))
+        <div class="empty-state">
+            <div class="empty-icon">💊</div>
+            <p class="empty-title">No date columns yet</p>
+            <p class="empty-sub">Use the date picker above to add the first date column, then add medication rows below.</p>
+        </div>
+        @else
+ 
+        {{-- ── MAR Grid ────────────────────────────────────────── --}}
+        <div class="mar-wrap">
+            <table class="mar-table">
+                <thead>
+                    <tr>
+                        <th class="col-med" style="text-align:left;padding:8px 10px;">Medication</th>
+                        <th class="col-shift">Shift</th>
+                        @foreach($marDates as $d)
+                        <th style="min-width:56px;padding:5px 3px;">
+                            <span class="mar-date-header">{{ \Carbon\Carbon::parse($d)->format('M j') }}</span>
+                            <span class="mar-date-sub">{{ \Carbon\Carbon::parse($d)->format('D') }}</span>
+                        </th>
+                        @endforeach
+                    </tr>
+                </thead>
+                <tbody>
+ 
+                @if($marEntries->isEmpty())
+                <tr>
+                    <td colspan="{{ 2 + count($marDates) }}"
+                        style="padding:32px;text-align:center;color:#9ca3af;font-size:.82rem;font-style:italic;">
+                        No medications yet — click "➕ Add Medication Row" below to add the first row.
+                    </td>
+                </tr>
+                @else
+ 
+                @foreach($marEntries as $entry)
+                @foreach(['7-3', '3-11', '11-7'] as $shiftIdx => $shift)
+                @php
+                    $isFirst    = $shiftIdx === 0;
+                    $shiftClass = match($shift) { '7-3' => 'mar-shift-73', '3-11' => 'mar-shift-311', '11-7' => 'mar-shift-117' };
+                @endphp
+                <tr wire:key="mar-{{ $entry->id }}-{{ $shift }}"
+                    class="{{ $isFirst ? 'mar-group-start' : '' }}">
+ 
+                    {{-- Medication name — editable inline, rowspan 3 --}}
+                    @if($isFirst)
+                    <td class="col-med" rowspan="3" style="text-align:left;vertical-align:middle;">
+                        <div style="display:flex;align-items:center;gap:2px;">
+                            <input type="text"
+                                   class="mar-med-input"
+                                   value="{{ $entry->medication_name }}"
+                                   placeholder="Type medication here…"
+                                   wire:key="medname-{{ $entry->id }}"
+                                   @blur="$wire.marUpdateMedName({{ $entry->id }}, $event.target.value)"
+                                   title="Click to type medication name">
+                            <button wire:click="marDeleteMed({{ $entry->id }})"
+                                    type="button"
+                                    class="btn-mar-del"
+                                    title="Remove this medication row">🗑</button>
+                        </div>
+                    </td>
+                    @endif
+ 
+                    {{-- Shift label --}}
+                    <td class="col-shift {{ $shiftClass }}">{{ $shift }}</td>
+ 
+                    {{-- Date cells — time input, saves on blur --}}
+                    @foreach($marDates as $d)
+                    @php $cellVal = $entry->getTime($d, $shift); @endphp
+                    <td style="padding:0;">
+                        <input type="time"
+                               class="mar-cell-input"
+                               value="{{ $cellVal }}"
+                               wire:key="cell-{{ $entry->id }}-{{ $d }}-{{ $shift }}"
+                               @blur="$wire.marSaveCell({{ $entry->id }}, '{{ $d }}', '{{ $shift }}', $event.target.value)"
+                               title="{{ $d }} / {{ $shift }}">
+                    </td>
+                    @endforeach
+ 
+                </tr>
+                @endforeach
+                @endforeach
+ 
+                @endif
+ 
+                </tbody>
+            </table>
+        </div>
+ 
+        @endif {{-- empty dates --}}
+ 
+        {{-- ── Add medication row button — always visible ──────── --}}
+        <div style="margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <button wire:click="marAddMedication"
+                    wire:loading.attr="disabled"
+                    wire:loading.class="opacity-60"
+                    type="button"
+                    class="btn-mar-add-med">
+                <span wire:loading.remove wire:target="marAddMedication">➕ Add Medication Row</span>
+                <span wire:loading wire:target="marAddMedication">Adding…</span>
+            </button>
+            <span style="font-size:.72rem;color:#9ca3af;">
+                Click multiple times to add several rows at once, then fill in the medication names.
+            </span>
+        </div>
 
         {{-- ══ PLACEHOLDER TABS ════════════════════════════════════ --}}
-        @elseif($activeTab === 'mar')
-        @include('filament.nurse.pages.partials.placeholder', ['icon'=>'💊','title'=>'Medication Administration Record (MAR)','desc'=>'Track all medications administered — drug name, dose, route, time, and nurse signature. Alerts for missed or overdue medications.','full'=>true])
 
         @elseif($activeTab === 'io')
         @include('filament.nurse.pages.partials.placeholder', ['icon'=>'📏','title'=>'Intake & Output Record','desc'=>'Monitor all fluid intake (oral, IV, NG) and output (urine, drain, emesis, stool) with shift and 24-hour totals.','full'=>true])

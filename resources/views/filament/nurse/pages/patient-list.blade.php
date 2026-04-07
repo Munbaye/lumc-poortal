@@ -173,10 +173,22 @@
 .orders-badge.has-orders { background: #fef3c7; color: #92400e; }
 .orders-badge.no-orders  { background: #d1fae5; color: #065f46; }
 
-/* Admission time */
-.adm-time { font-size: .78rem; color: #374151; white-space: nowrap; }
-.dark .adm-time { color: #d1d5db; }
-.adm-ago  { font-size: .7rem; color: #9ca3af; margin-top: 2px; }
+/* Status badge for "All" mode */
+.status-pill { display:inline-block; padding:2px 9px; border-radius:9999px; font-size:.7rem; font-weight:700; }
+.s-admitted   { background:#d1fae5; color:#065f46; }
+.s-discharged { background:#f3f4f6; color:#374151; }
+.s-registered { background:#fef9c3; color:#854d0e; }
+.s-assessed   { background:#e0f2fe; color:#0c4a6e; }
+.s-referred   { background:#fef3c7; color:#92400e; }
+.s-vitals     { background:#f0fdf4; color:#166534; }
+
+/* Entry type */
+.type-er  { background:#fee2e2; color:#991b1b; font-size:.7rem; font-weight:700; padding:2px 7px; border-radius:9999px; }
+.type-opd { background:#eff6ff; color:#1d4ed8; font-size:.7rem; font-weight:700; padding:2px 7px; border-radius:9999px; }
+
+.adm-time { font-size:.78rem; color:#374151; white-space:nowrap; }
+.dark .adm-time { color:#d1d5db; }
+.adm-ago  { font-size:.7rem; color:#9ca3af; margin-top:2px; }
 
 /* Open chart button */
 .btn-open-chart {
@@ -215,9 +227,9 @@
     <div class="stat-card">
         <div class="stat-icon blue">🏥</div>
         <div class="stat-body">
-            <p class="stat-label">Total Admitted</p>
+            <p class="stat-label">Currently Admitted</p>
             <p class="stat-value">{{ $this->totalAdmitted }}</p>
-            <p class="stat-sub">patients currently admitted</p>
+            <p class="stat-sub">patients on ward</p>
         </div>
     </div>
     <div class="stat-card">
@@ -238,16 +250,29 @@
     </div>
 </div>
 
-{{-- ── FILTER BAR ───────────────────────────────────────────────────── --}}
+{{-- ── VIEW TOGGLE + FILTER BAR ─────────────────────────────────── --}}
 <div class="filter-bar">
+
+    {{-- Admitted / All toggle --}}
+    <div class="view-toggle">
+        <button wire:click="$set('viewFilter','admitted')"
+                type="button"
+                class="vt-btn {{ $viewFilter === 'admitted' ? 'active' : '' }}">
+            🏥 Admitted
+        </button>
+        <button wire:click="$set('viewFilter','all')"
+                type="button"
+                class="vt-btn {{ $viewFilter === 'all' ? 'active' : '' }}">
+            🗂️ All Patients
+        </button>
+    </div>
+
     <div class="search-wrap">
         <span class="si">🔍</span>
-        <input
-            type="text"
-            wire:model.live.debounce.300ms="search"
-            placeholder="Search by patient name or case number…"
-            class="search-input"
-        >
+        <input type="text"
+               wire:model.live.debounce.300ms="search"
+               placeholder="Search by patient name or case number…"
+               class="search-input">
     </div>
 
     <select wire:model.live="serviceFilter" class="filter-select">
@@ -263,7 +288,7 @@
         @if($search) · "{{ $search }}" @endif
         @if($serviceFilter) · {{ $serviceFilter }} @endif
     </span>
-    <button wire:click="$set('search', ''); $set('serviceFilter', '')"
+    <button wire:click="$set('search',''); $set('serviceFilter','')"
             style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.8rem;">
         ✕ Clear
     </button>
@@ -279,11 +304,17 @@
             <tr>
                 <th style="width:32px;">#</th>
                 <th>Patient</th>
+                @if($viewFilter === 'all')
+                    <th>Entry</th>
+                    <th>Status</th>
+                @endif
                 <th>Service</th>
                 <th>Diagnosis</th>
                 <th>Physician</th>
-                <th style="text-align:center;">Pending Orders</th>
-                <th>Admitted</th>
+                @if($viewFilter === 'admitted')
+                    <th style="text-align:center;">Pending Orders</th>
+                @endif
+                <th>{{ $viewFilter === 'admitted' ? 'Admitted' : 'Registered' }}</th>
                 <th style="width:110px;"></th>
             </tr>
         </thead>
@@ -291,6 +322,18 @@
             @foreach($this->admittedPatients as $i => $visit)
             @php
                 $pendingCount = $visit->doctorsOrders->count();
+                $statusLabel  = match($visit->status) {
+                    'vitals_done' => 'Vitals Done',
+                    default       => ucfirst(str_replace('_', ' ', $visit->status)),
+                };
+                $statusClass = match($visit->status) {
+                    'admitted'    => 's-admitted',
+                    'discharged'  => 's-discharged',
+                    'assessed'    => 's-assessed',
+                    'referred'    => 's-referred',
+                    'vitals_done' => 's-vitals',
+                    default       => 's-registered',
+                };
             @endphp
             <tr wire:click="openChart({{ $visit->id }})" wire:key="row-{{ $visit->id }}">
                 <td style="color:#9ca3af;font-size:.75rem;font-weight:600;">
@@ -303,15 +346,24 @@
                         {{ $visit->patient->age_display }} · {{ $visit->patient->sex }}
                     </p>
                 </td>
+                @if($viewFilter === 'all')
+                <td>
+                    <span class="{{ $visit->visit_type === 'ER' ? 'type-er' : 'type-opd' }}">
+                        {{ $visit->visit_type === 'ER' ? '🚑 ER' : '📋 OPD' }}
+                    </span>
+                </td>
+                <td>
+                    <span class="status-pill {{ $statusClass }}">{{ $statusLabel }}</span>
+                </td>
+                @endif
                 <td>
                     @if($visit->admitted_service)
-                    <span class="svc-badge">{{ $visit->admitted_service }}</span>
+                        <span class="svc-badge">{{ $visit->admitted_service }}</span>
                     @else
-                    <span style="color:#9ca3af;">—</span>
+                        <span style="color:#9ca3af;">—</span>
                     @endif
-                    <br>
                     @if($visit->payment_class)
-                    <span class="pay-badge {{ $visit->payment_class === 'Private' ? 'pay-private' : 'pay-charity' }}" style="margin-top:3px;">
+                    <br><span class="pay-badge {{ $visit->payment_class === 'Private' ? 'pay-private' : 'pay-charity' }}" style="margin-top:3px;">
                         {{ $visit->payment_class }}
                     </span>
                     @endif
@@ -328,23 +380,27 @@
                         <span style="color:#9ca3af;">—</span>
                     @endif
                 </td>
+                @if($viewFilter === 'admitted')
                 <td style="text-align:center;">
                     <span class="orders-badge {{ $pendingCount > 0 ? 'has-orders' : 'no-orders' }}">
                         {{ $pendingCount > 0 ? $pendingCount : '✓' }}
                     </span>
                 </td>
+                @endif
                 <td>
-                    @if($visit->clerk_admitted_at)
-                        <p class="adm-time">{{ $visit->clerk_admitted_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
-                        <p class="adm-ago">{{ $visit->clerk_admitted_at->diffForHumans() }}</p>
+                    @if($viewFilter === 'admitted')
+                        @if($visit->clerk_admitted_at)
+                            <p class="adm-time">{{ $visit->clerk_admitted_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
+                            <p class="adm-ago">{{ $visit->clerk_admitted_at->diffForHumans() }}</p>
+                        @else
+                            <p class="adm-time">{{ $visit->doctor_admitted_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
+                            <p style="font-size:.7rem;margin-top:2px;">
+                                <span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:9999px;font-weight:700;font-size:.68rem;">⏳ Pending Clerk</span>
+                            </p>
+                        @endif
                     @else
-                        {{-- Doctor ordered admission but clerk hasn't processed yet --}}
-                        <p class="adm-time">{{ $visit->doctor_admitted_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
-                        <p style="font-size:.7rem;margin-top:2px;">
-                            <span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:9999px;font-weight:700;font-size:.68rem;">
-                                ⏳ Pending Clerk
-                            </span>
-                        </p>
+                        <p class="adm-time">{{ $visit->registered_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
+                        <p class="adm-ago">{{ $visit->registered_at->diffForHumans() }}</p>
                     @endif
                 </td>
                 <td wire:click.stop>
@@ -366,17 +422,15 @@
     <div class="empty-state">
         <div class="empty-icon">🏥</div>
         <p class="empty-title">
-            @if($search || $serviceFilter)
-                No patients match your search
-            @else
-                No admitted patients
+            @if($search || $serviceFilter) No patients match your search
+            @elseif($viewFilter === 'admitted') No admitted patients
+            @else No patients found
             @endif
         </p>
         <p class="empty-sub">
-            @if($search || $serviceFilter)
-                Try adjusting your search or filter criteria.
-            @else
-                Patients will appear here once they have been fully admitted by the clerk.
+            @if($search || $serviceFilter) Try adjusting your search or filter criteria.
+            @elseif($viewFilter === 'admitted') Switch to "All Patients" to see patients with other statuses.
+            @else No patient visits are recorded yet.
             @endif
         </p>
     </div>

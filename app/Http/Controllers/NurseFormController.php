@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Visit;
-use Illuminate\Http\Request;
 
 class NurseFormController extends Controller
 {
@@ -38,5 +37,25 @@ class NurseFormController extends Controller
         ]);
 
         return view('forms.iv-bt-sheet', compact('visit'));
+    }
+
+    /**
+     * GET /forms/nurses-notes/{visit}
+     * Renders the printable Nurse's Notes sheet (NUR-010).
+     */
+    public function nursesNotes(Visit $visit)
+    {
+        $visit->loadMissing(['patient', 'medicalHistory']);
+        return view('forms.nurses-notes', compact('visit'));
+    }
+
+    /**
+     * GET /forms/medication-records/{visit}
+     * Printable Medication Administration Record / Medication Records (NUR-011).
+     */
+    public function medicationRecords(Visit $visit)
+    {
+        $visit->loadMissing(['patient', 'medicalHistory']);
+        return view('forms.medication-records', compact('visit'));
     }
 }
