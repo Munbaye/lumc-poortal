@@ -139,7 +139,7 @@ class VisitResource extends Resource
             ->actions([
                 Tables\Actions\Action::make('add_vitals')
                     ->label('Add Vitals')
-                    ->icon('heroicon-o-heart')
+                    ->icon('heroicon-o-plus')
                     ->color('warning')
                     ->button()
                     ->url(fn (Visit $record) =>

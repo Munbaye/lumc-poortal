@@ -17,7 +17,7 @@
             display:flex;align-items:center;justify-content:space-between;">
     <div>
         <h1 style="color:#fff;font-size:1.15rem;font-weight:700;margin:0 0 3px;">
-            🏥 Pending Admissions
+            Pending Admissions
         </h1>
         <p style="color:#bfdbfe;font-size:.82rem;margin:0;">
             Patients admitted by doctor awaiting admission completion.
@@ -34,7 +34,9 @@
 @if($pending->isEmpty())
 <div style="text-align:center;padding:60px 20px;background:#fff;border:1px solid #e5e7eb;
             border-radius:10px;" class="dark:bg-gray-900 dark:border-gray-700">
-    <p style="font-size:2.5rem;margin:0 0 10px;">✅</p>
+    <div style="margin:0 0 10px;display:flex;justify-content:center;">
+        <x-filament::icon icon="heroicon-o-check-circle" class="w-10 h-10 text-emerald-600" />
+    </div>
     <p style="font-weight:700;font-size:1rem;color:#374151;margin:0 0 4px;" class="dark:text-white">
         No pending admissions
     </p>

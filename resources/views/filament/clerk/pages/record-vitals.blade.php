@@ -21,7 +21,7 @@
             </h1>
             <div style="display:inline-flex;gap:6px;margin-top:4px;padding:3px 14px;border-radius:9999px;
                         background:rgba(255,255,255,.18);color:#e0f2fe;font-size:13px;font-weight:600;">
-                🌡️ Vital Signs Recording
+                Vital Signs Recording
             </div>
         </div>
         <div class="flex-shrink-0">
@@ -34,6 +34,10 @@
         </div>
     </div>
 </div>
+
+<style>
+    .lumc-required { color:#dc2626; }
+</style>
 
 @if($visit)
 
@@ -65,7 +69,7 @@
      class="dark:bg-gray-900 dark:border-gray-700">
 
     <h2 style="font-size:1.05rem;font-weight:700;margin-bottom:20px;" class="text-gray-900 dark:text-white">
-        🌡️ Vital Signs Entry
+        Vital Signs Entry
     </h2>
 
     {{-- Nurse Name --}}
@@ -73,7 +77,7 @@
          class="dark:bg-yellow-900/20 dark:border-yellow-700">
         <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:6px;"
                class="{{ $errors->has('nurseName') ? 'text-red-600' : 'text-yellow-800 dark:text-yellow-300' }}">
-            Nurse / Person Who Took Vitals *
+            Nurse / Person Who Took Vitals <span class="lumc-required">*</span>
         </label>
         <input type="text" wire:model="nurseName"
             placeholder="e.g., Nurse Maria Santos, Intern Juan Dela Cruz, Midwife Ana Reyes"
@@ -82,11 +86,11 @@
                    text-gray-900 bg-white placeholder-gray-400
                    dark:text-white dark:bg-gray-800 dark:placeholder-gray-500
                    focus:outline-none focus:ring-2 focus:ring-yellow-400">
-        <p style="font-size:.73rem;margin-top:4px;" class="text-yellow-700 dark:text-yellow-400">
+        <p style="font-size:.73rem;margin-top:6px;" class="text-yellow-700 dark:text-yellow-400">
             Type full name — handles nurses, interns, volunteers, or midwives without system accounts
         </p>
         @error('nurseName')
-            <p style="color:#ef4444;font-size:.73rem;margin-top:3px;font-weight:600;">⚠️ {{ $message }}</p>
+            <p style="color:#ef4444;font-size:.73rem;margin-top:3px;font-weight:600;">{{ $message }}</p>
         @enderror
     </div>
 
@@ -97,7 +101,7 @@
         <div>
             <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:4px;"
                    class="{{ $errors->has('temperature') ? 'text-red-600' : 'text-gray-700 dark:text-gray-200' }}">
-                Temperature (°C) *
+                Temperature (°C) <span class="lumc-required">*</span>
             </label>
             <input type="number" step="0.1" wire:model="temperature" placeholder="37.0" min="30" max="45"
                 class="w-full rounded-lg px-3 py-2 text-sm
@@ -106,7 +110,7 @@
                        dark:text-white dark:bg-gray-800 dark:placeholder-gray-500
                        focus:outline-none focus:ring-2 focus:ring-blue-500">
             @error('temperature')
-                <p style="color:#ef4444;font-size:.73rem;margin-top:3px;font-weight:600;">⚠️ {{ $message }}</p>
+                <p style="color:#ef4444;font-size:.73rem;margin-top:3px;font-weight:600;">{{ $message }}</p>
             @enderror
         </div>
 
@@ -126,7 +130,7 @@
         <div>
             <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:4px;"
                    class="{{ $errors->has('pulseRate') ? 'text-red-600' : 'text-gray-700 dark:text-gray-200' }}">
-                Pulse Rate (bpm) *
+                Pulse Rate (bpm) <span class="lumc-required">*</span>
             </label>
             <input type="number" wire:model="pulseRate" placeholder="80" min="20" max="300"
                 class="w-full rounded-lg px-3 py-2 text-sm
@@ -135,7 +139,7 @@
                        dark:text-white dark:bg-gray-800 dark:placeholder-gray-500
                        focus:outline-none focus:ring-2 focus:ring-blue-500">
             @error('pulseRate')
-                <p style="color:#ef4444;font-size:.73rem;margin-top:3px;font-weight:600;">⚠️ {{ $message }}</p>
+                <p style="color:#ef4444;font-size:.73rem;margin-top:3px;font-weight:600;">{{ $message }}</p>
             @enderror
         </div>
 
@@ -143,7 +147,7 @@
         <div>
             <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:4px;"
                    class="{{ $errors->has('respiratoryRate') ? 'text-red-600' : 'text-gray-700 dark:text-gray-200' }}">
-                Respiratory Rate (breaths/min) *
+                Respiratory Rate (breaths/min) <span class="lumc-required">*</span>
             </label>
             <input type="number" wire:model="respiratoryRate" placeholder="18" min="0" max="80"
                 class="w-full rounded-lg px-3 py-2 text-sm
@@ -152,7 +156,7 @@
                        dark:text-white dark:bg-gray-800 dark:placeholder-gray-500
                        focus:outline-none focus:ring-2 focus:ring-blue-500">
             @error('respiratoryRate')
-                <p style="color:#ef4444;font-size:.73rem;margin-top:3px;font-weight:600;">⚠️ {{ $message }}</p>
+                <p style="color:#ef4444;font-size:.73rem;margin-top:3px;font-weight:600;">{{ $message }}</p>
             @enderror
         </div>
 
@@ -165,7 +169,7 @@
                        focus:outline-none focus:ring-2 focus:ring-blue-500">
             @if($weightKg && $weightKg < 10)
                 <p style="color:#ea580c;font-size:.73rem;margin-top:3px;" class="dark:text-orange-400">
-                    ⚠️ Pedia weight (&lt;10 kg) — Blood Pressure field hidden
+                    Pedia weight (&lt;10 kg) — Blood Pressure field hidden
                 </p>
             @endif
         </div>
@@ -242,8 +246,8 @@
                        background:#1e3a5f;color:#fff;border:none;
                        font-size:.875rem;font-weight:600;cursor:pointer;
                        transition:background .18s;">
-            <span wire:loading.remove wire:target="save">💾 Save Vital Signs</span>
-            <span wire:loading wire:target="save">⏳ Saving…</span>
+            <span wire:loading.remove wire:target="save">Save Vital Signs</span>
+            <span wire:loading wire:target="save">Saving…</span>
         </button>
 
         <a href="{{ \App\Filament\Clerk\Resources\VisitResource::getUrl('index') }}"
@@ -255,7 +259,7 @@
                   transition:background .18s,border-color .18s;"
            onmouseover="this.style.background='#f3f4f6';this.style.borderColor='#9ca3af'"
            onmouseout="this.style.background='#fff';this.style.borderColor='#d1d5db'">
-            ← Back to Patients List
+             Back to Patients List
         </a>
 
     </div>
