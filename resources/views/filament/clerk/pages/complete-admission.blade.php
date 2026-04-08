@@ -366,14 +366,28 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
             @if($svc)<span class="ca-header-pill">{{ $svc }}</span>@endif
             <span class="ca-header-pill" style="{{ $visit->visit_type==='ER' ? 'background:rgba(220,38,38,.3);' : '' }}">
-                {{ $visit->visit_type==='ER' ? '🚑 ER' : '📋 OPD' }}
+                <span style="display:inline-flex;align-items:center;gap:6px;">
+                    @if($visit->visit_type==='ER')
+                        <x-filament::icon icon="heroicon-o-bolt" class="w-4 h-4 text-red-100" />
+                        <span>ER</span>
+                    @else
+                        <x-filament::icon icon="heroicon-o-clipboard-document-list" class="w-4 h-4 text-blue-100" />
+                        <span>OPD</span>
+                    @endif
+                </span>
             </span>
             @if($history?->doctor)<span class="ca-header-pill">Dr. {{ $history->doctor->name }}</span>@endif
             <span class="ca-header-pill" style="background:rgba(245,158,11,.25);">
-                🕐 Admitted {{ $visit->doctor_admitted_at->timezone('Asia/Manila')->format('M j H:i') }}
+                <span style="display:inline-flex;align-items:center;gap:6px;">
+                    <x-filament::icon icon="heroicon-o-clock" class="w-4 h-4 text-yellow-100" />
+                    <span>Admitted {{ $visit->doctor_admitted_at->timezone('Asia/Manila')->format('M j H:i') }}</span>
+                </span>
             </span>
         </div>
-        <a href="{{ \App\Filament\Clerk\Pages\PendingAdmissions::getUrl() }}" class="ca-back-link">← Pending List</a>
+        <a href="{{ \App\Filament\Clerk\Pages\PendingAdmissions::getUrl() }}" class="ca-back-link">
+            <x-filament::icon icon="heroicon-o-arrow-left" class="w-4 h-4" />
+            Pending List
+        </a>
     </div>
 
     {{-- Stepper (4 steps) --}}
@@ -391,7 +405,11 @@
         <div class="ca-step">
             <div class="ca-step-dot {{ $cls }}"
                 @if($cls==='done' ) wire:click="goToStep({{ $num }})" title="Go back to step {{ $num }}" @endif>
-                @if($cls === 'done') ✓ @else {{ $num }} @endif
+                @if($cls === 'done')
+                    <x-filament::icon icon="heroicon-o-check" class="w-4 h-4" />
+                @else
+                    {{ $num }}
+                @endif
             </div>
             <div>
                 <p class="ca-step-label {{ $cls }}">{{ $label }}</p>
@@ -407,8 +425,11 @@
     {{-- ══ STEP 1: ER RECORD ══════════════════════════════════════════ --}}
     @if($step === 1)
     <div class="step-hint">
-        📋 <strong>Step 1 of 4 — Emergency Room Record (ER-001)</strong><br>
-        Fill in all fields. When done, click <strong>💾 Save &amp; Continue</strong> inside the form toolbar.
+        <span style="display:inline-flex;align-items:center;gap:8px;">
+            <x-filament::icon icon="heroicon-o-clipboard-document-list" class="w-5 h-5 text-gray-500" />
+            <strong>Step 1 of 4 — Emergency Room Record (ER-001)</strong>
+        </span><br>
+        Fill in all fields. When done, click <strong>Save &amp; Continue</strong> inside the form toolbar.
         The page will advance to Step 2 automatically.
     </div>
 
@@ -427,9 +448,12 @@
     {{-- ══ STEP 2: ADMISSION & DISCHARGE RECORD ══════════════════════════ --}}
     @elseif($step === 2)
     <div class="step-hint">
-        🏥 <strong>Step 2 of 4 — Admission and Discharge Record (ADM-001)</strong><br>
+        <span style="display:inline-flex;align-items:center;gap:8px;">
+            <x-filament::icon icon="heroicon-o-building-office-2" class="w-5 h-5 text-gray-500" />
+            <strong>Step 2 of 4 — Admission and Discharge Record (ADM-001)</strong>
+        </span><br>
         Fields shared with the ER Record are pre-filled. Fill remaining fields, then click
-        <strong>💾 Save &amp; Continue</strong> in the form toolbar.
+        <strong>Save &amp; Continue</strong> in the form toolbar.
     </div>
 
     <div class="iframe-container">
@@ -447,9 +471,12 @@
     {{-- ══ STEP 3: CONSENT TO CARE ════════════════════════════════════════ --}}
     @elseif($step === 3)
     <div class="step-hint">
-        📝 <strong>Step 3 of 4 — Consent to Care (NUR-002-1)</strong><br>
+        <span style="display:inline-flex;align-items:center;gap:8px;">
+            <x-filament::icon icon="heroicon-o-pencil-square" class="w-5 h-5 text-gray-500" />
+            <strong>Step 3 of 4 — Consent to Care (NUR-002-1)</strong>
+        </span><br>
         Patient name and doctor name are pre-filled. Either the patient <em>or</em> the guardian
-        must fill and sign. When ready, click <strong>💾 Save &amp; Continue</strong> in the form toolbar.
+        must fill and sign. When ready, click <strong>Save &amp; Continue</strong> in the form toolbar.
     </div>
 
     <div class="iframe-container">
@@ -469,7 +496,10 @@
 
     <div class="all-done-banner">
         <p style="font-size:.92rem;font-weight:700;color:#15803d;margin:0 0 3px;">
-            ✅ All three forms saved — review in full before completing admission
+            <span style="display:inline-flex;align-items:center;gap:8px;">
+                <x-filament::icon icon="heroicon-o-check-circle" class="w-5 h-5 text-emerald-700" />
+                <span>All three forms saved — review in full before completing admission</span>
+            </span>
         </p>
         <p style="font-size:.8rem;color:#166534;margin:0;">
             Scroll through all documents. When satisfied, click
@@ -481,7 +511,10 @@
     <div>
         <div class="review-head">
             <div>
-                <p class="review-title">📋 Emergency Room Record (ER-001)</p>
+                <p class="review-title" style="display:inline-flex;align-items:center;gap:8px;">
+                    <x-filament::icon icon="heroicon-o-clipboard-document-list" class="w-5 h-5 text-gray-500" />
+                    <span>Emergency Room Record (ER-001)</span>
+                </p>
                 @if($visit->erRecord?->registration_date)
                 <p class="review-meta">
                     Date: {{ $visit->erRecord->registration_date->format('M j, Y') }}
@@ -490,8 +523,14 @@
                 @endif
             </div>
             <div style="display:flex;gap:8px;">
-                <button wire:click="goToStep(1)" type="button" class="btn-sm">✏️ Edit</button>
-                <a href="{{ $this->getErRecordFormUrl() }}" target="_blank" rel="noopener" class="btn-sm">🖨️ Print</a>
+                <button wire:click="goToStep(1)" type="button" class="btn-sm" style="display:inline-flex;align-items:center;gap:6px;">
+                    <x-filament::icon icon="heroicon-o-pencil-square" class="w-4 h-4" />
+                    Edit
+                </button>
+                <a href="{{ $this->getErRecordFormUrl() }}" target="_blank" rel="noopener" class="btn-sm" style="display:inline-flex;align-items:center;gap:6px;">
+                    <x-filament::icon icon="heroicon-o-printer" class="w-4 h-4" />
+                    Print
+                </a>
             </div>
         </div>
         <div class="review-frame-wrap">
@@ -506,7 +545,10 @@
     <div>
         <div class="review-head">
             <div>
-                <p class="review-title">🏥 Admission and Discharge Record (ADM-001)</p>
+                <p class="review-title" style="display:inline-flex;align-items:center;gap:8px;">
+                    <x-filament::icon icon="heroicon-o-building-office-2" class="w-5 h-5 text-gray-500" />
+                    <span>Admission and Discharge Record (ADM-001)</span>
+                </p>
                 @if($visit->admissionRecord?->admission_date)
                 <p class="review-meta">
                     Admitted: {{ $visit->admissionRecord->admission_date->format('M j, Y') }}
@@ -515,8 +557,14 @@
                 @endif
             </div>
             <div style="display:flex;gap:8px;">
-                <button wire:click="goToStep(2)" type="button" class="btn-sm">✏️ Edit</button>
-                <a href="{{ $this->getAdmRecordFormUrl() }}" target="_blank" rel="noopener" class="btn-sm">🖨️ Print</a>
+                <button wire:click="goToStep(2)" type="button" class="btn-sm" style="display:inline-flex;align-items:center;gap:6px;">
+                    <x-filament::icon icon="heroicon-o-pencil-square" class="w-4 h-4" />
+                    Edit
+                </button>
+                <a href="{{ $this->getAdmRecordFormUrl() }}" target="_blank" rel="noopener" class="btn-sm" style="display:inline-flex;align-items:center;gap:6px;">
+                    <x-filament::icon icon="heroicon-o-printer" class="w-4 h-4" />
+                    Print
+                </a>
             </div>
         </div>
         <div class="review-frame-wrap">
@@ -531,7 +579,10 @@
     <div>
         <div class="review-head">
             <div>
-                <p class="review-title">📝 Consent to Care (NUR-002-1)</p>
+                <p class="review-title" style="display:inline-flex;align-items:center;gap:8px;">
+                    <x-filament::icon icon="heroicon-o-document-check" class="w-5 h-5 text-gray-500" />
+                    <span>Consent to Care (NUR-002-1)</span>
+                </p>
                 @if($visit->consentRecord)
                 <p class="review-meta">
                     {{ $visit->consentRecord->active_section === 1
@@ -541,8 +592,14 @@
                 @endif
             </div>
             <div style="display:flex;gap:8px;">
-                <button wire:click="goToStep(3)" type="button" class="btn-sm">✏️ Edit</button>
-                <a href="{{ $this->getConsentFormUrl() }}" target="_blank" rel="noopener" class="btn-sm">🖨️ Print</a>
+                <button wire:click="goToStep(3)" type="button" class="btn-sm" style="display:inline-flex;align-items:center;gap:6px;">
+                    <x-filament::icon icon="heroicon-o-pencil-square" class="w-4 h-4" />
+                    Edit
+                </button>
+                <a href="{{ $this->getConsentFormUrl() }}" target="_blank" rel="noopener" class="btn-sm" style="display:inline-flex;align-items:center;gap:6px;">
+                    <x-filament::icon icon="heroicon-o-printer" class="w-4 h-4" />
+                    Print
+                </a>
             </div>
         </div>
         <div class="review-frame-wrap">
@@ -560,10 +617,16 @@
             wire:loading.class="opacity-60"
             type="button"
             class="btn-complete">
-            <span wire:loading.remove wire:target="completeAdmission">✅ Complete Admission</span>
+            <span wire:loading.remove wire:target="completeAdmission" style="display:inline-flex;align-items:center;gap:8px;">
+                <x-filament::icon icon="heroicon-o-check-circle" class="w-5 h-5" />
+                Complete Admission
+            </span>
             <span wire:loading wire:target="completeAdmission">Processing…</span>
         </button>
-        <a href="{{ \App\Filament\Clerk\Pages\PendingAdmissions::getUrl() }}" class="btn-back-link">← Back to Pending List</a>
+        <a href="{{ \App\Filament\Clerk\Pages\PendingAdmissions::getUrl() }}" class="btn-back-link" style="display:inline-flex;align-items:center;gap:6px;">
+            <x-filament::icon icon="heroicon-o-arrow-left" class="w-4 h-4" />
+            Back to Pending List
+        </a>
     </div>
 
     @endif {{-- /step --}}
@@ -594,7 +657,10 @@
     <div style="text-align:center;padding:60px 20px;">
         <p style="color:#9ca3af;margin-bottom:8px;">Visit not found or not pending admission.</p>
         <a href="{{ \App\Filament\Clerk\Pages\PendingAdmissions::getUrl() }}"
-            style="color:#1d4ed8;font-size:.875rem;">← Back to Pending List</a>
+            style="color:#1d4ed8;font-size:.875rem;display:inline-flex;align-items:center;gap:6px;">
+            <x-filament::icon icon="heroicon-o-arrow-left" class="w-4 h-4" />
+            Back to Pending List
+        </a>
     </div>
     @endif
 

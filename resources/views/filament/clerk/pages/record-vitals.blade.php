@@ -5,8 +5,8 @@
         style="background:linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 100%);border:1px solid #1e40af;">
         <div class="flex items-center justify-between px-6 py-4">
             <div class="flex-shrink-0">
-                @if(file_exists(public_path('images/la-union-seal.png')))
-                <img src="{{ asset('images/la-union-seal.png') }}" alt="La Union Seal" class="h-16 w-16 object-contain">
+                @if(file_exists(public_path('images/province-logo.png')))
+                <img src="{{ asset('images/province-logo.png') }}" alt="Province of La Union" class="h-16 w-16 object-contain">
                 @else
                 <div class="h-16 w-16 rounded-full flex items-center justify-center text-3xl"
                     style="background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4)">🏛️</div>
@@ -25,8 +25,8 @@
                 </div>
             </div>
             <div class="flex-shrink-0">
-                @if(file_exists(public_path('images/ph-flag.png')))
-                <img src="{{ asset('images/ph-flag.png') }}" alt="Philippine Flag" class="h-16 w-16 object-contain">
+                @if(file_exists(public_path('images/bagong-pilipinas-logo-only.png')))
+                <img src="{{ asset('images/bagong-pilipinas-logo-only.png') }}" alt="Philippine Flag" class="h-16 w-16 object-contain">
                 @else
                 <div class="h-16 w-16 rounded-full flex items-center justify-center text-3xl"
                     style="background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4)">🇵🇭</div>
@@ -44,7 +44,7 @@
     @if($visit)
 
     {{-- Patient Info Card --}}
-    <div style="border-radius:12px;padding:16px;margin-bottom:20px;border:1px solid #bfdbfe;background:#eff6ff;"
+    <div style="border-radius:12px;padding:16px;border:1px solid #bfdbfe;background:#eff6ff;"
         class="dark:bg-blue-950/50 dark:border-blue-800">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
@@ -193,7 +193,7 @@
                     class="w-full rounded-lg px-3 py-2 text-sm border border-gray-300 bg-white text-gray-900 placeholder-gray-400
                        dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500
                        focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <p style="font-size:.7rem;margin-top:3px;" class="text-gray-400 dark:text-gray-500">Format: 120/80</p>
+                <p style="font-size:.7rem;margin-top:4px;" class="text-gray-400 dark:text-gray-500">Format: 120/80</p>
             </div>
             @endif
 
@@ -229,12 +229,18 @@
 
         {{-- Notes --}}
         <div class="mb-6">
-            <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:4px;" class="text-gray-700 dark:text-gray-200">Additional Notes / Observations</label>
-            <textarea wire:model="notes" rows="2"
+            <label style="display:block;font-size:.78rem;font-weight:700;" class="text-gray-700 dark:text-gray-200">Additional Notes / Observations</label>
+            <textarea
+                wire:model="notes"
+                rows="2"
+                x-data
+                x-ref="notes"
+                x-init="$nextTick(() => { $refs.notes.style.height = 'auto'; $refs.notes.style.height = $refs.notes.scrollHeight + 'px'; })"
+                @input="$refs.notes.style.height = 'auto'; $refs.notes.style.height = $refs.notes.scrollHeight + 'px';"
                 placeholder="Any additional clinical observations…"
-                class="w-full rounded-lg px-3 py-2 text-sm border border-gray-300 bg-white text-gray-900 placeholder-gray-400
-                   dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500
-                   focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                class="w-full rounded-lg px-3 py-2 my-2 text-sm border border-gray-300 bg-white text-gray-900 placeholder-gray-400 overflow-hidden resize-none
+                dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500
+                focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
         </div>
 
         {{-- Actions --}}

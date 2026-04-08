@@ -95,7 +95,15 @@
                          font-size:.72rem;font-weight:700;
                          background:{{ $visit->visit_type==='ER'?'#fef2f2':'#eff6ff' }};
                          color:{{ $visit->visit_type==='ER'?'#dc2626':'#1d4ed8' }};">
-                    {{ $visit->visit_type==='ER'?'🚑 ER':'📋 OPD' }}
+                    <span style="display:inline-flex;align-items:center;gap:6px;">
+                        @if($visit->visit_type==='ER')
+                            <x-filament::icon icon="heroicon-o-bolt" class="w-4 h-4" />
+                            <span>ER</span>
+                        @else
+                            <x-filament::icon icon="heroicon-o-clipboard-document-list" class="w-4 h-4" />
+                            <span>OPD</span>
+                        @endif
+                    </span>
                 </span>
             </div>
 
@@ -121,8 +129,9 @@
                     Dr. {{ $h->doctor->name }}
                 </p>
                 @endif
-                <p style="font-size:.72rem;color:#9ca3af;margin-top:2px;">
-                    🕐 {{ $visit->doctor_admitted_at->timezone('Asia/Manila')->format('M j, Y H:i') }}
+                <p style="font-size:.72rem;color:#9ca3af;margin-top:2px;display:flex;align-items:center;gap:6px;">
+                    <x-filament::icon icon="heroicon-o-clock" class="w-4 h-4" />
+                    {{ $visit->doctor_admitted_at->timezone('Asia/Manila')->format('M j, Y H:i') }}
                 </p>
                 <p style="font-size:.7rem;color:#9ca3af;">
                     {{ $visit->doctor_admitted_at->diffForHumans() }}
@@ -152,7 +161,7 @@
                   text-decoration:none;white-space:nowrap;"
                 onmouseover="this.style.background='#047857'"
                 onmouseout="this.style.background='#059669'">
-                Complete Admission →
+                Complete Admission
             </a>
         </div>
 

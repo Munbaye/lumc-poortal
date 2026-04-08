@@ -43,8 +43,8 @@
     <div style="background:linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 100%);border:1px solid #1e40af;border-radius:12px;margin-bottom:24px;overflow:hidden;">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;">
             <div style="flex-shrink:0;">
-                @if(file_exists(public_path('images/la-union-seal.png')))
-                <img src="{{ asset('images/la-union-seal.png') }}" alt="La Union Seal" style="height:64px;width:64px;object-fit:contain;">
+                @if(file_exists(public_path('images/province-logo.png')))
+                <img src="{{ asset('images/province-logo.png') }}" alt="La Union Seal" style="height:64px;width:64px;object-fit:contain;">
                 @else
                 <div style="height:64px;width:64px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:1.8rem;">🏛️</div>
                 @endif
@@ -63,8 +63,8 @@
                 </div>
             </div>
             <div style="flex-shrink:0;">
-                @if(file_exists(public_path('images/ph-flag.png')))
-                <img src="{{ asset('images/ph-flag.png') }}" alt="Philippine Flag" style="height:64px;width:64px;object-fit:contain;">
+                @if(file_exists(public_path('images/bagong-pilipinas-logo-only.png')))
+                <img src="{{ asset('images/bagong-pilipinas-logo-only.png') }}" alt="Philippine Flag" style="height:64px;width:64px;object-fit:contain;">
                 @else
                 <div style="height:64px;width:64px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:1.8rem;">🇵🇭</div>
                 @endif
