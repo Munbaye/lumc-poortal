@@ -591,6 +591,7 @@
         : '—';
     $vitalsCount   = $this->vitalsCount;
     $ivCount       = $this->ivEntriesCount;
+    $isReadonly    = $this->isReadonly;
 @endphp
 
 <div class="chart-page">
@@ -612,7 +613,14 @@
         <button wire:click="goBack" type="button" class="btn-back-hdr">← Patient List</button>
     </div>
 
+    @if($isReadonly)
+    <div style="background:#fef9c3;border-bottom:2px solid #f59e0b;padding:10px 24px;display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:600;color:#92400e;">
+        📂 Past Visit — Read Only &nbsp;·&nbsp; <span style="font-weight:400;">This visit is completed. No changes can be made.</span>
+    </div>
+    @endif
+
     {{-- ════ TABS ═══════════════════════════════════════════════════ --}}
+    @if(!$isReadonly)
     <div class="chart-tabs">
         <button wire:click="setTab('orders')"   class="chart-tab {{ $activeTab==='orders'   ? 'active':'' }}">
             📋 Doctor's Orders
@@ -636,6 +644,7 @@
         <button wire:click="setTab('io')"       class="chart-tab {{ $activeTab==='io'       ? 'active':'' }}">📏 I &amp; O</button>
         <button wire:click="setTab('handover')" class="chart-tab {{ $activeTab==='handover' ? 'active':'' }}">🔄 Handover</button>
     </div>
+    @endif{{-- !isReadonly --}}
 
     <div class="chart-content">
 

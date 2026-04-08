@@ -267,6 +267,7 @@
     $hasConsent   = (bool) $visit->consentRecord;
     $hasHistory   = (bool) $history;
     $isErVisit    = $visit->visit_type === 'ER';
+    $isReadonly   = $this->isReadonly;
 @endphp
 
 <div class="chart-page">
@@ -302,7 +303,14 @@
         </div>
     </div>
 
+    @if($isReadonly)
+    <div style="background:#fef9c3;border-bottom:2px solid #f59e0b;padding:10px 24px;display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:600;color:#92400e;">
+        📂 Past Visit — Read Only &nbsp;·&nbsp; <span style="font-weight:400;">This visit is completed. No changes can be made.</span>
+    </div>
+    @endif
+
     {{-- ════ TABS ═══════════════════════════════════════════════════ --}}
+    @if(!$isReadonly)
     <div class="chart-tabs">
         <button wire:click="setTab('profile')" class="chart-tab {{ $activeTab==='profile' ? 'active':'' }}">
             <span class="tab-icon">📄</span> Patient Forms
@@ -316,6 +324,7 @@
             @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif
         </button>
     </div>
+    @endif{{-- !isReadonly --}}
 
     <div class="chart-content">
 
