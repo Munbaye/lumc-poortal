@@ -61,11 +61,21 @@ class AdmittedPatientsResource extends Resource
                     ->color('primary')
                     ->copyable(),
 
-                Tables\Columns\TextColumn::make('patient.full_name')
+                Tables\Columns\TextColumn::make('patient_full_name')
                     ->label('Full Name')
-                    ->searchable()
-                    ->weight('semibold')
-                    ->sortable(),
+                    ->getStateUsing(fn (Visit $record) => $record->patient?->full_name ?? '—')
+                    ->searchable(query: function (Builder $query, string $search) {
+                        $query->whereHas('patient', function (Builder $q) use ($search) {
+                            $q->where('case_no', 'like', "%{$search}%")
+                            ->orWhere('first_name', 'like', "%{$search}%")
+                            ->orWhere('family_name', 'like', "%{$search}%")
+                            ->orWhereRaw(
+                                "CONCAT(first_name, ' ', COALESCE(middle_name, ''), ' ', family_name) LIKE ?",
+                                ["%{$search}%"]
+                            );
+                        });
+                    })
+                    ->weight('semibold'),
 
                 Tables\Columns\TextColumn::make('patient.age_display')
                     ->label('Age'),
