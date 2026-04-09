@@ -140,7 +140,7 @@ class VisitResource extends Resource
                 // ── Vitals shortcut (only for just-registered visits) ──────────
                 Tables\Actions\Action::make('add_vitals')
                     ->label('Add Vitals')
-                    ->icon('heroicon-o-heart')
+                    ->icon('heroicon-o-plus')
                     ->color('warning')
                     ->button()
                     ->url(fn (Visit $record) =>
