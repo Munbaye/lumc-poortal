@@ -16,9 +16,11 @@ use Livewire\WithPagination;
  * Nurses see all wards and rooms, can:
  *  - Add / remove beds per room
  *  - Toggle bed maintenance status
- *  - Assign an admitted patient to a bed (sets bed occupied + links visit_id)
- *  - Unassign a patient from a bed (sets bed available, clears visit_id)
+ *  - Toggle ROOM maintenance status (nurse can also set/clear room maintenance)
+ *  - Assign an admitted patient to a bed
+ *  - Unassign a patient from a bed
  *  - Transfer a bed from one room to another
+ *  - Search patients live with highlight
  */
 class BedManagement extends Page
 {
@@ -41,15 +43,16 @@ class BedManagement extends Page
     public bool   $showAddBedModal = false;
 
     // ── Assign Patient modal ──────────────────────────────────────────────────
-    public ?int   $assignBedId     = null;
-    public ?int   $assignVisitId   = null;
-    public bool   $showAssignModal = false;
+    public ?int    $assignBedId      = null;
+    public ?int    $assignVisitId    = null;
+    public string  $patientSearch    = '';
+    public bool    $showAssignModal  = false;
 
     // ── Unassign modal ────────────────────────────────────────────────────────
     public ?int   $unassignBedId     = null;
     public bool   $showUnassignModal = false;
 
-    // ── Maintenance toggle modal ──────────────────────────────────────────────
+    // ── Bed Maintenance toggle modal ──────────────────────────────────────────
     public ?int   $maintenanceBedId     = null;
     public bool   $showMaintenanceModal = false;
 
@@ -62,12 +65,18 @@ class BedManagement extends Page
     public ?int   $transferRoomId    = null;
     public bool   $showTransferModal = false;
 
-    // ── Listeners so the blade can re-render after Livewire actions ───────────
+    // ── Room Maintenance toggle modal ─────────────────────────────────────────
+    public ?int   $maintenanceRoomId       = null;
+    public string $maintenanceRoomNotes    = '';
+    public bool   $showRoomMaintenanceModal = false;
+
+    // ── Listeners ─────────────────────────────────────────────────────────────
     public function updatedSearch(): void               { $this->resetPage(); }
     public function updatedWardFilter(): void           { $this->resetPage(); }
     public function updatedClassificationFilter(): void { $this->resetPage(); }
+    public function updatedPatientSearch(): void        { $this->assignVisitId = null; }
 
-    // ── Computed: wards list for filter dropdown ──────────────────────────────
+    // ── Computed: wards list ──────────────────────────────────────────────────
     public function getWardsProperty()
     {
         return Ward::where('is_active', true)->orderBy('name')->get();
@@ -93,7 +102,7 @@ class BedManagement extends Page
             ->groupBy('ward_id');
     }
 
-    // ── Computed: rooms list for transfer dropdown (all active rooms) ─────────
+    // ── Computed: all rooms for transfer dropdown ─────────────────────────────
     public function getAllRoomsProperty()
     {
         return Room::with('ward')
@@ -104,7 +113,31 @@ class BedManagement extends Page
             ->get();
     }
 
-    // ── Computed: admitted patients without a bed assigned ────────────────────
+    // ── Computed: admitted patients for search ────────────────────────────────
+    public function getSearchedPatientsProperty()
+    {
+        if (trim($this->patientSearch) === '') {
+            return collect();
+        }
+
+        $assignedVisitIds = Bed::whereNotNull('visit_id')
+            ->where('status', 'occupied')
+            ->pluck('visit_id')
+            ->toArray();
+
+        return Visit::with('patient')
+            ->whereNotNull('clerk_admitted_at')
+            ->whereNull('discharged_at')
+            ->whereNotIn('id', $assignedVisitIds)
+            ->whereHas('patient', function ($q) {
+                $q->where('family_name', 'like', '%' . $this->patientSearch . '%')
+                  ->orWhere('first_name', 'like', '%' . $this->patientSearch . '%')
+                  ->orWhere('case_no', 'like', '%' . $this->patientSearch . '%');
+            })
+            ->get();
+    }
+
+    // ── Computed: all admitted+unassigned patients (for unassigned count) ─────
     public function getUnassignedPatientsProperty()
     {
         $assignedVisitIds = Bed::whereNotNull('visit_id')
@@ -280,6 +313,52 @@ class BedManagement extends Page
     }
 
     // =========================================================================
+    // TOGGLE ROOM MAINTENANCE (nurse can also set/clear)
+    // =========================================================================
+
+    public function openRoomMaintenanceModal(int $roomId): void
+    {
+        $room = Room::find($roomId);
+        if (! $room) return;
+
+        $this->maintenanceRoomId        = $roomId;
+        $this->maintenanceRoomNotes     = $room->maintenance_notes ?? '';
+        $this->showRoomMaintenanceModal = true;
+    }
+
+    public function toggleRoomMaintenance(): void
+    {
+        $room = Room::find($this->maintenanceRoomId);
+        if (! $room) return;
+
+        if ($room->is_under_maintenance) {
+            // Clear maintenance
+            $room->update([
+                'is_under_maintenance' => false,
+                'maintenance_notes'    => null,
+            ]);
+            Notification::make()
+                ->success()
+                ->title("Room {$room->room_number} marked as Operational.")
+                ->send();
+        } else {
+            // Set maintenance
+            $room->update([
+                'is_under_maintenance' => true,
+                'maintenance_notes'    => trim($this->maintenanceRoomNotes) ?: null,
+            ]);
+            Notification::make()
+                ->success()
+                ->title("Room {$room->room_number} set Under Maintenance.")
+                ->send();
+        }
+
+        $this->showRoomMaintenanceModal = false;
+        $this->maintenanceRoomId        = null;
+        $this->maintenanceRoomNotes     = '';
+    }
+
+    // =========================================================================
     // ASSIGN PATIENT TO BED
     // =========================================================================
 
@@ -287,7 +366,17 @@ class BedManagement extends Page
     {
         $this->assignBedId     = $bedId;
         $this->assignVisitId   = null;
+        $this->patientSearch   = '';
         $this->showAssignModal = true;
+    }
+
+    public function selectPatient(int $visitId): void
+    {
+        $this->assignVisitId = $visitId;
+        $visit = Visit::with('patient')->find($visitId);
+        if ($visit?->patient) {
+            $this->patientSearch = $visit->patient->full_name;
+        }
     }
 
     public function assignPatient(): void
@@ -336,6 +425,7 @@ class BedManagement extends Page
         $this->showAssignModal = false;
         $this->assignBedId     = null;
         $this->assignVisitId   = null;
+        $this->patientSearch   = '';
     }
 
     // =========================================================================
@@ -370,7 +460,7 @@ class BedManagement extends Page
     }
 
     // =========================================================================
-    // TRANSFER BED (move bed from one room to another)
+    // TRANSFER BED
     // =========================================================================
 
     public function openTransferModal(int $bedId): void
@@ -392,7 +482,7 @@ class BedManagement extends Page
             return;
         }
 
-        if ($bed->room_id === $this->transferRoomId) {
+        if ((int) $bed->room_id === (int) $this->transferRoomId) {
             Notification::make()->warning()->title('Bed is already in that room.')->send();
             return;
         }
