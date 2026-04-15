@@ -10,6 +10,7 @@ use App\Filament\Doctor\Resources\AdmittedPatientsResource;
 use App\Filament\Doctor\Pages\PatientAssessment;
 use App\Filament\Doctor\Pages\PatientChart;
 use App\Http\Middleware\Filament\StaffAuthenticate;
+use Illuminate\Support\HtmlString;
 
 class DoctorPanelProvider extends PanelProvider
 {
@@ -20,7 +21,12 @@ class DoctorPanelProvider extends PanelProvider
             ->path('doctor')
             ->homeUrl('/doctor/patient-queues')
             ->colors(['primary' => Color::Teal])
-            ->brandName('LUMC — Doctor Portal')
+            ->brandLogo(fn() => new HtmlString(
+                '<div style="display:flex;align-items:center;gap:10px;">'
+                    . '<img src="' . asset('images/lumc-logo.png') . '" alt="LUMC Logo" style="height:40px;width:auto;">'
+                    . '<span style="font-weight:700;color:#111827;">LUMC — Doctor Portal</span>'
+                    . '</div>'
+            ))
             ->favicon(asset('images/lumc-logo.png'))
             ->resources([
                 PatientQueueResource::class,
