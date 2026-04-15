@@ -1,6 +1,6 @@
 <x-filament-panels::page>
 
-{{-- ── Stats Row — 4 cards in a single horizontal row ─────────────────── --}}
+{{-- ── Stats Row ─────────────────────────────────────────────────────────── --}}
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;">
 
     <div style="background:#fff;border:1px solid #e5e7eb;border-radius:.75rem;padding:1rem 1.25rem;display:flex;flex-direction:column;gap:.25rem;box-shadow:0 1px 3px rgba(0,0,0,.06);">
@@ -25,15 +25,25 @@
 
 </div>
 
+{{-- ── Unassigned Patients Alert ─────────────────────────────────────────── --}}
+@php $unassignedCount = $this->unassignedPatients->count(); @endphp
+@if($unassignedCount > 0)
+<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:.75rem;padding:.875rem 1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem;">
+    <x-heroicon-o-exclamation-triangle class="w-5 h-5 text-yellow-500 shrink-0" />
+    <p style="font-size:.875rem;color:#92400e;margin:0;">
+        <strong>{{ $unassignedCount }}</strong> admitted patient(s) not yet assigned to a bed.
+    </p>
+</div>
+@endif
+
 {{-- ── Filters ───────────────────────────────────────────────────────────── --}}
 <div class="flex flex-wrap gap-3 mb-6">
     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search room or ward..."
         class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white w-56 focus:outline-none focus:ring-2 focus:ring-primary-500" />
 
-    {{-- Ward filter with chevron --}}
     <div style="position:relative;display:inline-flex;align-items:center;">
         <select wire:model.live="wardFilter"
-            style="border:1px solid #d1d5db;border-radius:.5rem;font-size:.875rem;background:#fff;color:#1f2937;outline:none;padding:0.5rem 2.25rem 0.5rem 0.75rem;cursor:pointer;min-width:8rem;-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:none;">
+            style="border:1px solid #d1d5db;border-radius:.5rem;font-size:.875rem;background:#fff;color:#1f2937;outline:none;padding:0.5rem 2.25rem 0.5rem 0.75rem;cursor:pointer;min-width:8rem;-webkit-appearance:none;appearance:none;">
             <option value="">All Wards</option>
             @foreach($this->wards as $ward)
                 <option value="{{ $ward->id }}">{{ $ward->name }}</option>
@@ -46,10 +56,9 @@
         </span>
     </div>
 
-    {{-- Classification filter with chevron --}}
     <div style="position:relative;display:inline-flex;align-items:center;">
         <select wire:model.live="classificationFilter"
-            style="border:1px solid #d1d5db;border-radius:.5rem;font-size:.875rem;background:#fff;color:#1f2937;outline:none;padding:0.5rem 2.25rem 0.5rem 0.75rem;cursor:pointer;min-width:10rem;-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:none;">
+            style="border:1px solid #d1d5db;border-radius:.5rem;font-size:.875rem;background:#fff;color:#1f2937;outline:none;padding:0.5rem 2.25rem 0.5rem 0.75rem;cursor:pointer;min-width:10rem;-webkit-appearance:none;appearance:none;">
             <option value="">All Classifications</option>
             <option value="service">Service</option>
             <option value="pay_ward">Pay Ward</option>
@@ -157,7 +166,7 @@
                         <div class="flex flex-col gap-1.5">
                             @forelse($activeBeds as $bed)
                                 @php
-                                    if ($bed->status === 'available')    { $bedStyle = 'background:#dcfce7;color:#166534;'; }
+                                    if ($bed->status === 'available')       { $bedStyle = 'background:#dcfce7;color:#166534;'; }
                                     elseif ($bed->status === 'occupied')    { $bedStyle = 'background:#fee2e2;color:#991b1b;'; }
                                     elseif ($bed->status === 'maintenance') { $bedStyle = 'background:#fef9c3;color:#854d0e;'; }
                                     else                                    { $bedStyle = 'background:#f3f4f6;color:#374151;'; }
@@ -233,123 +242,58 @@
 
 
 {{-- ══════════════════════════════════════════════════════════════════════════ --}}
-{{-- MODALS                                                                     --}}
+{{-- MODALS (identical to original nurse page)                                  --}}
 {{-- ══════════════════════════════════════════════════════════════════════════ --}}
 
 <style>
-    select.nurse-select {
-        -webkit-appearance: none !important;
-        -moz-appearance: none !important;
-        appearance: none !important;
-        background-image: none !important;
-    }
-    select.nurse-select::-ms-expand { display: none !important; }
-
     .nurse-modal-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem;
-        background: rgba(0, 0, 0, 0.5);
+        position: fixed; inset: 0; z-index: 9999;
+        display: flex; align-items: center; justify-content: center;
+        padding: 1rem; background: rgba(0,0,0,0.5);
     }
     .nurse-modal {
-        position: relative;
-        width: 100%;
-        max-width: 26rem;
-        background: #fff;
-        border-radius: 0.75rem;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.18);
-        overflow: hidden;
+        position: relative; width: 100%; max-width: 26rem;
+        background: #fff; border-radius: 0.75rem;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.18); overflow: hidden;
     }
     .dark .nurse-modal { background: #1f2937; }
     .nurse-modal-close {
-        position: absolute;
-        top: 0.75rem;
-        right: 0.75rem;
-        padding: 0.25rem;
-        border-radius: 0.375rem;
-        color: #9ca3af;
-        cursor: pointer;
-        background: transparent;
-        border: none;
-        line-height: 1;
+        position: absolute; top: 0.75rem; right: 0.75rem;
+        padding: 0.25rem; border-radius: 0.375rem; color: #9ca3af;
+        cursor: pointer; background: transparent; border: none; line-height: 1;
         transition: background 0.15s, color 0.15s;
     }
     .nurse-modal-close:hover { background: #f3f4f6; color: #374151; }
     .nurse-modal-icon-wrap {
-        width: 3rem;
-        height: 3rem;
-        border-radius: 9999px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1rem;
+        width: 3rem; height: 3rem; border-radius: 9999px;
+        display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;
     }
     .nurse-modal-icon-wrap svg { width: 1.5rem; height: 1.5rem; }
     .nurse-modal-header {
-        padding: 2rem 1.5rem 1rem;
-        text-align: center;
+        padding: 2rem 1.5rem 1rem; text-align: center;
         border-bottom: 1px solid #f3f4f6;
     }
     .dark .nurse-modal-header { border-color: #374151; }
-    .nurse-modal-title {
-        font-size: 1.0625rem;
-        font-weight: 700;
-        color: #111827;
-        margin: 0 0 0.25rem;
-        line-height: 1.3;
-    }
+    .nurse-modal-title { font-size: 1.0625rem; font-weight: 700; color: #111827; margin: 0 0 0.25rem; line-height: 1.3; }
     .dark .nurse-modal-title { color: #f9fafb; }
-    .nurse-modal-subtitle {
-        font-size: 0.8125rem;
-        color: #6b7280;
-        margin: 0;
-        line-height: 1.5;
-    }
+    .nurse-modal-subtitle { font-size: 0.8125rem; color: #6b7280; margin: 0; line-height: 1.5; }
     .nurse-modal-body { padding: 1.25rem 1.5rem; }
-    .nurse-modal-desc {
-        font-size: 0.875rem;
-        color: #374151;
-        text-align: center;
-        margin: 0;
-        line-height: 1.6;
-    }
+    .nurse-modal-desc { font-size: 0.875rem; color: #374151; text-align: center; margin: 0; line-height: 1.6; }
     .dark .nurse-modal-desc { color: #d1d5db; }
     .nurse-modal-footer {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.625rem;
-        padding: 1rem 1.5rem;
-        border-top: 1px solid #f3f4f6;
-        background: #f9fafb;
+        display: flex; align-items: center; justify-content: center; gap: 0.625rem;
+        padding: 1rem 1.5rem; border-top: 1px solid #f3f4f6; background: #f9fafb;
     }
     .dark .nurse-modal-footer { border-color: #374151; background: #111827; }
     .nurse-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.375rem;
-        padding: 0.5rem 1.125rem;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        border-radius: 0.5rem;
-        border: none;
-        cursor: pointer;
-        transition: opacity 0.15s, box-shadow 0.15s;
-        line-height: 1;
-        white-space: nowrap;
+        display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem;
+        padding: 0.5rem 1.125rem; font-size: 0.8125rem; font-weight: 600;
+        border-radius: 0.5rem; border: none; cursor: pointer;
+        transition: opacity 0.15s, box-shadow 0.15s; line-height: 1; white-space: nowrap;
     }
     .nurse-btn:hover { opacity: 0.88; }
     .nurse-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-    .nurse-btn-cancel {
-        background: #fff;
-        color: #374151;
-        border: 1px solid #d1d5db;
-    }
+    .nurse-btn-cancel { background: #fff; color: #374151; border: 1px solid #d1d5db; }
     .dark .nurse-btn-cancel { background: #1f2937; color: #d1d5db; border-color: #4b5563; }
     .nurse-btn-cancel:hover { background: #f9fafb; opacity: 1; }
     .dark .nurse-btn-cancel:hover { background: #374151; }
@@ -359,31 +303,16 @@
     .nurse-btn-warning { background: #d97706; color: #fff; }
     .nurse-btn-indigo  { background: #4338ca; color: #fff; }
     .nurse-input {
-        width: 100%;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        padding: 0.5rem 0.75rem;
-        font-size: 0.875rem;
-        color: #111827;
-        background: #fff;
-        outline: none;
-        transition: border-color 0.15s, box-shadow 0.15s;
-        box-sizing: border-box;
+        width: 100%; border: 1px solid #d1d5db; border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #111827; background: #fff;
+        outline: none; transition: border-color 0.15s, box-shadow 0.15s; box-sizing: border-box;
     }
     .nurse-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
     .dark .nurse-input { background: #374151; border-color: #4b5563; color: #f9fafb; }
     .nurse-textarea {
-        width: 100%;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        padding: 0.5rem 0.75rem;
-        font-size: 0.875rem;
-        color: #111827;
-        background: #fff;
-        outline: none;
-        resize: none;
-        transition: border-color 0.15s, box-shadow 0.15s;
-        box-sizing: border-box;
+        width: 100%; border: 1px solid #d1d5db; border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #111827; background: #fff;
+        outline: none; resize: none; transition: border-color 0.15s, box-shadow 0.15s; box-sizing: border-box;
     }
     .nurse-textarea:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
     .dark .nurse-textarea { background: #374151; border-color: #4b5563; color: #f9fafb; }
@@ -394,27 +323,14 @@
     .nurse-error { font-size: 0.75rem; color: #dc2626; margin-top: 0.25rem; }
     .nurse-hint { font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem; }
     .nurse-search-results {
-        border: 1px solid #e5e7eb;
-        border-radius: 0.5rem;
-        overflow: hidden;
-        max-height: 11rem;
-        overflow-y: auto;
-        margin-top: 0.375rem;
+        border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden;
+        max-height: 11rem; overflow-y: auto; margin-top: 0.375rem;
     }
     .dark .nurse-search-results { border-color: #4b5563; }
     .nurse-result-item {
-        width: 100%;
-        text-align: left;
-        padding: 0.625rem 0.875rem;
-        font-size: 0.8125rem;
-        border: none;
-        border-bottom: 1px solid #f3f4f6;
-        background: #fff;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
+        width: 100%; text-align: left; padding: 0.625rem 0.875rem; font-size: 0.8125rem;
+        border: none; border-bottom: 1px solid #f3f4f6; background: #fff; cursor: pointer;
+        display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
         transition: background 0.12s;
     }
     .nurse-result-item:last-child { border-bottom: none; }
@@ -424,153 +340,65 @@
     .nurse-result-item.selected { background: #eff6ff; border-left: 3px solid #3b82f6; }
     .dark .nurse-result-item.selected { background: #1e3a5f; }
     .nurse-selected-pill {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 0.75rem;
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        border-radius: 0.5rem;
-        margin-top: 0.625rem;
-        font-size: 0.8125rem;
-        color: #1d4ed8;
-        font-weight: 500;
+        display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem;
+        background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 0.5rem;
+        margin-top: 0.625rem; font-size: 0.8125rem; color: #1d4ed8; font-weight: 500;
     }
-    .nurse-info-box {
-        padding: 0.625rem 0.875rem;
-        border-radius: 0.5rem;
-        font-size: 0.8125rem;
-        font-style: italic;
+    .nurse-info-box { padding: 0.625rem 0.875rem; border-radius: 0.5rem; font-size: 0.8125rem; font-style: italic; }
+    .nurse-ward-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 0.5rem; max-height: 12.5rem; overflow-y: auto; }
+    .nurse-ward-btn {
+        padding: 0.625rem 0.75rem; border-radius: 0.5rem; border: 1.5px solid #e5e7eb;
+        background: #fff; font-size: 0.8rem; font-weight: 500; color: #374151;
+        text-align: left; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+        line-height: 1.3; width: 100%;
     }
-    .nurse-step-tabs {
-        display: flex;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.5rem;
-        overflow: hidden;
-        margin-bottom: 0.875rem;
+    .dark .nurse-ward-btn { background: #1f2937; border-color: #4b5563; color: #d1d5db; }
+    .nurse-ward-btn:hover { border-color: #4338ca; background: #eef2ff; color: #4338ca; }
+    .nurse-ward-btn.selected { border-color: #4338ca; background: #eef2ff; color: #4338ca; font-weight: 700; }
+    .nurse-room-list { display: flex; flex-direction: column; gap: 0.375rem; max-height: 12.5rem; overflow-y: auto; }
+    .nurse-room-btn {
+        padding: 0.5rem 0.875rem; border-radius: 0.5rem; border: 1.5px solid #e5e7eb;
+        background: #fff; font-size: 0.8125rem; font-weight: 500; color: #374151;
+        text-align: left; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+        display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+        width: 100%; border-left: 3px solid transparent;
     }
+    .dark .nurse-room-btn { background: #1f2937; border-color: #4b5563; color: #d1d5db; }
+    .nurse-room-btn:hover { border-color: #4338ca; background: #eef2ff; }
+    .nurse-room-btn.selected { border-left-color: #4338ca; background: #eef2ff; color: #4338ca; font-weight: 700; }
+    .nurse-room-cap { font-size: 0.7rem; color: #9ca3af; white-space: nowrap; }
+    .nurse-room-btn.selected .nurse-room-cap { color: #818cf8; }
+    .nurse-step-back {
+        display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.75rem;
+        font-weight: 600; color: #6b7280; background: none; border: none; cursor: pointer;
+        padding: 0; margin-bottom: 0.625rem; transition: color 0.15s;
+    }
+    .nurse-step-back:hover { color: #4338ca; }
+    .nurse-selected-room-pill {
+        display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem;
+        background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 0.5rem;
+        margin-top: 0.625rem; font-size: 0.8125rem; color: #4338ca; font-weight: 500;
+    }
+    .nurse-step-tabs { display: flex; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden; margin-bottom: 0.875rem; }
     .dark .nurse-step-tabs { border-color: #4b5563; }
     .nurse-step-tab {
-        flex: 1;
-        padding: 0.5rem 0.5rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-align: center;
-        color: #9ca3af;
-        background: #f9fafb;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.375rem;
-        pointer-events: none;
+        flex: 1; padding: 0.5rem 0.5rem; font-size: 0.75rem; font-weight: 600; text-align: center;
+        color: #9ca3af; background: #f9fafb; border: none; display: flex; align-items: center;
+        justify-content: center; gap: 0.375rem; pointer-events: none;
     }
     .dark .nurse-step-tab { background: #1f2937; color: #6b7280; }
     .nurse-step-tab.active { background: #fff; color: #4338ca; }
     .dark .nurse-step-tab.active { background: #374151; color: #818cf8; }
     .nurse-step-tab.done { background: #f0fdf4; color: #16a34a; }
-    .dark .nurse-step-tab.done { background: #052e16; color: #4ade80; }
     .nurse-step-tab:not(:last-child) { border-right: 1px solid #e5e7eb; }
     .dark .nurse-step-tab:not(:last-child) { border-color: #4b5563; }
     .nurse-step-num {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 1.125rem;
-        height: 1.125rem;
-        border-radius: 9999px;
-        font-size: 0.625rem;
-        font-weight: 800;
-        background: #e5e7eb;
-        color: #9ca3af;
-        flex-shrink: 0;
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 1.125rem; height: 1.125rem; border-radius: 9999px; font-size: 0.625rem;
+        font-weight: 800; background: #e5e7eb; color: #9ca3af; flex-shrink: 0;
     }
     .nurse-step-tab.active .nurse-step-num { background: #4338ca; color: #fff; }
     .nurse-step-tab.done .nurse-step-num { background: #16a34a; color: #fff; }
-    .nurse-ward-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem;
-        max-height: 12.5rem;
-        overflow-y: auto;
-    }
-    .nurse-ward-btn {
-        padding: 0.625rem 0.75rem;
-        border-radius: 0.5rem;
-        border: 1.5px solid #e5e7eb;
-        background: #fff;
-        font-size: 0.8rem;
-        font-weight: 500;
-        color: #374151;
-        text-align: left;
-        cursor: pointer;
-        transition: border-color 0.15s, background 0.15s;
-        line-height: 1.3;
-        width: 100%;
-    }
-    .dark .nurse-ward-btn { background: #1f2937; border-color: #4b5563; color: #d1d5db; }
-    .nurse-ward-btn:hover { border-color: #4338ca; background: #eef2ff; color: #4338ca; }
-    .dark .nurse-ward-btn:hover { background: #312e81; border-color: #818cf8; color: #c7d2fe; }
-    .nurse-ward-btn.selected { border-color: #4338ca; background: #eef2ff; color: #4338ca; font-weight: 700; }
-    .nurse-room-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.375rem;
-        max-height: 12.5rem;
-        overflow-y: auto;
-    }
-    .nurse-room-btn {
-        padding: 0.5rem 0.875rem;
-        border-radius: 0.5rem;
-        border: 1.5px solid #e5e7eb;
-        background: #fff;
-        font-size: 0.8125rem;
-        font-weight: 500;
-        color: #374151;
-        text-align: left;
-        cursor: pointer;
-        transition: border-color 0.15s, background 0.15s;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-        width: 100%;
-        border-left: 3px solid transparent;
-    }
-    .dark .nurse-room-btn { background: #1f2937; border-color: #4b5563; color: #d1d5db; }
-    .nurse-room-btn:hover { border-color: #4338ca; background: #eef2ff; }
-    .dark .nurse-room-btn:hover { background: #312e81; border-color: #818cf8; }
-    .nurse-room-btn.selected { border-left-color: #4338ca; background: #eef2ff; color: #4338ca; font-weight: 700; }
-    .nurse-room-cap { font-size: 0.7rem; color: #9ca3af; white-space: nowrap; }
-    .nurse-room-btn.selected .nurse-room-cap { color: #818cf8; }
-    .nurse-step-back {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #6b7280;
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0;
-        margin-bottom: 0.625rem;
-        transition: color 0.15s;
-    }
-    .nurse-step-back:hover { color: #4338ca; }
-    .nurse-selected-room-pill {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 0.75rem;
-        background: #eef2ff;
-        border: 1px solid #c7d2fe;
-        border-radius: 0.5rem;
-        margin-top: 0.625rem;
-        font-size: 0.8125rem;
-        color: #4338ca;
-        font-weight: 500;
-    }
 </style>
 
 
@@ -694,7 +522,7 @@
                 @php $selectedVisit = \App\Models\Visit::with('patient')->find($assignVisitId); @endphp
                 <div class="nurse-selected-pill">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width:1rem;height:1rem;flex-shrink:0;">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-5.5-2.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0ZM10 12a5.99 5.99 0 0 0-4.793 2.39A6.483 6.483 0 0 0 10 16.5a6.483 6.483 0 0 0 4.793-2.11A5.99 5.99 0 0 0 10 12Z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-5.5-2.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0ZM10 12a5.99 5.99 0 0 0-4.793 2.39A6.483 6.483 0 0 0 10 16.5a6.483 6.483 0 0 0 4.793-2.11A5.99 5.99 0 0 0 10 12Z" clip-rule="evenodd" />
                     </svg>
                     <span class="truncate">{{ $selectedVisit?->patient?->full_name }} &bull; {{ $selectedVisit?->patient?->case_no }}</span>
                 </div>
@@ -831,7 +659,7 @@
         </div>
         <div class="nurse-modal-body">
             @if($maintRoom?->is_under_maintenance)
-                <p class="nurse-modal-desc">Room <strong>{{ $maintRoom?->room_number }}</strong> will be marked <strong style="color:#16a34a;">operational</strong>. Nurses will be able to assign beds in this room again.</p>
+                <p class="nurse-modal-desc">Room <strong>{{ $maintRoom?->room_number }}</strong> will be marked <strong style="color:#16a34a;">operational</strong>.</p>
                 @if($maintRoom?->maintenance_notes)
                     <div class="nurse-info-box" style="background:#fee2e2;border:1px solid #fca5a5;color:#b91c1c;margin-top:.75rem;">
                         Current note: {{ $maintRoom->maintenance_notes }}
