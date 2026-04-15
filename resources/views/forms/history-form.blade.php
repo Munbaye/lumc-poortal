@@ -205,8 +205,43 @@
             margin-top: 14px;
         }
         .sig-block { display: flex; flex-direction: column; }
-        .sig-line  { border-bottom: 1px solid #000; height: 42px; width: 100%; }
+        .sig-line  { border-bottom: 1px solid #000; height: 62px; width: 100%; }
         .sig-cap   { font-size: 9pt; text-align: center; font-style: italic; margin-top: 3px; }
+
+        /* ── SIGNATURE IMAGE inside sig-line ────────────────────────── */
+        .sig-img-wrap {
+            position: relative;
+            width: 100%;
+            height: 62px;
+            border-bottom: 1px solid #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .sig-img-wrap img.sig-img {
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            max-height: 50px;
+            max-width: 88%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+        .sig-img-wrap .sig-name {
+            position: relative;
+            z-index: 1;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 10.5pt;
+            text-align: center;
+            width: 100%;
+            padding-bottom: 2px;
+            border: none;
+            outline: none;
+            cursor: text;
+            white-space: pre-wrap;
+        }
 
         /* ── SCREEN TIP ─────────────────────────────────────────────── */
         .screen-tip {
@@ -273,14 +308,15 @@
 
     {{-- PATIENT INFO BAR --}}
     @php
-        $pName = $patient->full_name ?? '';
-        $pAge  = ($patient->age_display ?? '') . ' / ' . ($patient->sex ?? '');
-        $pBday = $patient->birthday ? $patient->birthday->format('M j, Y') : '';
-        $pAddr = $patient->address ?? '';
+        $pName   = $patient->full_name ?? '';
+        $pAge    = ($patient->age_display ?? '') . ' / ' . ($patient->sex ?? '');
+        $pBday   = $patient->birthday ? $patient->birthday->format('M j, Y') : '';
+        $pAddr   = $patient->address ?? '';
         $docName = $doctor ? 'Dr. ' . $doctor->name : '';
         $admDate = $visit->clerk_admitted_at
             ? $visit->clerk_admitted_at->timezone('Asia/Manila')->format('M j, Y')
             : '';
+        $doctorSig = $doctor?->signature ?? null;
     @endphp
 
     <div class="patient-bar">
@@ -401,21 +437,32 @@
 
     {{-- ══ SIGNATURE ══ --}}
     <div class="sig-row">
+
+        {{-- Patient signature — always blank line --}}
         <div class="sig-block">
             <div class="sig-line"></div>
             <div class="sig-cap">Signature of Patient / Authorized Representative</div>
         </div>
+
+        {{-- Attending Physician signature --}}
         <div class="sig-block">
-            <div class="sig-line" style="display:flex;align-items:flex-end;padding-bottom:3px;">
+            <div class="sig-img-wrap">
+                @if($doctorSig)
+                    <img
+                        class="sig-img"
+                        src="{{ $doctorSig }}"
+                        alt="Physician Signature"
+                    >
+                @endif
                 <span
-                    class="field"
-                    style="width:100%;border:none;text-align:center;"
+                    class="sig-name field"
                     contenteditable="true"
                     spellcheck="false"
                 >{{ $docName }}</span>
             </div>
             <div class="sig-cap">Attending Physician</div>
         </div>
+
     </div>
 
     <div style="text-align:right;margin-top:10px;">
@@ -437,7 +484,6 @@
 <script>
 /* Suppress Enter in all contenteditable fields */
 document.querySelectorAll('[contenteditable]').forEach(function (el) {
-    /* Allow Enter in multi-line blocks (field-block), suppress in single-line fields */
     if (!el.classList.contains('field-block')) {
         el.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') { e.preventDefault(); }

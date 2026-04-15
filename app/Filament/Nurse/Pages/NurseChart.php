@@ -92,6 +92,10 @@ class NurseChart extends Page
             return;
         }
         $this->loadVisit();
+
+        if ($this->visit && $this->isReadonly) {
+            $this->activeTab = 'forms';
+        }
     }
 
     private function loadVisit(): void
@@ -164,6 +168,16 @@ class NurseChart extends Page
     public function getMarEntriesCountProperty(): int
     {
         return MarEntry::where('visit_id', $this->visitId)->count();
+    }
+
+    // ── Readonly mode (past / completed visits) ───────────────────────────────
+
+    public function getIsReadonlyProperty(): bool
+    {
+        if (!$this->visit) return true;
+        return !($this->visit->status === 'admitted'
+            && $this->visit->clerk_admitted_at !== null
+            && $this->visit->discharged_at === null);
     }
 
     // ── Tab navigation ─────────────────────────────────────────────────────────
