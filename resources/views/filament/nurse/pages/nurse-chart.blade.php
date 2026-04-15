@@ -641,6 +641,7 @@
         </button>
         <button wire:click="setTab('forms')"    class="chart-tab {{ $activeTab==='forms'    ? 'active':'' }}">📄 Patient Forms</button>
         <button wire:click="setTab('mar')"      class="chart-tab {{ $activeTab==='mar'      ? 'active':'' }}">💊 MAR</button>
+        <button wire:click="setTab('tpr')" class="chart-tab {{ $activeTab==='tpr' ? 'active':'' }}">🌡️ TPR Record</button>
         <button wire:click="setTab('io')"       class="chart-tab {{ $activeTab==='io'       ? 'active':'' }}">📏 I &amp; O</button>
         <button wire:click="setTab('handover')" class="chart-tab {{ $activeTab==='handover' ? 'active':'' }}">🔄 Handover</button>
     </div>
@@ -1553,6 +1554,522 @@
                 Click multiple times to add several rows at once, then fill in the medication names.
             </span>
         </div>
+
+        {{-- ══════════════════════════════════════════════════════════════════════════
+            TPR GRAPHIC RECORD TAB CONTENT
+            Included from nurse-chart.blade.php when $activeTab === 'tpr'
+            Requires: $visit, $this->allVitals, $this->tprIoEntries
+            TPR I/O state: $tprAddingIo, $tprIoDate, $tprIoShift, $tprIoUrine,
+                            $tprIoStool, $tprIoStoolType, $tprIoNotes, $tprIoEditId
+        ══════════════════════════════════════════════════════════════════════════ --}}
+
+        @elseif($activeTab === 'tpr')
+
+        @php
+            $tprVitals    = $this->allVitals;
+            $admittedAt   = $visit->clerk_admitted_at;
+            $tprIoEntries = $this->tprIoEntries;
+
+            $labels      = [];
+            $tempPoints  = [];
+            $pulsePoints = [];
+            $rrPoints    = [];
+
+            foreach ($tprVitals as $v) {
+                $labels[]      = $v->taken_at->timezone('Asia/Manila')->format('M j H:i');
+                $tempPoints[]  = $v->temperature      ?? null;
+                $pulsePoints[] = $v->pulse_rate       ?? null;
+                $rrPoints[]    = $v->respiratory_rate ?? null;
+            }
+
+            $uid         = 'tpr-' . $visit->id;
+            $chartJson   = json_encode([
+                'labels' => $labels,
+                'temp'   => $tempPoints,
+                'pulse'  => $pulsePoints,
+                'rr'     => $rrPoints,
+            ]);
+        @endphp
+
+        <style>
+        /* ── TPR tab styles ──────────────────────────────────────────────── */
+        .tpr-chart-wrap {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin-bottom: 16px;
+        }
+        .dark .tpr-chart-wrap { background:#1f2937; border-color:#374151; }
+
+        .tpr-chart-title {
+            font-size: .75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: #6b7280;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tpr-chart-title .tpr-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Numbers table */
+        .tpr-num-table-wrap {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin-bottom: 24px;
+        }
+        .dark .tpr-num-table-wrap { background:#1f2937; border-color:#374151; }
+        .tpr-num-table {
+            width: 100%;
+            min-width: 600px;
+            border-collapse: collapse;
+            font-size: .78rem;
+        }
+        .tpr-num-table th {
+            background: #f9fafb;
+            padding: 8px 12px;
+            text-align: center;
+            font-size: .68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: #6b7280;
+            border-bottom: 2px solid #e5e7eb;
+            white-space: nowrap;
+        }
+        .dark .tpr-num-table th { background:#111827; border-bottom-color:#374151; color:#9ca3af; }
+        .tpr-num-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f3f4f6;
+            text-align: center;
+            color: #374151;
+        }
+        .dark .tpr-num-table td { border-bottom-color:#374151; color:#d1d5db; }
+        .tpr-num-table tr:last-child td { border-bottom: none; }
+        .tpr-val-abnormal { color: #dc2626 !important; font-weight: 700; }
+        .dark .tpr-val-abnormal { color: #f87171 !important; }
+        .tpr-val-normal { color: #059669; font-weight: 600; }
+        .tpr-val-na { color: #d1d5db; font-size: .72rem; }
+
+        /* IO section */
+        .tpr-io-section {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .dark .tpr-io-section { background:#1f2937; border-color:#374151; }
+
+        .tpr-io-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        .dark .tpr-io-head { background:#111827; border-bottom-color:#374151; }
+
+        .tpr-io-form {
+            background: #f0fdf4;
+            border: 1.5px solid #86efac;
+            border-radius: 8px;
+            padding: 16px 18px;
+            margin: 14px 18px;
+        }
+        .dark .tpr-io-form { background:#022c22; border-color:#16a34a; }
+
+        .tpr-io-form-grid {
+            display: grid;
+            grid-template-columns: 150px 140px 120px 120px 140px 1fr;
+            gap: 12px;
+            align-items: end;
+            margin-bottom: 12px;
+        }
+        @media (max-width: 900px) {
+            .tpr-io-form-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 600px) {
+            .tpr-io-form-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .tpr-io-label {
+            font-size: .7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: #6b7280;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .tpr-io-input {
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            padding: 8px 10px;
+            font-size: .875rem;
+            background: #fff;
+            color: #111827;
+            outline: none;
+            width: 100%;
+        }
+        .dark .tpr-io-input { background:#374151; border-color:#4b5563; color:#f3f4f6; }
+        .tpr-io-input:focus { border-color: #059669; box-shadow: 0 0 0 2px rgba(5,150,105,.12); }
+
+        .tpr-io-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .8rem;
+        }
+        .tpr-io-table th {
+            padding: 9px 14px;
+            text-align: left;
+            font-size: .68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: #6b7280;
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+        }
+        .dark .tpr-io-table th { background:#111827; color:#9ca3af; border-bottom-color:#374151; }
+        .tpr-io-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #374151;
+            vertical-align: middle;
+        }
+        .dark .tpr-io-table td { border-bottom-color:#374151; color:#d1d5db; }
+        .tpr-io-table tr:last-child td { border-bottom: none; }
+        .tpr-io-table tbody tr:hover td { background: #f0fdf4; }
+        .dark .tpr-io-table tbody tr:hover td { background: rgba(5,150,105,.04); }
+
+        .tpr-shift-badge {
+            font-size: .68rem; font-weight: 700; padding: 2px 8px;
+            border-radius: 9999px; white-space: nowrap;
+        }
+        .tpr-shift-73   { background:#eff6ff; color:#1d4ed8; }
+        .tpr-shift-311  { background:#f5f3ff; color:#5b21b6; }
+        .tpr-shift-117  { background:#f0fdfa; color:#0f766e; }
+
+        .btn-tpr-add {
+            background: #059669; color: #fff; border: none; border-radius: 7px;
+            padding: 8px 16px; font-size: .8rem; font-weight: 700; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        .btn-tpr-add:hover { background: #047857; }
+        .btn-tpr-save {
+            background: #059669; color: #fff; border: none; border-radius: 7px;
+            padding: 8px 20px; font-size: .83rem; font-weight: 700; cursor: pointer;
+        }
+        .btn-tpr-save:hover { background: #047857; }
+        .btn-tpr-del {
+            background: none; border: none; color: #d1d5db; cursor: pointer;
+            font-size: .75rem; padding: 3px 6px; border-radius: 4px;
+        }
+        .btn-tpr-del:hover { color: #ef4444; background: #fee2e2; }
+        </style>
+
+        {{-- ── Section header ──────────────────────────────────────────── --}}
+        <div class="sec-head">
+            <h2 class="sec-title">🌡️ TPR Graphic Record</h2>
+            <span style="font-size:.78rem;color:#6b7280;">
+                {{ $tprVitals->count() }} vital reading{{ $tprVitals->count() !== 1 ? 's' : '' }}
+                @if($admittedAt)
+                    &nbsp;·&nbsp; Day {{ (int) $admittedAt->diffInDays(now()) + 1 }} of admission
+                @endif
+            </span>
+        </div>
+
+        @if($tprVitals->isEmpty())
+        <div class="empty-state">
+            <div class="empty-icon">🌡️</div>
+            <p class="empty-title">No vital signs recorded yet</p>
+            <p class="empty-sub">Go to the 📊 Vital Signs tab to add the first vital signs entry. Charts will appear here once data is available.</p>
+        </div>
+        @else
+
+        <div class="tpr-chart-wrap">
+            <div class="tpr-chart-title"><span class="tpr-dot" style="background:#ef4444;"></span> Temperature (°C) <span style="font-size:.67rem;color:#9ca3af;font-weight:400;margin-left:auto;">Normal: 36.0–37.5°C</span></div>
+            <div style="position:relative;height:220px;"><canvas id="{{ $uid }}-temp"></canvas></div>
+        </div>
+
+        <div class="tpr-chart-wrap">
+            <div class="tpr-chart-title"><span class="tpr-dot" style="background:#f97316;"></span> Pulse Rate (/min) <span style="font-size:.67rem;color:#9ca3af;font-weight:400;margin-left:auto;">Normal: 60–100 bpm</span></div>
+            <div style="position:relative;height:220px;"><canvas id="{{ $uid }}-pulse"></canvas></div>
+        </div>
+
+        <div class="tpr-chart-wrap">
+            <div class="tpr-chart-title"><span class="tpr-dot" style="background:#3b82f6;"></span> Respiratory Rate (/min) <span style="font-size:.67rem;color:#9ca3af;font-weight:400;margin-left:auto;">Normal: 12–20 /min</span></div>
+            <div style="position:relative;height:220px;"><canvas id="{{ $uid }}-rr"></canvas></div>
+        </div>
+
+        {{-- Data island — safe from Livewire morphing --}}
+        <div id="{{ $uid }}-data"
+             data-chart="{{ htmlspecialchars($chartJson, ENT_QUOTES, 'UTF-8') }}"
+             style="display:none;"></div>
+
+        @script
+        <script>
+        (function () {
+            const uid      = {!! json_encode($uid) !!};
+            const dataEl   = document.getElementById(uid + '-data');
+            if (!dataEl) return;
+
+            const payload  = JSON.parse(dataEl.dataset.chart);
+
+            // Destroy any previous instances
+            if (!window.__tprCharts) window.__tprCharts = {};
+            ['temp','pulse','rr'].forEach(k => {
+                if (window.__tprCharts[uid + '-' + k]) {
+                    window.__tprCharts[uid + '-' + k].destroy();
+                    delete window.__tprCharts[uid + '-' + k];
+                }
+            });
+
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js is not loaded');
+                return;
+            }
+
+            const shared = {
+                type: 'line',
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    spanGaps: true,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 11 } } } },
+                    scales: {
+                        x: { ticks: { maxRotation: 45, font: { size: 10 } }, grid: { color: 'rgba(156,163,175,0.15)' } },
+                        y: { grid: { color: 'rgba(156,163,175,0.15)' }, ticks: { font: { size: 11 } } }
+                    }
+                }
+            };
+
+            const ds = (label, data, color) => ({
+                label, data,
+                borderColor: color,
+                backgroundColor: color.replace(')', ',0.1)').replace('rgb', 'rgba'),
+                borderWidth: 2.5, tension: 0.3, pointRadius: 4, pointHoverRadius: 6, spanGaps: true
+            });
+
+            window.__tprCharts[uid + '-temp'] = new Chart(
+                document.getElementById(uid + '-temp'),
+                { ...shared, data: { labels: payload.labels, datasets: [ds('Temperature (°C)', payload.temp, '#ef4444')] },
+                  options: { ...shared.options, scales: { ...shared.options.scales, y: { min: 34, max: 42, ticks: { stepSize: 0.5 } } } } }
+            );
+
+            window.__tprCharts[uid + '-pulse'] = new Chart(
+                document.getElementById(uid + '-pulse'),
+                { ...shared, data: { labels: payload.labels, datasets: [ds('Pulse Rate (/min)', payload.pulse, '#f97316')] },
+                  options: { ...shared.options, scales: { ...shared.options.scales, y: { min: 40, max: 180, ticks: { stepSize: 10 } } } } }
+            );
+
+            window.__tprCharts[uid + '-rr'] = new Chart(
+                document.getElementById(uid + '-rr'),
+                { ...shared, data: { labels: payload.labels, datasets: [ds('Respiratory Rate (/min)', payload.rr, '#3b82f6')] },
+                  options: { ...shared.options, scales: { ...shared.options.scales, y: { min: 8, max: 40, ticks: { stepSize: 4 } } } } }
+            );
+        })();
+        </script>
+        @endscript
+
+        @endif {{-- tprVitals not empty --}}
+
+        {{-- ════════════════════════════════════════════════════════════════
+            URINE & STOOL RECORDING
+        ════════════════════════════════════════════════════════════════ --}}
+        <div class="tpr-io-section">
+
+            <div class="tpr-io-head">
+                <div>
+                    <span style="font-size:.88rem;font-weight:700;color:#111827;">🚽 Urine &amp; Stool Output</span>
+                    <span style="font-size:.72rem;color:#9ca3af;margin-left:8px;">Per shift · Per day</span>
+                </div>
+                @if(!$tprAddingIo && !$tprIoEditId)
+                <button wire:click="tprOpenAddIo" type="button" class="btn-tpr-add">
+                    ➕ Add Entry
+                </button>
+                @endif
+            </div>
+
+            {{-- ── Add / Edit form ─────────────────────────────────────── --}}
+            @if($tprAddingIo || $tprIoEditId)
+            <div class="tpr-io-form">
+                <p style="font-size:.82rem;font-weight:700;color:#065f46;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #bbf7d0;">
+                    {{ $tprIoEditId ? '✎ Edit Entry' : '➕ New Urine & Stool Entry' }}
+                </p>
+
+                <div class="tpr-io-form-grid">
+
+                    <div>
+                        <label class="tpr-io-label">Date *</label>
+                        <input type="date" wire:model="tprIoDate" class="tpr-io-input">
+                    </div>
+
+                    <div>
+                        <label class="tpr-io-label">Shift *</label>
+                        <select wire:model="tprIoShift" class="tpr-io-input" style="cursor:pointer;">
+                            <option value="">— Select —</option>
+                            <option value="7-3">7-3 (7AM–3PM)</option>
+                            <option value="3-11">3-11 (3PM–11PM)</option>
+                            <option value="11-7">11-7 (11PM–7AM)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="tpr-io-label">Urine (mL)</label>
+                        <input type="number" wire:model="tprIoUrine" min="0" max="9999"
+                            class="tpr-io-input" placeholder="0">
+                    </div>
+
+                    <div>
+                        <label class="tpr-io-label">Stool Count</label>
+                        <input type="number" wire:model="tprIoStool" min="0" max="99"
+                            class="tpr-io-input" placeholder="0">
+                    </div>
+
+                    <div>
+                        <label class="tpr-io-label">Stool Type</label>
+                        <select wire:model="tprIoStoolType" class="tpr-io-input" style="cursor:pointer;">
+                            <option value="">— Type —</option>
+                            <option value="formed">Formed</option>
+                            <option value="loose">Loose</option>
+                            <option value="watery">Watery</option>
+                            <option value="bloody">Bloody</option>
+                            <option value="none">None</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="tpr-io-label">Notes</label>
+                        <input type="text" wire:model="tprIoNotes" class="tpr-io-input"
+                            placeholder="Optional remarks…">
+                    </div>
+
+                </div>
+
+                <div style="display:flex;gap:10px;">
+                    <button wire:click="tprSaveIo"
+                            wire:loading.attr="disabled"
+                            wire:loading.class="opacity-60"
+                            type="button" class="btn-tpr-save">
+                        <span wire:loading.remove wire:target="tprSaveIo">💾 Save</span>
+                        <span wire:loading wire:target="tprSaveIo">Saving…</span>
+                    </button>
+                    <button wire:click="tprCancelIo" type="button" class="btn-secondary">Cancel</button>
+                </div>
+            </div>
+            @endif
+
+            {{-- ── Entries table ───────────────────────────────────────── --}}
+            @if($tprIoEntries->isEmpty())
+            <div style="text-align:center;padding:36px 24px;">
+                <div style="font-size:2rem;margin-bottom:8px;">🚽</div>
+                <p style="font-size:.88rem;font-weight:700;color:#374151;margin-bottom:4px;">No urine &amp; stool entries yet</p>
+                <p style="font-size:.78rem;color:#9ca3af;">Click "Add Entry" above to record per-shift urine &amp; stool output.</p>
+            </div>
+            @else
+            <table class="tpr-io-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Shift</th>
+                        <th>Urine (mL)</th>
+                        <th>Stool</th>
+                        <th>Stool Type</th>
+                        <th style="text-align:left;">Nurse</th>
+                        <th style="text-align:left;">Notes</th>
+                        <th style="width:60px;text-align:center;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($tprIoEntries as $io)
+                    @php
+                        $shiftClass = match($io->shift) {
+                            '7-3'  => 'tpr-shift-73',
+                            '3-11' => 'tpr-shift-311',
+                            '11-7' => 'tpr-shift-117',
+                            default => '',
+                        };
+                    @endphp
+                    <tr wire:key="tprio-{{ $io->id }}">
+                        <td style="font-family:monospace;font-size:.78rem;font-weight:600;">
+                            {{ $io->date->format('M j, Y') }}
+                        </td>
+                        <td>
+                            <span class="tpr-shift-badge {{ $shiftClass }}">{{ $io->shift }}</span>
+                        </td>
+                        <td style="font-weight:700;color:#0284c7;">
+                            {{ $io->urine_ml !== null ? number_format($io->urine_ml) . ' mL' : '—' }}
+                        </td>
+                        <td style="font-weight:700;color:#7c3aed;">
+                            {{ $io->stool_count !== null ? $io->stool_count . 'x' : '—' }}
+                        </td>
+                        <td>
+                            @if($io->stool_type)
+                                <span style="font-size:.72rem;background:#f3f4f6;padding:1px 7px;border-radius:4px;color:#374151;font-weight:600;">
+                                    {{ $io->stool_type_label }}
+                                </span>
+                            @else
+                                <span style="color:#d1d5db;font-size:.72rem;">—</span>
+                            @endif
+                        </td>
+                        <td style="font-size:.75rem;color:#6b7280;">{{ $io->nurse_name }}</td>
+                        <td style="font-size:.75rem;color:#6b7280;max-width:140px;">
+                            {{ $io->notes ? \Str::limit($io->notes, 35) : '—' }}
+                        </td>
+                        <td style="text-align:center;">
+                            <div style="display:flex;gap:3px;justify-content:center;">
+                                @if(!$tprAddingIo && !$tprIoEditId)
+                                <button wire:click="tprOpenEditIo({{ $io->id }})" type="button"
+                                        style="font-size:.7rem;color:#6b7280;background:#f3f4f6;border:none;border-radius:4px;padding:3px 7px;cursor:pointer;">✎</button>
+                                <button wire:click="tprDeleteIo({{ $io->id }})" type="button"
+                                        class="btn-tpr-del">🗑</button>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+
+            {{-- Daily totals summary --}}
+            @php
+                $dailyTotals = $tprIoEntries->groupBy(fn($io) => $io->date->format('Y-m-d'));
+            @endphp
+            @if($dailyTotals->count() > 0)
+            <div style="padding:10px 18px;border-top:1px solid #f3f4f6;display:flex;flex-wrap:wrap;gap:12px;background:#f9fafb;">
+                <span style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;">24-hr Totals:</span>
+                @foreach($dailyTotals as $date => $entries)
+                @php
+                    $totalUrine = $entries->sum('urine_ml');
+                    $totalStool = $entries->sum('stool_count');
+                @endphp
+                <span style="font-size:.75rem;color:#374151;background:#fff;border:1px solid #e5e7eb;padding:2px 10px;border-radius:6px;">
+                    <strong>{{ \Carbon\Carbon::parse($date)->format('M j') }}</strong>
+                    &nbsp;·&nbsp;
+                    🚱 <span style="color:#0284c7;font-weight:700;">{{ number_format($totalUrine) }}mL</span>
+                    &nbsp;·&nbsp;
+                    🚽 <span style="color:#7c3aed;font-weight:700;">{{ $totalStool }}x</span>
+                </span>
+                @endforeach
+            </div>
+            @endif
+
+            @endif {{-- tprIoEntries not empty --}}
+
+        </div>{{-- /.tpr-io-section --}}
 
         {{-- ══ PLACEHOLDER TABS ════════════════════════════════════ --}}
 

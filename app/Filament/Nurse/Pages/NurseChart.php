@@ -85,6 +85,16 @@ class NurseChart extends Page
     /** Whether the "add medication row" mini-form is open. */
     public bool   $marAddingMed    = false;
 
+    // ── TPR Urine & Stool state ───────────────────────────────────────────────────
+    public bool   $tprAddingIo    = false;
+    public string $tprIoDate      = '';
+    public string $tprIoShift     = '';
+    public ?int   $tprIoUrine     = null;
+    public ?int   $tprIoStool     = null;
+    public string $tprIoStoolType = '';
+    public string $tprIoNotes     = '';
+    public ?int   $tprIoEditId    = null;
+
     public function mount(): void
     {
         if (!$this->visitId) {
@@ -170,6 +180,14 @@ class NurseChart extends Page
         return MarEntry::where('visit_id', $this->visitId)->count();
     }
 
+    public function getTprIoEntriesProperty()
+    {
+        return \App\Models\TprIoEntry::where('visit_id', $this->visitId)
+            ->orderBy('date')
+            ->orderByRaw("FIELD(shift, '7-3', '3-11', '11-7')")
+            ->get();
+    }
+
     // ── Readonly mode (past / completed visits) ───────────────────────────────
 
     public function getIsReadonlyProperty(): bool
@@ -193,6 +211,8 @@ class NurseChart extends Page
         $this->marAddingMed   = false;
         $this->marNewDate     = '';
         $this->marNewMedName  = '';
+        $this->tprAddingIo = false;
+        $this->tprIoEditId = null;
     }
 
     // ── Doctor's Orders — Mark as Carried (individual) ────────────────────────
@@ -672,6 +692,85 @@ class NurseChart extends Page
         if (!$entry) return;
         $entry->delete();
         Notification::make()->title('Medication row removed.')->success()->send();
+    }
+
+    // ── TPR Urine & Stool ─────────────────────────────────────────────────────────
+
+    public function tprOpenAddIo(): void
+    {
+        $this->tprAddingIo    = true;
+        $this->tprIoEditId    = null;
+        $this->tprIoDate      = now()->timezone('Asia/Manila')->toDateString();
+        $this->tprIoShift     = '';
+        $this->tprIoUrine     = null;
+        $this->tprIoStool     = null;
+        $this->tprIoStoolType = '';
+        $this->tprIoNotes     = '';
+    }
+
+    public function tprSaveIo(): void
+    {
+        if (!filled($this->tprIoDate)) {
+            Notification::make()->title('Date is required.')->warning()->send();
+            return;
+        }
+        if (!filled($this->tprIoShift) || !in_array($this->tprIoShift, \App\Models\TprIoEntry::SHIFTS)) {
+            Notification::make()->title('Please select a shift.')->warning()->send();
+            return;
+        }
+
+        $data = [
+            'visit_id'     => $this->visitId,
+            'patient_id'   => $this->visit->patient_id,
+            'recorded_by'  => auth()->id(),
+            'nurse_name'   => auth()->user()->name,
+            'date'         => $this->tprIoDate,
+            'shift'        => $this->tprIoShift,
+            'urine_ml'     => $this->tprIoUrine  ?: null,
+            'stool_count'  => $this->tprIoStool  ?: null,
+            'stool_type'   => filled($this->tprIoStoolType) ? $this->tprIoStoolType : null,
+            'notes'        => trim($this->tprIoNotes) ?: null,
+        ];
+
+        if ($this->tprIoEditId) {
+            \App\Models\TprIoEntry::where('visit_id', $this->visitId)
+                ->find($this->tprIoEditId)
+                ?->update($data);
+            Notification::make()->title('Entry updated.')->success()->send();
+        } else {
+            \App\Models\TprIoEntry::create($data);
+            Notification::make()->title('I&O entry saved.')->success()->send();
+        }
+
+        $this->tprAddingIo = false;
+        $this->tprIoEditId = null;
+    }
+
+    public function tprOpenEditIo(int $id): void
+    {
+        $entry = \App\Models\TprIoEntry::where('visit_id', $this->visitId)->find($id);
+        if (!$entry) return;
+
+        $this->tprIoEditId    = $id;
+        $this->tprAddingIo    = false;
+        $this->tprIoDate      = $entry->date->toDateString();
+        $this->tprIoShift     = $entry->shift;
+        $this->tprIoUrine     = $entry->urine_ml;
+        $this->tprIoStool     = $entry->stool_count;
+        $this->tprIoStoolType = $entry->stool_type ?? '';
+        $this->tprIoNotes     = $entry->notes ?? '';
+    }
+
+    public function tprDeleteIo(int $id): void
+    {
+        \App\Models\TprIoEntry::where('visit_id', $this->visitId)->find($id)?->delete();
+        Notification::make()->title('Entry removed.')->success()->send();
+    }
+
+    public function tprCancelIo(): void
+    {
+        $this->tprAddingIo = false;
+        $this->tprIoEditId = null;
     }
 
     // ── Patient Forms URL helpers ──────────────────────────────────────────────
