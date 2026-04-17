@@ -71,7 +71,7 @@ class PatientChart extends Page
         $this->visit = Visit::with([
             'patient',
             'medicalHistory.doctor',
-            'doctorsOrders' => fn ($q) => $q->with('doctor')->orderBy('order_date', 'desc'),
+            'doctorsOrders' => fn($q) => $q->with('doctor')->orderBy('order_date', 'desc'),
         ])->find($this->visitId);
 
         if (!$this->visit) {
@@ -172,8 +172,8 @@ class PatientChart extends Page
 
         // Split by newlines, trim each line, remove blank lines
         $lines = collect(explode("\n", $this->orderText))
-            ->map(fn ($line) => trim($line))
-            ->filter(fn ($line) => $line !== '')
+            ->map(fn($line) => trim($line))
+            ->filter(fn($line) => $line !== '')
             ->values();
 
         if ($lines->isEmpty()) return;
@@ -194,12 +194,12 @@ class PatientChart extends Page
         }
 
         ActivityLog::record(
-            action:       ActivityLog::ACT_ADMITTED_PATIENT,
-            category:     ActivityLog::CAT_CLINICAL,
-            subject:      $this->visit,
+            action: ActivityLog::ACT_ADMITTED_PATIENT,
+            category: ActivityLog::CAT_CLINICAL,
+            subject: $this->visit,
             subjectLabel: $this->visit->patient->full_name . ' (' . $this->visit->patient->case_no . ')',
-            newValues:    ['orders_written' => $saved, 'doctor' => auth()->user()->name],
-            panel:        'doctor',
+            newValues: ['orders_written' => $saved, 'doctor' => auth()->user()->name],
+            panel: 'doctor',
         );
 
         Notification::make()
@@ -214,7 +214,10 @@ class PatientChart extends Page
     public function discontinueOrder(int $orderId): void
     {
         $order = DoctorsOrder::where('visit_id', $this->visitId)->find($orderId);
-        if (!$order) { Notification::make()->title('Order not found.')->danger()->send(); return; }
+        if (!$order) {
+            Notification::make()->title('Order not found.')->danger()->send();
+            return;
+        }
 
         $order->update([
             'status'       => DoctorsOrder::STATUS_DISCONTINUED,
@@ -258,5 +261,15 @@ class PatientChart extends Page
         return \App\Filament\Doctor\Pages\PatientHistory::getUrl([
             'patientId' => $this->visit?->patient_id,
         ]);
+    }
+
+    public function getPastVisitsCountProperty(): int
+    {
+        if (!$this->visit) return 0;
+
+        return Visit::where('patient_id', $this->visit->patient_id)
+            ->where('id', '!=', $this->visitId)
+            ->whereNotNull('discharged_at')
+            ->count();
     }
 }
