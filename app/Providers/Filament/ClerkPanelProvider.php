@@ -7,7 +7,6 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use App\Http\Middleware\Filament\StaffAuthenticate;
 use Illuminate\Support\HtmlString;
-use Illuminate\Support\HtmlString;
 
 class ClerkPanelProvider extends PanelProvider
 {
