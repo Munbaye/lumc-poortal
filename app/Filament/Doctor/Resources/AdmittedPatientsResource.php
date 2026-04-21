@@ -43,6 +43,8 @@ class AdmittedPatientsResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([])
+
             ->query(static::getEloquentQuery())
             ->columns([
 
@@ -59,11 +61,21 @@ class AdmittedPatientsResource extends Resource
                     ->color('primary')
                     ->copyable(),
 
-                Tables\Columns\TextColumn::make('patient.full_name')
+                Tables\Columns\TextColumn::make('patient_full_name')
                     ->label('Full Name')
-                    ->searchable()
-                    ->weight('semibold')
-                    ->sortable(),
+                    ->getStateUsing(fn (Visit $record) => $record->patient?->full_name ?? '—')
+                    ->searchable(query: function (Builder $query, string $search) {
+                        $query->whereHas('patient', function (Builder $q) use ($search) {
+                            $q->where('case_no', 'like', "%{$search}%")
+                            ->orWhere('first_name', 'like', "%{$search}%")
+                            ->orWhere('family_name', 'like', "%{$search}%")
+                            ->orWhereRaw(
+                                "CONCAT(first_name, ' ', COALESCE(middle_name, ''), ' ', family_name) LIKE ?",
+                                ["%{$search}%"]
+                            );
+                        });
+                    })
+                    ->weight('semibold'),
 
                 Tables\Columns\TextColumn::make('patient.age_display')
                     ->label('Age'),
@@ -99,8 +111,28 @@ class AdmittedPatientsResource extends Resource
                     ),
 
             ])
+
+            ->emptyStateHeading(fn (\Livewire\Component $livewire) =>
+                $livewire->viewFilter === 'all'
+                    ? 'No patients found'
+                    : 'No admitted patients'
+            )
+
             ->defaultSort('doctor_admitted_at', 'asc')
             ->searchPlaceholder('Search by name or case no…')
+
+            // Added SelectFilter to switch between "Admitted Only" and "All Patients"
+            ->filters([
+                \Filament\Tables\Filters\SelectFilter::make('viewFilter')
+                    ->label('Show')
+                    ->options([
+                        'admitted' => '🏥 Admitted Only',
+                        'all'      => '🗂️ All Patients',
+                    ])
+                    ->default('admitted')
+                    ->query(fn (Builder $query, array $data) => $query), // query is handled in ListAdmittedPatients
+            ])
+
             ->actions([
                 Tables\Actions\Action::make('open_chart')
                     ->label('Open Chart')

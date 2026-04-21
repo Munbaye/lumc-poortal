@@ -137,6 +137,7 @@ class VisitResource extends Resource
             ])
             ->persistFiltersInSession()
             ->actions([
+                // ── Vitals shortcut (only for just-registered visits) ──────────
                 Tables\Actions\Action::make('add_vitals')
                     ->label('Add Vitals')
                     ->icon('heroicon-o-plus')
@@ -146,6 +147,20 @@ class VisitResource extends Resource
                         \App\Filament\Clerk\Pages\RecordVitals::getUrl(['visitId' => $record->id])
                     )
                     ->visible(fn (Visit $record) => $record->status === 'registered'),
+
+                // ── Patient visit history ──────────────────────────────────────
+                Tables\Actions\Action::make('patient_history')
+                    ->label('Patient History')
+                    ->icon('heroicon-o-clock')
+                    ->color('gray')
+                    ->button()
+                    ->url(fn (Visit $record) =>
+                        \App\Filament\Clerk\Pages\PatientHistory::getUrl([
+                            'patientId' => $record->patient_id,
+                        ])
+                    ),
+
+                // ── View this specific visit ───────────────────────────────────
                 Tables\Actions\ViewAction::make(),
             ]);
     }

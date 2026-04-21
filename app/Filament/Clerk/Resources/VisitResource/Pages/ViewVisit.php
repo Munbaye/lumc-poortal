@@ -83,6 +83,17 @@ class ViewVisit extends ViewRecord
         return route('forms.consent-to-care', ['visit' => $this->record->id]);
     }
 
+    /**
+     * Link to the PatientHistory page for this patient.
+     * Used by the "All Visits for This Patient →" button in the blade.
+     */
+    public function getPatientHistoryUrl(): string
+    {
+        return \App\Filament\Clerk\Pages\PatientHistory::getUrl([
+            'patientId' => $this->record->patient_id,
+        ]);
+    }
+
     protected function getHeaderActions(): array
     {
         return [];

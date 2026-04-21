@@ -145,13 +145,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/forms/iv-bt-sheet/{visit}', [NurseFormController::class, 'ivBtSheet'])
         ->name('forms.iv-bt-sheet');
 
-    // Legacy static routes kept for backward-compat (no visit = blank template)
-    Route::get('/forms/medication-records', function () {
-        return view('forms.medication-records');
-    })->name('forms.medication-records');
-
-    Route::get('/forms/nurses-notes', function () {
-        return view('forms.nurses-notes');
-    })->name('forms.nurses-notes');
+    Route::get('/forms/nurses-notes/{visit}', [NurseFormController::class, 'nursesNotes'])
+        ->name('forms.nurses-notes');
+ 
+    Route::get('/forms/medication-records/{visit}', [NurseFormController::class, 'medicationRecords'])
+        ->name('forms.medication-records');
 
 });

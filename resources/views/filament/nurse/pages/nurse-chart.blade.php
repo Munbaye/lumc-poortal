@@ -453,6 +453,129 @@
 .ph-title { font-size:.92rem; font-weight:700; color:#374151; margin-bottom:5px; }
 .dark .ph-title { color:#e5e7eb; }
 .ph-desc { font-size:.8rem; color:#9ca3af; margin-bottom:16px; line-height:1.6; }
+
+/* ── MAR (Medication Administration Record) ──────────────────────── */
+.mar-wrap { overflow-x: auto; background:#fff; border:1px solid #e5e7eb; border-radius:10px; }
+.dark .mar-wrap { background:#1f2937; border-color:#374151; }
+ 
+.mar-table { border-collapse:collapse; font-size:.78rem; min-width:700px; }
+ 
+/* Sticky medication column */
+.mar-table .col-med {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: #f8fafc;
+    min-width: 160px;
+    max-width: 200px;
+    border-right: 2px solid #d1d5db !important;
+}
+.dark .mar-table .col-med { background:#1e2937; border-right-color:#374151 !important; }
+ 
+/* Sticky shift column */
+.mar-table .col-shift {
+    position: sticky;
+    left: 160px;          /* same as col-med min-width */
+    z-index: 2;
+    min-width: 48px;
+    max-width: 52px;
+    border-right: 1.5px solid #d1d5db !important;
+}
+.dark .mar-table .col-shift { border-right-color:#374151 !important; }
+ 
+.mar-table th, .mar-table td {
+    border: 1px solid #e5e7eb;
+    padding: 0;
+    vertical-align: middle;
+    text-align: center;
+}
+.dark .mar-table th, .dark .mar-table td { border-color:#374151; }
+ 
+.mar-table thead th {
+    background: #f3f4f6;
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #6b7280;
+    padding: 7px 6px;
+    white-space: nowrap;
+}
+.dark .mar-table thead th { background:#111827; color:#9ca3af; }
+ 
+/* Shift badge cells */
+.mar-shift-73   { background:#eff6ff; color:#1d4ed8; font-size:.7rem; font-weight:700; padding:4px 6px; }
+.mar-shift-311  { background:#f5f3ff; color:#5b21b6; font-size:.7rem; font-weight:700; padding:4px 6px; }
+.mar-shift-117  { background:#f0fdfa; color:#0f766e; font-size:.7rem; font-weight:700; padding:4px 6px; }
+.dark .mar-shift-73  { background:#1e3a5f; color:#93c5fd; }
+.dark .mar-shift-311 { background:#2e1065; color:#c4b5fd; }
+.dark .mar-shift-117 { background:#042f2e; color:#5eead4; }
+ 
+/* Medication group: top border thicker between groups */
+.mar-table tr.mar-group-start td { border-top: 2px solid #d1d5db !important; }
+.dark .mar-table tr.mar-group-start td { border-top-color:#4b5563 !important; }
+ 
+/* Inline inputs */
+.mar-cell-input {
+    width: 100%;
+    min-width: 52px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-size: .78rem;
+    font-family: monospace;
+    color: #111827;
+    outline: none;
+    padding: 2px 3px;
+}
+.dark .mar-cell-input { color:#f3f4f6; }
+.mar-cell-input:focus {
+    background: #fffbeb;
+    border: 1.5px solid #f59e0b !important;
+    border-radius: 3px;
+}
+.dark .mar-cell-input:focus { background:#292524; }
+ 
+/* Medication name input */
+.mar-med-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: .78rem;
+    font-weight: 600;
+    color: #111827;
+    padding: 6px 8px;
+    outline: none;
+    font-family: inherit;
+    text-align: left;
+}
+.dark .mar-med-input { color:#f3f4f6; }
+.mar-med-input:focus { background:#fffbeb; border-radius:3px; }
+.dark .mar-med-input:focus { background:#292524; }
+ 
+/* "Add date" mini row */
+.mar-add-date-row td { background:#f0fdf4; border-top:2px solid #86efac; }
+.dark .mar-add-date-row td { background:#022c22; }
+ 
+/* Add med button */
+.btn-mar-add-med {
+    background:#f43f5e; color:#fff; border:none; border-radius:7px;
+    padding:7px 16px; font-size:.78rem; font-weight:700; cursor:pointer;
+    display:inline-flex; align-items:center; gap:5px;
+}
+.btn-mar-add-med:hover { background:#e11d48; }
+ 
+.btn-mar-del {
+    background:none; border:none; color:#d1d5db; cursor:pointer;
+    font-size:.75rem; padding:2px 5px; border-radius:3px;
+}
+.btn-mar-del:hover { color:#ef4444; background:#fee2e2; }
+.dark .btn-mar-del:hover { background:#450a0a; color:#fca5a5; }
+ 
+.mar-date-header { font-size:.67rem; font-weight:700; color:#374151; white-space:nowrap; }
+.dark .mar-date-header { color:#e5e7eb; }
+.mar-date-sub { font-size:.58rem; color:#9ca3af; display:block; }
 </style>
 
 @if($visit && $visit->patient)
@@ -468,6 +591,7 @@
         : '—';
     $vitalsCount   = $this->vitalsCount;
     $ivCount       = $this->ivEntriesCount;
+    $isReadonly    = $this->isReadonly;
 @endphp
 
 <div class="chart-page">
@@ -484,11 +608,19 @@
             <span class="svc-pill">{{ $service }}</span>
             <div class="h-pill"><p class="pl">Admitted</p><p class="pv">{{ $admittedAt }}</p></div>
             @if($history?->doctor)<div class="h-pill"><p class="pl">Physician</p><p class="pv">Dr. {{ $history->doctor->name }}</p></div>@endif
+            <a href="{{ $this->getPatientHistoryUrl() }}" class="btn-back-hdr">🗂️ All Visits →</a>
         </div>
         <button wire:click="goBack" type="button" class="btn-back-hdr">← Patient List</button>
     </div>
 
+    @if($isReadonly)
+    <div style="background:#fef9c3;border-bottom:2px solid #f59e0b;padding:10px 24px;display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:600;color:#92400e;">
+        📂 Past Visit — Read Only &nbsp;·&nbsp; <span style="font-weight:400;">This visit is completed. No changes can be made.</span>
+    </div>
+    @endif
+
     {{-- ════ TABS ═══════════════════════════════════════════════════ --}}
+    @if(!$isReadonly)
     <div class="chart-tabs">
         <button wire:click="setTab('orders')"   class="chart-tab {{ $activeTab==='orders'   ? 'active':'' }}">
             📋 Doctor's Orders
@@ -509,9 +641,11 @@
         </button>
         <button wire:click="setTab('forms')"    class="chart-tab {{ $activeTab==='forms'    ? 'active':'' }}">📄 Patient Forms</button>
         <button wire:click="setTab('mar')"      class="chart-tab {{ $activeTab==='mar'      ? 'active':'' }}">💊 MAR</button>
+        <button wire:click="setTab('tpr')" class="chart-tab {{ $activeTab==='tpr' ? 'active':'' }}">🌡️ TPR Record</button>
         <button wire:click="setTab('io')"       class="chart-tab {{ $activeTab==='io'       ? 'active':'' }}">📏 I &amp; O</button>
         <button wire:click="setTab('handover')" class="chart-tab {{ $activeTab==='handover' ? 'active':'' }}">🔄 Handover</button>
     </div>
+    @endif{{-- !isReadonly --}}
 
     <div class="chart-content">
 
@@ -568,22 +702,165 @@
         @elseif($activeTab === 'notes')
         <div class="sec-head">
             <h2 class="sec-title">Nurse's Notes</h2>
-            <button wire:click="toggleAddNote" type="button" class="btn-add-note {{ $addingNote ? 'is-cancel':'' }}">@if($addingNote) ✕ Cancel @else ✏️ Add FDAR Note @endif</button>
+            <button wire:click="toggleAddNote" type="button"
+                    class="btn-add-note {{ $addingNote ? 'is-cancel':'' }}">
+                @if($addingNote) ✕ Cancel @else ✏️ Add FDAR Note @endif
+            </button>
         </div>
+ 
         @if($addingNote)
         <div class="soap-form">
-            <p class="soap-form-title">New FDAR Note &nbsp;·&nbsp; <span style="font-weight:400;color:#6b7280;">{{ now()->timezone('Asia/Manila')->format('F j, Y H:i') }} &nbsp;·&nbsp; {{ auth()->user()->name }}</span></p>
-            <div class="soap-row"><div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><div class="soap-letter soap-f">F</div><span style="font-size:.62rem;color:#1e40af;font-weight:700;">Focus</span></div><div><span class="soap-label">Focus — nursing diagnosis or patient problem / concern</span><textarea wire:model="fdarF" rows="2" class="soap-textarea" placeholder="e.g., Acute pain related to hypertensive crisis."></textarea></div></div>
-            <div class="soap-row"><div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><div class="soap-letter soap-d">D</div><span style="font-size:.62rem;color:#166534;font-weight:700;">Data</span></div><div><span class="soap-label">Data — supporting subjective and objective findings</span><textarea wire:model="fdarD" rows="3" class="soap-textarea" placeholder="e.g., Patient c/o headache 8/10. BP 185/100, PR 98, Temp 37.1°C, O2 95%."></textarea></div></div>
-            <div class="soap-row"><div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><div class="soap-letter soap-a">A</div><span style="font-size:.62rem;color:#854d0e;font-weight:700;">Action</span></div><div><span class="soap-label">Action — nursing interventions performed</span><textarea wire:model="fdarA" rows="3" class="soap-textarea" placeholder="e.g., Administered Captopril 25mg SL as ordered. O2 via face mask applied. Monitoring BP q1h."></textarea></div></div>
-            <div class="soap-row"><div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><div class="soap-letter soap-r">R</div><span style="font-size:.62rem;color:#5b21b6;font-weight:700;">Response</span></div><div><span class="soap-label">Response — patient's response to interventions</span><textarea wire:model="fdarR" rows="3" class="soap-textarea" placeholder="e.g., BP decreased to 160/95 after 30 minutes. Headache improved to 5/10. Patient resting comfortably."></textarea></div></div>
-            <div style="display:flex;gap:10px;margin-top:14px;"><button wire:click="saveNote" wire:loading.attr="disabled" wire:loading.class="opacity-60" type="button" class="btn-primary"><span wire:loading.remove wire:target="saveNote">💾 Save Note</span><span wire:loading wire:target="saveNote">Saving…</span></button><button wire:click="toggleAddNote" type="button" class="btn-secondary">Cancel</button></div>
+            <p class="soap-form-title">
+                New FDAR Note &nbsp;·&nbsp;
+                <span style="font-weight:400;color:#6b7280;">
+                    {{ now()->timezone('Asia/Manila')->format('F j, Y H:i') }}
+                    &nbsp;·&nbsp; {{ auth()->user()->name }}
+                </span>
+            </p>
+ 
+            {{-- ── Shift selector ───────────────────────────────────── --}}
+            <div style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #ffe4e6;">
+                <span class="soap-label" style="display:block;margin-bottom:6px;">
+                    Shift *
+                    <span style="font-size:.68rem;color:#ef4444;font-weight:600;">(required)</span>
+                </span>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    @foreach(['7-3' => '7AM – 3PM', '3-11' => '3PM – 11PM', '11-7' => '11PM – 7AM'] as $val => $label)
+                    <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+                                  background:{{ $fdarShift === $val ? '#ffe4e6' : '#f9fafb' }};
+                                  border:2px solid {{ $fdarShift === $val ? '#f43f5e' : '#e5e7eb' }};
+                                  border-radius:7px;padding:7px 16px;font-size:.82rem;font-weight:700;
+                                  color:{{ $fdarShift === $val ? '#be123c' : '#374151' }};
+                                  transition:border-color .12s,background .12s;">
+                        <input type="radio"
+                               wire:model="fdarShift"
+                               value="{{ $val }}"
+                               style="accent-color:#f43f5e;">
+                        {{ $val }} &nbsp;<span style="font-weight:400;font-size:.75rem;">{{ $label }}</span>
+                    </label>
+                    @endforeach
+                </div>
+                @if(filled($fdarShift))
+                <p style="font-size:.7rem;color:#059669;margin-top:5px;font-weight:600;">
+                    ✓ Shift {{ $fdarShift }} selected
+                </p>
+                @endif
+            </div>
+ 
+            {{-- ── FDAR fields ─────────────────────────────────────── --}}
+            <div class="soap-row">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+                    <div class="soap-letter soap-f">F</div>
+                    <span style="font-size:.62rem;color:#1e40af;font-weight:700;">Focus</span>
+                </div>
+                <div>
+                    <span class="soap-label">Focus — nursing diagnosis or patient problem / concern</span>
+                    <textarea wire:model="fdarF" rows="2" class="soap-textarea"
+                        placeholder="e.g., Acute pain related to hypertensive crisis."></textarea>
+                </div>
+            </div>
+ 
+            <div class="soap-row">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+                    <div class="soap-letter soap-d">D</div>
+                    <span style="font-size:.62rem;color:#166534;font-weight:700;">Data</span>
+                </div>
+                <div>
+                    <span class="soap-label">Data — supporting subjective and objective findings</span>
+                    <textarea wire:model="fdarD" rows="3" class="soap-textarea"
+                        placeholder="e.g., Patient c/o headache 8/10. BP 185/100, PR 98, Temp 37.1°C, O2 95%."></textarea>
+                </div>
+            </div>
+ 
+            <div class="soap-row">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+                    <div class="soap-letter soap-a">A</div>
+                    <span style="font-size:.62rem;color:#854d0e;font-weight:700;">Action</span>
+                </div>
+                <div>
+                    <span class="soap-label">Action — nursing interventions performed</span>
+                    <textarea wire:model="fdarA" rows="3" class="soap-textarea"
+                        placeholder="e.g., Administered Captopril 25mg SL as ordered. O2 via face mask applied. Monitoring BP q1h."></textarea>
+                </div>
+            </div>
+ 
+            <div class="soap-row">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+                    <div class="soap-letter soap-r">R</div>
+                    <span style="font-size:.62rem;color:#5b21b6;font-weight:700;">Response</span>
+                </div>
+                <div>
+                    <span class="soap-label">Response — patient's response to interventions</span>
+                    <textarea wire:model="fdarR" rows="3" class="soap-textarea"
+                        placeholder="e.g., BP decreased to 160/95 after 30 minutes. Headache improved to 5/10. Patient resting comfortably."></textarea>
+                </div>
+            </div>
+ 
+            <div style="display:flex;gap:10px;margin-top:14px;">
+                <button wire:click="saveNote"
+                        wire:loading.attr="disabled"
+                        wire:loading.class="opacity-60"
+                        type="button" class="btn-primary">
+                    <span wire:loading.remove wire:target="saveNote">💾 Save Note</span>
+                    <span wire:loading wire:target="saveNote">Saving…</span>
+                </button>
+                <button wire:click="toggleAddNote" type="button" class="btn-secondary">Cancel</button>
+            </div>
         </div>
         @endif
+ 
         @if($allNotes->isEmpty() && !$addingNote)
-        <div class="empty-state"><div class="empty-icon">📝</div><p class="empty-title">No nurse's notes yet</p><p class="empty-sub">Click "Add FDAR Note" above to write the first nursing note.</p></div>
+        <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <p class="empty-title">No nurse's notes yet</p>
+            <p class="empty-sub">Click "Add FDAR Note" above to write the first nursing note.</p>
+        </div>
         @else
-        @foreach($allNotes as $note)<div class="note-card" wire:key="note-{{ $note->id }}"><div class="note-header"><div><p class="note-nurse">{{ $note->nurse?->name ?? 'Unknown Nurse' }}</p><p class="note-time">{{ $note->noted_at?->timezone('Asia/Manila')->format('F j, Y · H:i') }} &nbsp;·&nbsp; {{ $note->noted_at?->diffForHumans() }}</p></div><span style="font-size:.7rem;background:#f3f4f6;padding:2px 8px;border-radius:4px;color:#6b7280;font-weight:700;">FDAR</span></div>@if($note->focus)<div class="note-soap-row"><div class="note-soap-letter soap-f" style="font-size:.68rem;">F</div><div><p class="note-soap-label">Focus</p><p class="note-soap-text">{{ $note->focus }}</p></div></div>@endif@if($note->data)<div class="note-soap-row"><div class="note-soap-letter soap-d" style="font-size:.68rem;">D</div><div><p class="note-soap-label">Data</p><p class="note-soap-text">{{ $note->data }}</p></div></div>@endif@if($note->action)<div class="note-soap-row"><div class="note-soap-letter soap-a" style="font-size:.68rem;">A</div><div><p class="note-soap-label">Action</p><p class="note-soap-text">{{ $note->action }}</p></div></div>@endif@if($note->response)<div class="note-soap-row"><div class="note-soap-letter soap-r" style="font-size:.68rem;">R</div><div><p class="note-soap-label">Response</p><p class="note-soap-text">{{ $note->response }}</p></div></div>@endif</div>@endforeach
+        @foreach($allNotes as $note)
+        <div class="note-card" wire:key="note-{{ $note->id }}">
+            <div class="note-header">
+                <div>
+                    <p class="note-nurse">{{ $note->nurse?->name ?? 'Unknown Nurse' }}</p>
+                    <p class="note-time">
+                        {{ $note->noted_at?->timezone('Asia/Manila')->format('F j, Y · H:i') }}
+                        &nbsp;·&nbsp; {{ $note->noted_at?->diffForHumans() }}
+                    </p>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    @if($note->shift)
+                    <span style="font-size:.7rem;font-weight:700;background:#fef3c7;color:#92400e;padding:2px 9px;border-radius:9999px;border:1px solid #fde68a;">
+                        Shift {{ $note->shift }}
+                    </span>
+                    @endif
+                    <span style="font-size:.7rem;background:#f3f4f6;padding:2px 8px;border-radius:4px;color:#6b7280;font-weight:700;">FDAR</span>
+                </div>
+            </div>
+            @if($note->focus)
+            <div class="note-soap-row">
+                <div class="note-soap-letter soap-f" style="font-size:.68rem;">F</div>
+                <div><p class="note-soap-label">Focus</p><p class="note-soap-text">{{ $note->focus }}</p></div>
+            </div>
+            @endif
+            @if($note->data)
+            <div class="note-soap-row">
+                <div class="note-soap-letter soap-d" style="font-size:.68rem;">D</div>
+                <div><p class="note-soap-label">Data</p><p class="note-soap-text">{{ $note->data }}</p></div>
+            </div>
+            @endif
+            @if($note->action)
+            <div class="note-soap-row">
+                <div class="note-soap-letter soap-a" style="font-size:.68rem;">A</div>
+                <div><p class="note-soap-label">Action</p><p class="note-soap-text">{{ $note->action }}</p></div>
+            </div>
+            @endif
+            @if($note->response)
+            <div class="note-soap-row">
+                <div class="note-soap-letter soap-r" style="font-size:.68rem;">R</div>
+                <div><p class="note-soap-label">Response</p><p class="note-soap-text">{{ $note->response }}</p></div>
+            </div>
+            @endif
+        </div>
+        @endforeach
         @endif
 
         {{-- ══ VITAL SIGNS MONITORING SHEET══════════════════════════════════════════ --}}
@@ -1037,7 +1314,7 @@
             @endif
         </div>
  
-        {{-- 6. Vital Sign Monitoring Sheet (NUR-014) — always shown, data-driven --}}
+        {{-- 6. Vital Sign Monitoring Sheet (NUR-014) --}}
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
                 <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">📊 Vital Sign Monitoring Sheet (NUR-014)</span>
@@ -1060,7 +1337,7 @@
             </div>
         </div>
  
-        {{-- 7. IV / Blood Transfusion Sheet (NUR-012) — always shown, data-driven --}}
+        {{-- 7. IV / Blood Transfusion Sheet (NUR-012) --}}
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
                 <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">💧 IV / Blood Transfusion Sheet (NUR-012)</span>
@@ -1082,10 +1359,657 @@
                     loading="lazy"></iframe>
             </div>
         </div>
+ 
+        {{-- 8. Nurse's Notes (NUR-010) ──────────────────────── --}}
+        <div style="margin-bottom:32px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">📝 Nurse's Notes (NUR-010)</span>
+                <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
+                @php $notesCount = $allNotes->count(); @endphp
+                <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $notesCount > 0 ? 'background:#ede9fe;color:#5b21b6;' : 'background:#f3f4f6;color:#6b7280;' }}">
+                    {{ $notesCount > 0 ? $notesCount . ' note' . ($notesCount === 1 ? '' : 's') : 'No notes yet' }}
+                </span>
+                <a href="{{ route('forms.nurses-notes', ['visit' => $visit->id]) }}"
+                   target="_blank"
+                   style="font-size:.72rem;font-weight:700;color:#5b21b6;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#faf5ff;border:1px solid #ddd6fe;padding:3px 10px;border-radius:5px;">
+                    🖨️ Open / Print
+                </a>
+            </div>
+            <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+                <iframe src="{{ route('forms.nurses-notes', ['visit' => $visit->id]) }}"
+                    title="Nurse's Notes"
+                    style="width:100%;min-height:900px;border:none;display:block;"
+                    loading="lazy"></iframe>
+            </div>
+        </div>
+
+        {{-- 9. Medication Administration Record (NUR-011) --}}
+        <div style="margin-bottom:32px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">💊 Medication Administration Record (NUR-011)</span>
+                <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
+                @php $marCount = $this->marEntriesCount; @endphp
+                <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $marCount > 0 ? 'background:#fff1f2;color:#be123c;' : 'background:#f3f4f6;color:#6b7280;' }}">
+                    {{ $marCount > 0 ? $marCount . ' medication' . ($marCount === 1 ? '' : 's') : 'No entries yet' }}
+                </span>
+                <a href="{{ route('forms.medication-records', ['visit' => $visit->id]) }}"
+                   target="_blank"
+                   style="font-size:.72rem;font-weight:700;color:#be123c;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#fff1f2;border:1px solid #fecdd3;padding:3px 10px;border-radius:5px;white-space:nowrap;">
+                    🖨️ Open / Print
+                </a>
+            </div>
+            @if($marCount > 0)
+            <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+                <iframe src="{{ route('forms.medication-records', ['visit' => $visit->id]) }}"
+                    title="Medication Administration Record"
+                    style="width:100%;min-height:900px;border:none;display:block;"
+                    loading="lazy"></iframe>
+            </div>
+            @else
+            <div style="background:#fff;border:1.5px dashed #e5e7eb;border-radius:8px;padding:24px;text-align:center;">
+                <p style="font-size:.82rem;color:#9ca3af;">No medications recorded yet. Go to the 💊 MAR tab to add medications and date columns.</p>
+            </div>
+            @endif
+        </div>
+
+        {{-- ══ MAR TAB CONTENT ══════════════════════════════════════════ --}}
+        @elseif($activeTab === 'mar')
+        @php
+            $marDates   = $this->marDateColumns->dates ?? [];
+            $marEntries = $this->marEntries;
+        @endphp
+ 
+        <div class="sec-head">
+            <h2 class="sec-title">💊 Medication Administration Record (MAR)</h2>
+            <span style="font-size:.78rem;color:#6b7280;">
+                {{ count($marDates) }} date col{{ count($marDates) === 1 ? '' : 's' }}
+                &nbsp;·&nbsp; {{ $marEntries->count() }} medication{{ $marEntries->count() === 1 ? '' : 's' }}
+            </span>
+        </div>
+ 
+        {{-- ── Date column manager ─────────────────────────────── --}}
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+            <span style="font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">Date Columns:</span>
+            @foreach($marDates as $d)
+            <span style="display:inline-flex;align-items:center;gap:4px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:.75rem;font-weight:600;color:#374151;font-family:monospace;">
+                {{ \Carbon\Carbon::parse($d)->format('M j') }}
+                <button wire:click="marRemoveDate('{{ $d }}')"
+                        type="button"
+                        style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.7rem;padding:0 2px;line-height:1;"
+                        title="Remove date column">✕</button>
+            </span>
+            @endforeach
+            <div style="display:flex;align-items:center;gap:6px;">
+                <input type="date"
+                       wire:model="marNewDate"
+                       style="border:1px solid #d1d5db;border-radius:6px;padding:5px 8px;font-size:.78rem;color:#111827;background:#fff;outline:none;">
+                <button wire:click="marAddDate" type="button"
+                        style="background:#059669;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.78rem;font-weight:700;cursor:pointer;">
+                    + Add Date
+                </button>
+            </div>
+        </div>
+ 
+        @if(empty($marDates))
+        <div class="empty-state">
+            <div class="empty-icon">💊</div>
+            <p class="empty-title">No date columns yet</p>
+            <p class="empty-sub">Use the date picker above to add the first date column, then add medication rows below.</p>
+        </div>
+        @else
+ 
+        {{-- ── MAR Grid ────────────────────────────────────────── --}}
+        <div class="mar-wrap">
+            <table class="mar-table">
+                <thead>
+                    <tr>
+                        <th class="col-med" style="text-align:left;padding:8px 10px;">Medication</th>
+                        <th class="col-shift">Shift</th>
+                        @foreach($marDates as $d)
+                        <th style="min-width:56px;padding:5px 3px;">
+                            <span class="mar-date-header">{{ \Carbon\Carbon::parse($d)->format('M j') }}</span>
+                            <span class="mar-date-sub">{{ \Carbon\Carbon::parse($d)->format('D') }}</span>
+                        </th>
+                        @endforeach
+                    </tr>
+                </thead>
+                <tbody>
+ 
+                @if($marEntries->isEmpty())
+                <tr>
+                    <td colspan="{{ 2 + count($marDates) }}"
+                        style="padding:32px;text-align:center;color:#9ca3af;font-size:.82rem;font-style:italic;">
+                        No medications yet — click "➕ Add Medication Row" below to add the first row.
+                    </td>
+                </tr>
+                @else
+ 
+                @foreach($marEntries as $entry)
+                @foreach(['7-3', '3-11', '11-7'] as $shiftIdx => $shift)
+                @php
+                    $isFirst    = $shiftIdx === 0;
+                    $shiftClass = match($shift) { '7-3' => 'mar-shift-73', '3-11' => 'mar-shift-311', '11-7' => 'mar-shift-117' };
+                @endphp
+                <tr wire:key="mar-{{ $entry->id }}-{{ $shift }}"
+                    class="{{ $isFirst ? 'mar-group-start' : '' }}">
+ 
+                    {{-- Medication name — editable inline, rowspan 3 --}}
+                    @if($isFirst)
+                    <td class="col-med" rowspan="3" style="text-align:left;vertical-align:middle;">
+                        <div style="display:flex;align-items:center;gap:2px;">
+                            <input type="text"
+                                   class="mar-med-input"
+                                   value="{{ $entry->medication_name }}"
+                                   placeholder="Type medication here…"
+                                   wire:key="medname-{{ $entry->id }}"
+                                   @blur="$wire.marUpdateMedName({{ $entry->id }}, $event.target.value)"
+                                   title="Click to type medication name">
+                            <button wire:click="marDeleteMed({{ $entry->id }})"
+                                    type="button"
+                                    class="btn-mar-del"
+                                    title="Remove this medication row">🗑</button>
+                        </div>
+                    </td>
+                    @endif
+ 
+                    {{-- Shift label --}}
+                    <td class="col-shift {{ $shiftClass }}">{{ $shift }}</td>
+ 
+                    {{-- Date cells — time input, saves on blur --}}
+                    @foreach($marDates as $d)
+                    @php $cellVal = $entry->getTime($d, $shift); @endphp
+                    <td style="padding:0;">
+                        <input type="time"
+                               class="mar-cell-input"
+                               value="{{ $cellVal }}"
+                               wire:key="cell-{{ $entry->id }}-{{ $d }}-{{ $shift }}"
+                               @blur="$wire.marSaveCell({{ $entry->id }}, '{{ $d }}', '{{ $shift }}', $event.target.value)"
+                               title="{{ $d }} / {{ $shift }}">
+                    </td>
+                    @endforeach
+ 
+                </tr>
+                @endforeach
+                @endforeach
+ 
+                @endif
+ 
+                </tbody>
+            </table>
+        </div>
+ 
+        @endif {{-- empty dates --}}
+ 
+        {{-- ── Add medication row button — always visible ──────── --}}
+        <div style="margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <button wire:click="marAddMedication"
+                    wire:loading.attr="disabled"
+                    wire:loading.class="opacity-60"
+                    type="button"
+                    class="btn-mar-add-med">
+                <span wire:loading.remove wire:target="marAddMedication">➕ Add Medication Row</span>
+                <span wire:loading wire:target="marAddMedication">Adding…</span>
+            </button>
+            <span style="font-size:.72rem;color:#9ca3af;">
+                Click multiple times to add several rows at once, then fill in the medication names.
+            </span>
+        </div>
+
+        {{-- ══════════════════════════════════════════════════════════════════════════
+            TPR GRAPHIC RECORD TAB CONTENT
+        ══════════════════════════════════════════════════════════════════════════ --}}
+
+        @elseif($activeTab === 'tpr')
+
+        @php
+            $tprVitals    = $this->allVitals;
+            $admittedAt   = $visit->clerk_admitted_at;
+            $tprIoEntries = $this->tprIoEntries;
+
+            $labels      = [];
+            $tempPoints  = [];
+            $pulsePoints = [];
+            $rrPoints    = [];
+
+            foreach ($tprVitals as $v) {
+                $labels[]      = $v->taken_at->timezone('Asia/Manila')->format('M j H:i');
+                $tempPoints[]  = $v->temperature      !== null ? (float) $v->temperature      : null;
+                $pulsePoints[] = $v->pulse_rate       !== null ? (float) $v->pulse_rate       : null;
+                $rrPoints[]    = $v->respiratory_rate !== null ? (float) $v->respiratory_rate : null;
+            }
+
+            $uid       = 'tpr-' . $visit->id;
+            $chartJson = json_encode([
+                'labels' => $labels,
+                'temp'   => $tempPoints,
+                'pulse'  => $pulsePoints,
+                'rr'     => $rrPoints,
+            ], JSON_NUMERIC_CHECK);
+        @endphp
+
+        {{-- ── Styles (unchanged) ──────────────────────────────────────────────── --}}
+        <style>
+        .tpr-chart-wrap { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:16px 18px; margin-bottom:16px; }
+        .dark .tpr-chart-wrap { background:#1f2937; border-color:#374151; }
+        .tpr-chart-title { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#6b7280; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+        .tpr-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; display:inline-block; }
+        .tpr-num-table-wrap { background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow-x:auto; margin-bottom:24px; }
+        .dark .tpr-num-table-wrap { background:#1f2937; border-color:#374151; }
+        .tpr-num-table { width:100%; min-width:600px; border-collapse:collapse; font-size:.78rem; }
+        .tpr-num-table th { background:#f9fafb; padding:8px 12px; text-align:center; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#6b7280; border-bottom:2px solid #e5e7eb; white-space:nowrap; }
+        .dark .tpr-num-table th { background:#111827; border-bottom-color:#374151; color:#9ca3af; }
+        .tpr-num-table td { padding:8px 12px; border-bottom:1px solid #f3f4f6; text-align:center; color:#374151; }
+        .dark .tpr-num-table td { border-bottom-color:#374151; color:#d1d5db; }
+        .tpr-num-table tr:last-child td { border-bottom:none; }
+        .tpr-val-abnormal { color:#dc2626 !important; font-weight:700; }
+        .tpr-val-normal { color:#059669; font-weight:600; }
+        .tpr-val-na { color:#d1d5db; font-size:.72rem; }
+        .tpr-io-section { background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; }
+        .dark .tpr-io-section { background:#1f2937; border-color:#374151; }
+        .tpr-io-head { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #e5e7eb; background:#f9fafb; }
+        .dark .tpr-io-head { background:#111827; border-bottom-color:#374151; }
+        .tpr-io-form { background:#f0fdf4; border:1.5px solid #86efac; border-radius:8px; padding:16px 18px; margin:14px 18px; }
+        .dark .tpr-io-form { background:#022c22; border-color:#16a34a; }
+        .tpr-io-form-grid { display:grid; grid-template-columns:150px 140px 120px 120px 140px 1fr; gap:12px; align-items:end; margin-bottom:12px; }
+        @media(max-width:900px){ .tpr-io-form-grid { grid-template-columns:repeat(3,1fr); } }
+        @media(max-width:600px){ .tpr-io-form-grid { grid-template-columns:1fr 1fr; } }
+        .tpr-io-label { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#6b7280; display:block; margin-bottom:4px; }
+        .tpr-io-input { border:1px solid #d1d5db; border-radius:7px; padding:8px 10px; font-size:.875rem; background:#fff; color:#111827; outline:none; width:100%; }
+        .dark .tpr-io-input { background:#374151; border-color:#4b5563; color:#f3f4f6; }
+        .tpr-io-input:focus { border-color:#059669; box-shadow:0 0 0 2px rgba(5,150,105,.12); }
+        .tpr-io-table { width:100%; border-collapse:collapse; font-size:.8rem; }
+        .tpr-io-table th { padding:9px 14px; text-align:left; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#6b7280; background:#f9fafb; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
+        .dark .tpr-io-table th { background:#111827; color:#9ca3af; border-bottom-color:#374151; }
+        .tpr-io-table td { padding:10px 14px; border-bottom:1px solid #f3f4f6; color:#374151; vertical-align:middle; }
+        .dark .tpr-io-table td { border-bottom-color:#374151; color:#d1d5db; }
+        .tpr-io-table tr:last-child td { border-bottom:none; }
+        .tpr-io-table tbody tr:hover td { background:#f0fdf4; }
+        .tpr-shift-badge { font-size:.68rem; font-weight:700; padding:2px 8px; border-radius:9999px; white-space:nowrap; }
+        .tpr-shift-73  { background:#eff6ff; color:#1d4ed8; }
+        .tpr-shift-311 { background:#f5f3ff; color:#5b21b6; }
+        .tpr-shift-117 { background:#f0fdfa; color:#0f766e; }
+        .btn-tpr-add  { background:#059669; color:#fff; border:none; border-radius:7px; padding:8px 16px; font-size:.8rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; }
+        .btn-tpr-add:hover { background:#047857; }
+        .btn-tpr-save { background:#059669; color:#fff; border:none; border-radius:7px; padding:8px 20px; font-size:.83rem; font-weight:700; cursor:pointer; }
+        .btn-tpr-save:hover { background:#047857; }
+        .btn-tpr-del  { background:none; border:none; color:#d1d5db; cursor:pointer; font-size:.75rem; padding:3px 6px; border-radius:4px; }
+        .btn-tpr-del:hover { color:#ef4444; background:#fee2e2; }
+        </style>
+
+        {{-- ── Section header ──────────────────────────────────────────── --}}
+        <div class="sec-head">
+            <h2 class="sec-title">🌡️ TPR Graphic Record</h2>
+            <span style="font-size:.78rem;color:#6b7280;">
+                {{ $tprVitals->count() }} vital reading{{ $tprVitals->count() !== 1 ? 's' : '' }}
+                @if($admittedAt)
+                    &nbsp;·&nbsp; Day {{ (int) $admittedAt->diffInDays(now()) + 1 }} of admission
+                @endif
+            </span>
+        </div>
+
+        @if($tprVitals->isEmpty())
+        <div class="empty-state">
+            <div class="empty-icon">🌡️</div>
+            <p class="empty-title">No vital signs recorded yet</p>
+            <p class="empty-sub">Go to the 📊 Vital Signs tab to add the first vital signs entry.</p>
+        </div>
+        @else
+
+        @php
+        /**
+        * Render a line chart as an inline SVG string.
+        * Zero JS dependencies — pure PHP/SVG.
+        */
+        function tprSvgChart(
+            array  $labels,
+            array  $values,
+            string $color,
+            float  $yMin,
+            float  $yMax,
+            float  $yStep,
+            string $unit
+        ): string {
+            $svgW  = 700; $svgH  = 210;
+            $padL  = 54;  $padR  = 20;
+            $padT  = 18;  $padB  = 50;
+            $cW    = $svgW - $padL - $padR;
+            $cH    = $svgH - $padT - $padB;
+            $range = $yMax - $yMin;
+            $n     = count($labels);
+
+            /** Map a data-value → SVG Y pixel */
+            $toY = static function (float $v) use ($padT, $cH, $yMin, $range): float {
+                return round($padT + $cH - (($v - $yMin) / $range * $cH), 2);
+            };
+
+            /** Map a label index → SVG X pixel */
+            $toX = static function (int $i) use ($padL, $cW, $n): float {
+                return round($padL + ($n > 1 ? ($i / ($n - 1)) * $cW : $cW / 2), 2);
+            };
+
+            $hex  = htmlspecialchars($color, ENT_QUOTES);
+            $out  = "<svg viewBox='0 0 {$svgW} {$svgH}' xmlns='http://www.w3.org/2000/svg'"
+                . " style='width:100%;height:100%;display:block;'>";
+
+            // ── background ──────────────────────────────────────────────
+            $out .= "<rect x='0' y='0' width='{$svgW}' height='{$svgH}' fill='transparent'/>";
+
+            // ── horizontal grid lines + Y-axis labels ───────────────────
+            $steps = (int) round(($yMax - $yMin) / $yStep);
+            for ($s = 0; $s <= $steps; $s++) {
+                $val  = $yMin + $s * $yStep;
+                $yPos = $toY((float) $val);
+                $out .= "<line x1='{$padL}' y1='{$yPos}' x2='" . ($svgW - $padR) . "' y2='{$yPos}'"
+                    . " stroke='#e5e7eb' stroke-width='1' stroke-dasharray='3 3'/>";
+                $label = (strpos((string) $yStep, '.') !== false)
+                    ? number_format((float) $val, 1)
+                    : (int) $val;
+                $out .= "<text x='" . ($padL - 6) . "' y='{$yPos}'"
+                    . " text-anchor='end' dominant-baseline='middle'"
+                    . " font-size='10' fill='#9ca3af'>{$label}</text>";
+            }
+
+            // ── vertical grid lines + X-axis labels ─────────────────────
+            for ($i = 0; $i < $n; $i++) {
+                $x    = $toX($i);
+                $xBot = $padT + $cH;
+                $out .= "<line x1='{$x}' y1='{$padT}' x2='{$x}' y2='{$xBot}'"
+                    . " stroke='#f3f4f6' stroke-width='1'/>";
+                $lbl  = htmlspecialchars($labels[$i], ENT_QUOTES);
+                $ty   = $xBot + 12;
+                $out .= "<text x='{$x}' y='{$ty}'"
+                    . " font-size='9' fill='#9ca3af' text-anchor='end'"
+                    . " transform='rotate(-38 {$x} {$ty})'>{$lbl}</text>";
+            }
+
+            // ── axes ─────────────────────────────────────────────────────
+            $axisBot = $padT + $cH;
+            $axisR   = $svgW - $padR;
+            $out .= "<line x1='{$padL}' y1='{$padT}' x2='{$padL}' y2='{$axisBot}'"
+                . " stroke='#d1d5db' stroke-width='1.5'/>";
+            $out .= "<line x1='{$padL}' y1='{$axisBot}' x2='{$axisR}' y2='{$axisBot}'"
+                . " stroke='#d1d5db' stroke-width='1.5'/>";
+
+            // ── collect non-null points ───────────────────────────────────
+            $pts = [];
+            for ($i = 0; $i < $n; $i++) {
+                if ($values[$i] !== null) {
+                    $pts[] = ['x' => $toX($i), 'y' => $toY((float) $values[$i]),
+                            'v' => $values[$i], 'lbl' => $labels[$i]];
+                }
+            }
+
+            if (count($pts) >= 2) {
+                // Area fill
+                $baseY = $padT + $cH;
+                $area  = "M {$pts[0]['x']} {$baseY} L {$pts[0]['x']} {$pts[0]['y']}";
+                foreach (array_slice($pts, 1) as $p) {
+                    $area .= " L {$p['x']} {$p['y']}";
+                }
+                $area .= ' L ' . end($pts)['x'] . " {$baseY} Z";
+                $out  .= "<path d='{$area}' fill='{$hex}' fill-opacity='0.09'/>";
+
+                // Line
+                $line = "M {$pts[0]['x']} {$pts[0]['y']}";
+                foreach (array_slice($pts, 1) as $p) {
+                    $line .= " L {$p['x']} {$p['y']}";
+                }
+                $out .= "<path d='{$line}' fill='none' stroke='{$hex}'"
+                    . " stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'/>";
+            } elseif (count($pts) === 1) {
+                // Single point — just draw the dot
+            }
+
+            // ── dots + value labels ───────────────────────────────────────
+            foreach ($pts as $p) {
+                $tip  = htmlspecialchars("{$p['lbl']}: {$p['v']} {$unit}", ENT_QUOTES);
+                $out .= "<circle cx='{$p['x']}' cy='{$p['y']}' r='5'"
+                    . " fill='{$hex}' stroke='white' stroke-width='2'>"
+                    . "<title>{$tip}</title></circle>";
+                $vy   = round($p['y'] - 11, 2);
+                $out .= "<text x='{$p['x']}' y='{$vy}'"
+                    . " text-anchor='middle' font-size='10' font-weight='700'"
+                    . " fill='{$hex}'>{$p['v']}</text>";
+            }
+
+            // ── "no data" message ─────────────────────────────────────────
+            if (empty($pts)) {
+                $cx   = round($svgW / 2, 0);
+                $cy   = round($svgH / 2, 0);
+                $out .= "<text x='{$cx}' y='{$cy}' text-anchor='middle'"
+                    . " font-size='13' fill='#d1d5db'>No data</text>";
+            }
+
+            $out .= '</svg>';
+            return $out;
+        }
+        @endphp
+
+        {{-- ── Temperature chart ─────────────────────────────────────── --}}
+        <div class="tpr-chart-wrap">
+            <div class="tpr-chart-title">
+                <span class="tpr-dot" style="background:#ef4444;"></span>
+                Temperature (°C)
+                <span style="font-size:.67rem;color:#9ca3af;font-weight:400;margin-left:auto;">Normal: 36.0–37.5°C</span>
+            </div>
+            <div style="position:relative;height:220px;">
+                {!! tprSvgChart($labels, $tempPoints, '#ef4444', 34, 42, 0.5, '°C') !!}
+            </div>
+        </div>
+
+        {{-- ── Pulse Rate chart ───────────────────────────────────────── --}}
+        <div class="tpr-chart-wrap">
+            <div class="tpr-chart-title">
+                <span class="tpr-dot" style="background:#f97316;"></span>
+                Pulse Rate (/min)
+                <span style="font-size:.67rem;color:#9ca3af;font-weight:400;margin-left:auto;">Normal: 60–100 bpm</span>
+            </div>
+            <div style="position:relative;height:220px;">
+                {!! tprSvgChart($labels, $pulsePoints, '#f97316', 40, 180, 20, '/min') !!}
+            </div>
+        </div>
+
+        {{-- ── Respiratory Rate chart ─────────────────────────────────── --}}
+        <div class="tpr-chart-wrap">
+            <div class="tpr-chart-title">
+                <span class="tpr-dot" style="background:#3b82f6;"></span>
+                Respiratory Rate (/min)
+                <span style="font-size:.67rem;color:#9ca3af;font-weight:400;margin-left:auto;">Normal: 12–20 /min</span>
+            </div>
+            <div style="position:relative;height:220px;">
+                {!! tprSvgChart($labels, $rrPoints, '#3b82f6', 8, 40, 4, '/min') !!}
+            </div>
+        </div>
+
+        @endif {{-- tprVitals not empty --}}
+
+        {{-- ════════════════════════════════════════════════════════════════
+            URINE & STOOL RECORDING
+        ════════════════════════════════════════════════════════════════ --}}
+        <div class="tpr-io-section">
+
+            <div class="tpr-io-head">
+                <div>
+                    <span style="font-size:.88rem;font-weight:700;color:#111827;">🚽 Urine &amp; Stool Output</span>
+                    <span style="font-size:.72rem;color:#9ca3af;margin-left:8px;">Per shift · Per day</span>
+                </div>
+                @if(!$tprAddingIo && !$tprIoEditId)
+                <button wire:click="tprOpenAddIo" type="button" class="btn-tpr-add">
+                    ➕ Add Entry
+                </button>
+                @endif
+            </div>
+
+            {{-- ── Add / Edit form ─────────────────────────────────────── --}}
+            @if($tprAddingIo || $tprIoEditId)
+            <div class="tpr-io-form" x-data="{ stoolCount: @js($tprIoStool) }">
+                <p style="font-size:.82rem;font-weight:700;color:#065f46;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #bbf7d0;">
+                    {{ $tprIoEditId ? '✎ Edit Entry' : '➕ New Urine & Stool Entry' }}
+                </p>
+
+                <div class="tpr-io-form-grid">
+
+                    <div>
+                        <label class="tpr-io-label">Date *</label>
+                        <input type="date" wire:model="tprIoDate" class="tpr-io-input">
+                    </div>
+
+                    <div>
+                        <label class="tpr-io-label">Shift *</label>
+                        <select wire:model="tprIoShift" class="tpr-io-input" style="cursor:pointer;">
+                            <option value="">— Select —</option>
+                            <option value="7-3">7-3 (7AM–3PM)</option>
+                            <option value="3-11">3-11 (3PM–11PM)</option>
+                            <option value="11-7">11-7 (11PM–7AM)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="tpr-io-label">Urine (times)</label>
+                        <input type="number" wire:model="tprIoUrine" min="0" max="99"
+                            class="tpr-io-input" placeholder="0">
+                    </div>
+
+                    <div>
+                        <label class="tpr-io-label">Stool Count</label>
+                        <input type="number" 
+                            x-model="stoolCount"
+                            wire:model.live="tprIoStool" 
+                            min="0" max="99"
+                            class="tpr-io-input" placeholder="0">
+                    </div>
+
+                    <!-- Stool Type -->
+                    <div x-show="stoolCount && stoolCount > 0" x-transition>
+                        <label class="tpr-io-label">Stool Type</label>
+                        <select wire:model="tprIoStoolType" class="tpr-io-input" style="cursor:pointer;">
+                            <option value="">— Type —</option>
+                            <option value="formed">Formed</option>
+                            <option value="loose">Loose</option>
+                            <option value="watery">Watery</option>
+                            <option value="bloody">Bloody</option>
+                            <option value="none">None</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="tpr-io-label">Notes</label>
+                        <input type="text" wire:model="tprIoNotes" class="tpr-io-input"
+                            placeholder="Optional remarks…">
+                    </div>
+
+                </div>
+
+                <div style="display:flex;gap:10px;">
+                    <button wire:click="tprSaveIo"
+                            wire:loading.attr="disabled"
+                            wire:loading.class="opacity-60"
+                            type="button" class="btn-tpr-save">
+                        <span wire:loading.remove wire:target="tprSaveIo">💾 Save</span>
+                        <span wire:loading wire:target="tprSaveIo">Saving…</span>
+                    </button>
+                    <button wire:click="tprCancelIo" type="button" class="btn-secondary">Cancel</button>
+                </div>
+            </div>
+            @endif
+
+            {{-- ── Entries table ───────────────────────────────────────── --}}
+            @if($tprIoEntries->isEmpty())
+            <div style="text-align:center;padding:36px 24px;">
+                <div style="font-size:2rem;margin-bottom:8px;">🚽</div>
+                <p style="font-size:.88rem;font-weight:700;color:#374151;margin-bottom:4px;">No urine &amp; stool entries yet</p>
+                <p style="font-size:.78rem;color:#9ca3af;">Click "Add Entry" above to record per-shift output.</p>
+            </div>
+            @else
+            <table class="tpr-io-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Shift</th>
+                        <th>Urine (times)</th>
+                        <th>Stool</th>
+                        <th>Stool Type</th>
+                        <th style="text-align:left;">Nurse</th>
+                        <th style="text-align:left;">Notes</th>
+                        <th style="width:60px;text-align:center;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($tprIoEntries as $io)
+                    @php
+                        $shiftClass = match($io->shift) {
+                            '7-3'  => 'tpr-shift-73',
+                            '3-11' => 'tpr-shift-311',
+                            '11-7' => 'tpr-shift-117',
+                            default => '',
+                        };
+                    @endphp
+                    <tr wire:key="tprio-{{ $io->id }}">
+                        <td style="font-family:monospace;font-size:.78rem;font-weight:600;">
+                            {{ $io->date->format('M j, Y') }}
+                        </td>
+                        <td><span class="tpr-shift-badge {{ $shiftClass }}">{{ $io->shift }}</span></td>
+                        <td style="font-weight:700;color:#0284c7;">
+                            {{ $io->urine_count !== null ? $io->urine_count . '×' : '—' }}
+                        </td>
+                        <td style="font-weight:700;color:#7c3aed;">
+                            {{ $io->stool_count !== null ? $io->stool_count . '×' : '—' }}
+                        </td>
+                        <td>
+                            @if($io->stool_count && $io->stool_count > 0 && $io->stool_type)
+                                <span style="font-size:.72rem;background:#f3f4f6;padding:1px 7px;border-radius:4px;color:#374151;font-weight:600;">
+                                    {{ $io->stool_type_label }}
+                                </span>
+                            @else
+                                <span style="color:#d1d5db;font-size:.72rem;">—</span>
+                            @endif
+                        </td>
+                        <td style="font-size:.75rem;color:#6b7280;">{{ $io->nurse_name }}</td>
+                        <td style="font-size:.75rem;color:#6b7280;max-width:140px;">
+                            {{ $io->notes ? \Str::limit($io->notes, 35) : '—' }}
+                        </td>
+                        <td style="text-align:center;">
+                            <div style="display:flex;gap:3px;justify-content:center;">
+                                @if(!$tprAddingIo && !$tprIoEditId)
+                                <button wire:click="tprOpenEditIo({{ $io->id }})" type="button"
+                                        style="font-size:.7rem;color:#6b7280;background:#f3f4f6;border:none;border-radius:4px;padding:3px 7px;cursor:pointer;">✎</button>
+                                <button wire:click="tprDeleteIo({{ $io->id }})" type="button"
+                                        class="btn-tpr-del">🗑</button>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+
+            {{-- Daily totals --}}
+            @php
+                $dailyTotals = $tprIoEntries->groupBy(fn($io) => $io->date->format('Y-m-d'));
+            @endphp
+            @if($dailyTotals->count() > 0)
+            <div style="padding:10px 18px;border-top:1px solid #f3f4f6;display:flex;flex-wrap:wrap;gap:12px;background:#f9fafb;">
+                <span style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;">24-hr Totals:</span>
+                @foreach($dailyTotals as $date => $entries)
+                @php
+                    $totalUrine = $entries->sum('urine_count');
+                    $totalStool = $entries->sum('stool_count');
+                @endphp
+                <span style="font-size:.75rem;color:#374151;background:#fff;border:1px solid #e5e7eb;padding:2px 10px;border-radius:6px;">
+                    <strong>{{ \Carbon\Carbon::parse($date)->format('M j') }}</strong>
+                    &nbsp;·&nbsp;
+                    🚱 <span style="color:#0284c7;font-weight:700;">{{ $totalUrine }}×</span>
+                    &nbsp;·&nbsp;
+                    🚽 <span style="color:#7c3aed;font-weight:700;">{{ $totalStool }}×</span>
+                </span>
+                @endforeach
+            </div>
+            @endif
+            @endif
+
+        </div>
 
         {{-- ══ PLACEHOLDER TABS ════════════════════════════════════ --}}
-        @elseif($activeTab === 'mar')
-        @include('filament.nurse.pages.partials.placeholder', ['icon'=>'💊','title'=>'Medication Administration Record (MAR)','desc'=>'Track all medications administered — drug name, dose, route, time, and nurse signature. Alerts for missed or overdue medications.','full'=>true])
 
         @elseif($activeTab === 'io')
         @include('filament.nurse.pages.partials.placeholder', ['icon'=>'📏','title'=>'Intake & Output Record','desc'=>'Monitor all fluid intake (oral, IV, NG) and output (urine, drain, emesis, stool) with shift and 24-hour totals.','full'=>true])

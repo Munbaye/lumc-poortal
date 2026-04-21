@@ -33,6 +33,11 @@ return new class extends Migration
 
             $table->timestamp('noted_at')->nullable();
 
+            // Shift the nurse was working when the note was written.
+            $table->enum('shift', ['7-3', '3-11', '11-7'])
+                  ->nullable()
+                  ->comment('Shift during which the note was written: 7-3, 3-11, or 11-7');
+
             $table->timestamps();
 
             $table->index(['visit_id', 'noted_at']);

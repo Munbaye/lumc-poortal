@@ -5,6 +5,8 @@ namespace App\Filament\Nurse\Pages;
 use App\Models\ActivityLog;
 use App\Models\DoctorsOrder;
 use App\Models\IvFluidEntry;
+use App\Models\MarDateColumn;
+use App\Models\MarEntry;
 use App\Models\NursesNote;
 use App\Models\Vital;
 use App\Models\Visit;
@@ -43,6 +45,7 @@ class NurseChart extends Page
     public string $fdarD      = '';
     public string $fdarA      = '';
     public string $fdarR      = '';
+    public string $fdarShift  = '';
 
     // ── Vitals monitoring sheet entry form ─────────────────────────────────────
     public bool   $addingVital    = false;
@@ -66,8 +69,31 @@ class NurseChart extends Page
 
     // Edit mode
     public ?int   $editingIvId      = null;
-    public string $ivConsumedAt     = '';   // datetime-local string
+    public string $ivConsumedAt     = '';
     public string $ivRemarks        = '';
+
+    // ── MAR state ─────────────────────────────────────────────────────────────
+    /**
+     * Inline-edit buffer: keyed as "entryId|date|shift" => time string.
+     * Populated on the fly as the nurse types; saved per-cell on blur.
+     */
+    public array  $marCells        = [];
+    /** Date being added to the column set. */
+    public string $marNewDate      = '';
+    /** Medication name for a new row being added. */
+    public string $marNewMedName   = '';
+    /** Whether the "add medication row" mini-form is open. */
+    public bool   $marAddingMed    = false;
+
+    // ── TPR Urine & Stool state ───────────────────────────────────────────────────
+    public bool   $tprAddingIo    = false;
+    public string $tprIoDate      = '';
+    public string $tprIoShift     = '';
+    public ?int   $tprIoUrine     = null;
+    public ?int   $tprIoStool     = null;
+    public string $tprIoStoolType = '';
+    public string $tprIoNotes     = '';
+    public ?int   $tprIoEditId    = null;
 
     public function mount(): void
     {
@@ -76,6 +102,10 @@ class NurseChart extends Page
             return;
         }
         $this->loadVisit();
+
+        if ($this->visit && $this->isReadonly) {
+            $this->activeTab = 'forms';
+        }
     }
 
     private function loadVisit(): void
@@ -132,6 +162,42 @@ class NurseChart extends Page
         return IvFluidEntry::where('visit_id', $this->visitId)->count();
     }
 
+    public function getMarDateColumnsProperty(): MarDateColumn
+    {
+        return MarDateColumn::forVisit($this->visitId);
+    }
+
+    public function getMarEntriesProperty()
+    {
+        return MarEntry::where('visit_id', $this->visitId)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+    }
+
+    public function getMarEntriesCountProperty(): int
+    {
+        return MarEntry::where('visit_id', $this->visitId)->count();
+    }
+
+    public function getTprIoEntriesProperty()
+    {
+        return \App\Models\TprIoEntry::where('visit_id', $this->visitId)
+            ->orderBy('date')
+            ->orderByRaw("FIELD(shift, '7-3', '3-11', '11-7')")
+            ->get();
+    }
+
+    // ── Readonly mode (past / completed visits) ───────────────────────────────
+
+    public function getIsReadonlyProperty(): bool
+    {
+        if (!$this->visit) return true;
+        return !($this->visit->status === 'admitted'
+            && $this->visit->clerk_admitted_at !== null
+            && $this->visit->discharged_at === null);
+    }
+
     // ── Tab navigation ─────────────────────────────────────────────────────────
 
     public function setTab(string $tab): void
@@ -142,6 +208,11 @@ class NurseChart extends Page
         $this->addingVital    = false;
         $this->addingIv       = false;
         $this->editingIvId    = null;
+        $this->marAddingMed   = false;
+        $this->marNewDate     = '';
+        $this->marNewMedName  = '';
+        $this->tprAddingIo = false;
+        $this->tprIoEditId = null;
     }
 
     // ── Doctor's Orders — Mark as Carried (individual) ────────────────────────
@@ -156,9 +227,7 @@ class NurseChart extends Page
         }
 
         if (!$order->isPending()) {
-            Notification::make()
-                ->title('Order is already ' . $order->status_label . '.')
-                ->warning()->send();
+            Notification::make()->title('Order is already ' . $order->status_label . '.')->warning()->send();
             $this->confirmCarryId = null;
             return;
         }
@@ -237,7 +306,11 @@ class NurseChart extends Page
     {
         $this->addingNote = !$this->addingNote;
         if ($this->addingNote) {
-            $this->fdarF = $this->fdarD = $this->fdarA = $this->fdarR = '';
+            $this->fdarF     = '';
+            $this->fdarD     = '';
+            $this->fdarA     = '';
+            $this->fdarR     = '';
+            $this->fdarShift = '';
         }
     }
 
@@ -249,6 +322,11 @@ class NurseChart extends Page
             return;
         }
 
+        if (!filled($this->fdarShift) || !in_array($this->fdarShift, NursesNote::SHIFTS)) {
+            Notification::make()->title('Please select your shift (7-3, 3-11, or 11-7).')->warning()->send();
+            return;
+        }
+
         $note = NursesNote::create([
             'visit_id' => $this->visitId,
             'nurse_id' => auth()->id(),
@@ -257,6 +335,7 @@ class NurseChart extends Page
             'action'   => trim($this->fdarA) ?: null,
             'response' => trim($this->fdarR) ?: null,
             'noted_at' => now(),
+            'shift'    => $this->fdarShift,
         ]);
 
         ActivityLog::record(
@@ -265,20 +344,25 @@ class NurseChart extends Page
             subject:      $note,
             subjectLabel: $this->visit->patient->full_name . ' (' . $this->visit->patient->case_no . ')',
             newValues: [
-                'note_id'  => $note->id,
-                'F'        => $note->focus    ? \Str::limit($note->focus,    80) : null,
-                'D'        => $note->data     ? \Str::limit($note->data,     80) : null,
-                'A'        => $note->action   ? \Str::limit($note->action,   80) : null,
-                'R'        => $note->response ? \Str::limit($note->response, 80) : null,
-                'nurse'    => auth()->user()->name,
+                'note_id' => $note->id,
+                'shift'   => $note->shift,
+                'F'       => $note->focus    ? \Str::limit($note->focus,    80) : null,
+                'D'       => $note->data     ? \Str::limit($note->data,     80) : null,
+                'A'       => $note->action   ? \Str::limit($note->action,   80) : null,
+                'R'       => $note->response ? \Str::limit($note->response, 80) : null,
+                'nurse'   => auth()->user()->name,
             ],
             panel: 'nurse',
         );
 
         $this->addingNote = false;
-        $this->fdarF = $this->fdarD = $this->fdarA = $this->fdarR = '';
+        $this->fdarF      = '';
+        $this->fdarD      = '';
+        $this->fdarA      = '';
+        $this->fdarR      = '';
+        $this->fdarShift  = '';
         $this->loadVisit();
-        Notification::make()->title('Nurse\'s note saved.')->success()->send();
+        Notification::make()->title("Nurse's note saved.")->success()->send();
     }
 
     // ── Vitals Monitoring Sheet ────────────────────────────────────────────────
@@ -380,9 +464,9 @@ class NurseChart extends Page
         $lastBottle = IvFluidEntry::where('visit_id', $this->visitId)->max('bottle_number');
         $this->ivBottleNumber = $lastBottle ? ($lastBottle + 1) : 1;
 
-        $this->ivSolution    = '';
-        $this->ivConsumedAt  = '';
-        $this->ivRemarks     = '';
+        $this->ivSolution   = '';
+        $this->ivConsumedAt = '';
+        $this->ivRemarks    = '';
     }
 
     public function cancelAddIv(): void
@@ -518,7 +602,176 @@ class NurseChart extends Page
         $this->editingIvId = null;
     }
 
-    // ── Patient Forms tab — URL helpers ───────────────────────────────────────
+    // ── MAR ────────────────────────────────────────────────────────────────────
+
+    /** Add a new date column to this visit's MAR. */
+    public function marAddDate(): void
+    {
+        if (!filled($this->marNewDate)) {
+            Notification::make()->title('Please pick a date.')->warning()->send();
+            return;
+        }
+        $cols = MarDateColumn::forVisit($this->visitId);
+        if (count($cols->dates ?? []) >= 31) {
+            Notification::make()->title('Maximum 31 date columns reached.')->warning()->send();
+            return;
+        }
+        if (in_array($this->marNewDate, $cols->dates ?? [])) {
+            Notification::make()->title('That date column already exists.')->warning()->send();
+            return;
+        }
+        $cols->addDate($this->marNewDate);
+        $this->marNewDate = '';
+        Notification::make()->title('Date column added.')->success()->send();
+    }
+
+    /** Remove a date column (and its data from all entries). */
+    public function marRemoveDate(string $date): void
+    {
+        MarDateColumn::forVisit($this->visitId)->removeDate($date);
+        // Also scrub the date key from all entry data
+        MarEntry::where('visit_id', $this->visitId)->each(function (MarEntry $entry) use ($date) {
+            $data = $entry->administration_data ?? [];
+            unset($data[$date]);
+            $entry->administration_data = $data;
+            $entry->save();
+        });
+        Notification::make()->title('Date column removed.')->success()->send();
+    }
+
+    /** Save a single cell (date + shift) for a given entry. Called on blur. */
+    public function marSaveCell(int $entryId, string $date, string $shift, string $time): void
+    {
+        $entry = MarEntry::where('visit_id', $this->visitId)->find($entryId);
+        if (!$entry) return;
+
+        // Validate time format — allow empty or HH:MM
+        $time = trim($time);
+        if (filled($time) && !preg_match('/^\d{1,2}:\d{2}$/', $time)) {
+            Notification::make()->title('Invalid time format. Use HH:MM (e.g. 08:30).')->warning()->send();
+            return;
+        }
+
+        $data = $entry->administration_data ?? [];
+        if (!isset($data[$date])) {
+            $data[$date] = ['7-3' => '', '3-11' => '', '11-7' => ''];
+        }
+        $data[$date][$shift] = $time;
+        $entry->administration_data = $data;
+        $entry->save();
+    }
+
+    /** Add a new medication row. */
+    public function marAddMedication(): void
+    {
+        $maxOrder = MarEntry::where('visit_id', $this->visitId)->max('sort_order') ?? 0;
+
+        MarEntry::create([
+            'visit_id'            => $this->visitId,
+            'patient_id'          => $this->visit->patient_id,
+            'created_by'          => auth()->id(),
+            'medication_name'     => '',          // blank — nurse types inline
+            'administration_data' => [],
+            'sort_order'          => $maxOrder + 1,
+        ]);
+    }
+
+    /** Update a medication name inline. */
+    public function marUpdateMedName(int $entryId, string $name): void
+    {
+        $entry = MarEntry::where('visit_id', $this->visitId)->find($entryId);
+        if (!$entry) return;
+        $entry->medication_name = trim($name);
+        $entry->save();
+    }
+
+    /** Delete a medication row. */
+    public function marDeleteMed(int $entryId): void
+    {
+        $entry = MarEntry::where('visit_id', $this->visitId)->find($entryId);
+        if (!$entry) return;
+        $entry->delete();
+        Notification::make()->title('Medication row removed.')->success()->send();
+    }
+
+    // ── TPR Urine & Stool ─────────────────────────────────────────────────────────
+
+    public function tprOpenAddIo(): void
+    {
+        $this->tprAddingIo    = true;
+        $this->tprIoEditId    = null;
+        $this->tprIoDate      = now()->timezone('Asia/Manila')->toDateString();
+        $this->tprIoShift     = '';
+        $this->tprIoUrine     = null;
+        $this->tprIoStool     = null;
+        $this->tprIoStoolType = '';
+        $this->tprIoNotes     = '';
+    }
+
+    public function tprSaveIo(): void
+    {
+        if (!filled($this->tprIoDate) || !filled($this->tprIoShift)) {
+            Notification::make()->title('Date and Shift are required.')->warning()->send();
+            return;
+        }
+
+        $data = [
+            'visit_id'    => $this->visitId,
+            'patient_id'  => $this->visit->patient_id,
+            'recorded_by' => auth()->id(),
+            'nurse_name'  => auth()->user()->name,
+            'date'        => $this->tprIoDate,
+            'shift'       => $this->tprIoShift,
+            'urine_count' => $this->tprIoUrine ?: null,
+            'stool_count' => $this->tprIoStool ?: null,
+            'stool_type'  => ($this->tprIoStool && $this->tprIoStool > 0) 
+                            ? $this->tprIoStoolType 
+                            : null,
+            'notes'       => trim($this->tprIoNotes) ?: null,
+        ];
+
+        if ($this->tprIoEditId) {
+            \App\Models\TprIoEntry::where('visit_id', $this->visitId)
+                ->find($this->tprIoEditId)
+                ?->update($data);
+            Notification::make()->title('Entry updated.')->success()->send();
+        } else {
+            \App\Models\TprIoEntry::create($data);
+            Notification::make()->title('I&O entry saved.')->success()->send();
+        }
+
+        $this->tprAddingIo = false;
+        $this->tprIoEditId = null;
+    }
+
+    public function tprOpenEditIo(int $id): void
+    {
+        $entry = \App\Models\TprIoEntry::where('visit_id', $this->visitId)->find($id);
+        if (!$entry) return;
+
+        $this->tprIoEditId    = $id;
+        $this->tprAddingIo    = false;
+        $this->tprIoDate      = $entry->date->toDateString();
+        $this->tprIoShift     = $entry->shift;
+        $this->tprIoUrine     = $entry->urine_ml;
+        $this->tprIoStool     = $entry->stool_count;
+        $this->tprIoStoolType = $entry->stool_type ?? '';
+        $this->tprIoNotes     = $entry->notes ?? '';
+    }
+
+    public function tprDeleteIo(int $id): void
+    {
+        \App\Models\TprIoEntry::where('visit_id', $this->visitId)->find($id)?->delete();
+        Notification::make()->title('Entry removed.')->success()->send();
+    }
+
+    public function tprCancelIo(): void
+    {
+        $this->tprAddingIo = false;
+        $this->tprIoEditId = null;
+    }
+
+    // ── Patient Forms URL helpers ──────────────────────────────────────────────
 
     public function getErRecordUrl(): string
     {
@@ -545,8 +798,20 @@ class NurseChart extends Page
         return route('forms.physical-exam-form', ['visit' => $this->visitId]);
     }
 
-    public function goBack(): void
+    public function getNursesNotesUrl(): string
     {
-        $this->redirect(PatientList::getUrl());
+        return route('forms.nurses-notes', ['visit' => $this->visitId]);
     }
+
+    /**
+     * URL to the dedicated Patient History page for this patient.
+     */
+    public function getPatientHistoryUrl(): string
+    {
+        return \App\Filament\Nurse\Pages\PatientHistory::getUrl([
+            'patientId' => $this->visit?->patient_id,
+        ]);
+    }
+
+    public function goBack(): void { $this->redirect(PatientList::getUrl()); }
 }

@@ -9,6 +9,7 @@ use App\Filament\Doctor\Resources\PatientQueueResource;
 use App\Filament\Doctor\Resources\AdmittedPatientsResource;
 use App\Filament\Doctor\Pages\PatientAssessment;
 use App\Filament\Doctor\Pages\PatientChart;
+use App\Filament\Doctor\Pages\PatientHistory;
 use App\Http\Middleware\Filament\StaffAuthenticate;
 use Illuminate\Support\HtmlString;
 
@@ -35,6 +36,7 @@ class DoctorPanelProvider extends PanelProvider
             ->pages([
                 PatientAssessment::class,
                 PatientChart::class,
+                PatientHistory::class,
             ])
             ->widgets([])
             ->middleware([
