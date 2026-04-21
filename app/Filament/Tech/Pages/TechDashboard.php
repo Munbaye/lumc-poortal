@@ -7,35 +7,22 @@ use App\Models\RadiologyRequest;
 use App\Models\ResultUpload;
 use Filament\Pages\Page;
 
-/**
- * TechDashboard — default landing page for the Tech panel.
- *
- * Specialty-based queue filtering:
- *   MedTech (specialty contains 'Med Tech', 'Medical Tech', 'Laboratory')
- *     → sees only Lab requests
- *   RadTech (specialty contains 'Radiolog', 'Radiology', 'X-Ray', 'Rad Tech')
- *     → sees only Radiology requests
- *   Other / unspecified
- *     → sees both queues
- */
 class TechDashboard extends Page
 {
     protected static ?string $navigationIcon  = 'heroicon-o-squares-2x2';
     protected static ?string $navigationLabel = 'Dashboard';
-    protected static ?string $title           = 'Tech Dashboard';
+    protected static ?string $title           = '';
 
-    // ── Dynamic Title based on specialty ─────────────────────────────────────
     public function getTitle(): string
     {
-        if ($this->isMedtech && !$this->isRadtech) return 'MedTech Dashboard';
-        if ($this->isRadtech && !$this->isMedtech) return 'RadTech Dashboard';
-        return 'Tech Dashboard';
+        return '';
     }
-    protected static string  $view            = 'filament.tech.pages.tech-dashboard';
-    protected static ?int    $navigationSort  = 1;
+
+    protected static string  $view           = 'filament.tech.pages.tech-dashboard';
+    protected static ?int    $navigationSort = 1;
 
     public string $search      = '';
-    public string $queueFilter = 'pending';  // pending | completed
+    public string $queueFilter = 'pending';
 
     public function updatedSearch(): void {}
 
@@ -60,7 +47,6 @@ class TechDashboard extends Page
             || str_contains($spec, 'radtech');
     }
 
-    /** Which queues to show: 'lab', 'radiology', or 'both' */
     public function getQueueTypeProperty(): string
     {
         if ($this->isMedtech && !$this->isRadtech) return 'lab';
@@ -100,7 +86,7 @@ class TechDashboard extends Page
 
         $statusFilter = $this->queueFilter === 'completed' ? 'completed' : ['pending', 'in_progress'];
 
-        $query = LabRequest::with(['visit.patient', 'doctor'])
+        return LabRequest::with(['visit.patient', 'doctor'])
             ->when(is_array($statusFilter),
                 fn ($q) => $q->whereIn('status', $statusFilter),
                 fn ($q) => $q->where('status', $statusFilter)
@@ -119,9 +105,8 @@ class TechDashboard extends Page
             })
             ->orderByRaw("FIELD(status, 'pending', 'in_progress', 'completed')")
             ->orderByRaw("request_type = 'stat' DESC")
-            ->orderBy('created_at', 'asc');
-
-        return $query->get();
+            ->orderBy('created_at', 'asc')
+            ->get();
     }
 
     // ── Radiology queue ───────────────────────────────────────────────────────
@@ -132,7 +117,7 @@ class TechDashboard extends Page
 
         $statusFilter = $this->queueFilter === 'completed' ? 'completed' : ['pending', 'in_progress'];
 
-        $query = RadiologyRequest::with(['visit.patient', 'doctor'])
+        return RadiologyRequest::with(['visit.patient', 'doctor'])
             ->when(is_array($statusFilter),
                 fn ($q) => $q->whereIn('status', $statusFilter),
                 fn ($q) => $q->where('status', $statusFilter)
@@ -150,9 +135,8 @@ class TechDashboard extends Page
                 });
             })
             ->orderByRaw("FIELD(status, 'pending', 'in_progress', 'completed')")
-            ->orderBy('created_at', 'asc');
-
-        return $query->get();
+            ->orderBy('created_at', 'asc')
+            ->get();
     }
 
     // ── Navigation ────────────────────────────────────────────────────────────
