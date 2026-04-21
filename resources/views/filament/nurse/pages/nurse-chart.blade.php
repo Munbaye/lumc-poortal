@@ -1557,10 +1557,6 @@
 
         {{-- ══════════════════════════════════════════════════════════════════════════
             TPR GRAPHIC RECORD TAB CONTENT
-            Included from nurse-chart.blade.php when $activeTab === 'tpr'
-            Requires: $visit, $this->allVitals, $this->tprIoEntries
-            TPR I/O state: $tprAddingIo, $tprIoDate, $tprIoShift, $tprIoUrine,
-                            $tprIoStool, $tprIoStoolType, $tprIoNotes, $tprIoEditId
         ══════════════════════════════════════════════════════════════════════════ --}}
 
         @elseif($activeTab === 'tpr')
@@ -1577,206 +1573,67 @@
 
             foreach ($tprVitals as $v) {
                 $labels[]      = $v->taken_at->timezone('Asia/Manila')->format('M j H:i');
-                $tempPoints[]  = $v->temperature      ?? null;
-                $pulsePoints[] = $v->pulse_rate       ?? null;
-                $rrPoints[]    = $v->respiratory_rate ?? null;
+                $tempPoints[]  = $v->temperature      !== null ? (float) $v->temperature      : null;
+                $pulsePoints[] = $v->pulse_rate       !== null ? (float) $v->pulse_rate       : null;
+                $rrPoints[]    = $v->respiratory_rate !== null ? (float) $v->respiratory_rate : null;
             }
 
-            $uid         = 'tpr-' . $visit->id;
-            $chartJson   = json_encode([
+            $uid       = 'tpr-' . $visit->id;
+            $chartJson = json_encode([
                 'labels' => $labels,
                 'temp'   => $tempPoints,
                 'pulse'  => $pulsePoints,
                 'rr'     => $rrPoints,
-            ]);
+            ], JSON_NUMERIC_CHECK);
         @endphp
 
+        {{-- ── Styles (unchanged) ──────────────────────────────────────────────── --}}
         <style>
-        /* ── TPR tab styles ──────────────────────────────────────────────── */
-        .tpr-chart-wrap {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            padding: 16px 18px;
-            margin-bottom: 16px;
-        }
+        .tpr-chart-wrap { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:16px 18px; margin-bottom:16px; }
         .dark .tpr-chart-wrap { background:#1f2937; border-color:#374151; }
-
-        .tpr-chart-title {
-            font-size: .75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            color: #6b7280;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .tpr-chart-title .tpr-dot {
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        /* Numbers table */
-        .tpr-num-table-wrap {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            overflow-x: auto;
-            margin-bottom: 24px;
-        }
+        .tpr-chart-title { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#6b7280; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+        .tpr-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; display:inline-block; }
+        .tpr-num-table-wrap { background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow-x:auto; margin-bottom:24px; }
         .dark .tpr-num-table-wrap { background:#1f2937; border-color:#374151; }
-        .tpr-num-table {
-            width: 100%;
-            min-width: 600px;
-            border-collapse: collapse;
-            font-size: .78rem;
-        }
-        .tpr-num-table th {
-            background: #f9fafb;
-            padding: 8px 12px;
-            text-align: center;
-            font-size: .68rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .05em;
-            color: #6b7280;
-            border-bottom: 2px solid #e5e7eb;
-            white-space: nowrap;
-        }
+        .tpr-num-table { width:100%; min-width:600px; border-collapse:collapse; font-size:.78rem; }
+        .tpr-num-table th { background:#f9fafb; padding:8px 12px; text-align:center; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#6b7280; border-bottom:2px solid #e5e7eb; white-space:nowrap; }
         .dark .tpr-num-table th { background:#111827; border-bottom-color:#374151; color:#9ca3af; }
-        .tpr-num-table td {
-            padding: 8px 12px;
-            border-bottom: 1px solid #f3f4f6;
-            text-align: center;
-            color: #374151;
-        }
+        .tpr-num-table td { padding:8px 12px; border-bottom:1px solid #f3f4f6; text-align:center; color:#374151; }
         .dark .tpr-num-table td { border-bottom-color:#374151; color:#d1d5db; }
-        .tpr-num-table tr:last-child td { border-bottom: none; }
-        .tpr-val-abnormal { color: #dc2626 !important; font-weight: 700; }
-        .dark .tpr-val-abnormal { color: #f87171 !important; }
-        .tpr-val-normal { color: #059669; font-weight: 600; }
-        .tpr-val-na { color: #d1d5db; font-size: .72rem; }
-
-        /* IO section */
-        .tpr-io-section {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            overflow: hidden;
-        }
+        .tpr-num-table tr:last-child td { border-bottom:none; }
+        .tpr-val-abnormal { color:#dc2626 !important; font-weight:700; }
+        .tpr-val-normal { color:#059669; font-weight:600; }
+        .tpr-val-na { color:#d1d5db; font-size:.72rem; }
+        .tpr-io-section { background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; }
         .dark .tpr-io-section { background:#1f2937; border-color:#374151; }
-
-        .tpr-io-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 18px;
-            border-bottom: 1px solid #e5e7eb;
-            background: #f9fafb;
-        }
+        .tpr-io-head { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #e5e7eb; background:#f9fafb; }
         .dark .tpr-io-head { background:#111827; border-bottom-color:#374151; }
-
-        .tpr-io-form {
-            background: #f0fdf4;
-            border: 1.5px solid #86efac;
-            border-radius: 8px;
-            padding: 16px 18px;
-            margin: 14px 18px;
-        }
+        .tpr-io-form { background:#f0fdf4; border:1.5px solid #86efac; border-radius:8px; padding:16px 18px; margin:14px 18px; }
         .dark .tpr-io-form { background:#022c22; border-color:#16a34a; }
-
-        .tpr-io-form-grid {
-            display: grid;
-            grid-template-columns: 150px 140px 120px 120px 140px 1fr;
-            gap: 12px;
-            align-items: end;
-            margin-bottom: 12px;
-        }
-        @media (max-width: 900px) {
-            .tpr-io-form-grid { grid-template-columns: repeat(3, 1fr); }
-        }
-        @media (max-width: 600px) {
-            .tpr-io-form-grid { grid-template-columns: 1fr 1fr; }
-        }
-
-        .tpr-io-label {
-            font-size: .7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .05em;
-            color: #6b7280;
-            display: block;
-            margin-bottom: 4px;
-        }
-        .tpr-io-input {
-            border: 1px solid #d1d5db;
-            border-radius: 7px;
-            padding: 8px 10px;
-            font-size: .875rem;
-            background: #fff;
-            color: #111827;
-            outline: none;
-            width: 100%;
-        }
+        .tpr-io-form-grid { display:grid; grid-template-columns:150px 140px 120px 120px 140px 1fr; gap:12px; align-items:end; margin-bottom:12px; }
+        @media(max-width:900px){ .tpr-io-form-grid { grid-template-columns:repeat(3,1fr); } }
+        @media(max-width:600px){ .tpr-io-form-grid { grid-template-columns:1fr 1fr; } }
+        .tpr-io-label { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#6b7280; display:block; margin-bottom:4px; }
+        .tpr-io-input { border:1px solid #d1d5db; border-radius:7px; padding:8px 10px; font-size:.875rem; background:#fff; color:#111827; outline:none; width:100%; }
         .dark .tpr-io-input { background:#374151; border-color:#4b5563; color:#f3f4f6; }
-        .tpr-io-input:focus { border-color: #059669; box-shadow: 0 0 0 2px rgba(5,150,105,.12); }
-
-        .tpr-io-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: .8rem;
-        }
-        .tpr-io-table th {
-            padding: 9px 14px;
-            text-align: left;
-            font-size: .68rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            color: #6b7280;
-            background: #f9fafb;
-            border-bottom: 1px solid #e5e7eb;
-            white-space: nowrap;
-        }
+        .tpr-io-input:focus { border-color:#059669; box-shadow:0 0 0 2px rgba(5,150,105,.12); }
+        .tpr-io-table { width:100%; border-collapse:collapse; font-size:.8rem; }
+        .tpr-io-table th { padding:9px 14px; text-align:left; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#6b7280; background:#f9fafb; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
         .dark .tpr-io-table th { background:#111827; color:#9ca3af; border-bottom-color:#374151; }
-        .tpr-io-table td {
-            padding: 10px 14px;
-            border-bottom: 1px solid #f3f4f6;
-            color: #374151;
-            vertical-align: middle;
-        }
+        .tpr-io-table td { padding:10px 14px; border-bottom:1px solid #f3f4f6; color:#374151; vertical-align:middle; }
         .dark .tpr-io-table td { border-bottom-color:#374151; color:#d1d5db; }
-        .tpr-io-table tr:last-child td { border-bottom: none; }
-        .tpr-io-table tbody tr:hover td { background: #f0fdf4; }
-        .dark .tpr-io-table tbody tr:hover td { background: rgba(5,150,105,.04); }
-
-        .tpr-shift-badge {
-            font-size: .68rem; font-weight: 700; padding: 2px 8px;
-            border-radius: 9999px; white-space: nowrap;
-        }
-        .tpr-shift-73   { background:#eff6ff; color:#1d4ed8; }
-        .tpr-shift-311  { background:#f5f3ff; color:#5b21b6; }
-        .tpr-shift-117  { background:#f0fdfa; color:#0f766e; }
-
-        .btn-tpr-add {
-            background: #059669; color: #fff; border: none; border-radius: 7px;
-            padding: 8px 16px; font-size: .8rem; font-weight: 700; cursor: pointer;
-            display: inline-flex; align-items: center; gap: 5px;
-        }
-        .btn-tpr-add:hover { background: #047857; }
-        .btn-tpr-save {
-            background: #059669; color: #fff; border: none; border-radius: 7px;
-            padding: 8px 20px; font-size: .83rem; font-weight: 700; cursor: pointer;
-        }
-        .btn-tpr-save:hover { background: #047857; }
-        .btn-tpr-del {
-            background: none; border: none; color: #d1d5db; cursor: pointer;
-            font-size: .75rem; padding: 3px 6px; border-radius: 4px;
-        }
-        .btn-tpr-del:hover { color: #ef4444; background: #fee2e2; }
+        .tpr-io-table tr:last-child td { border-bottom:none; }
+        .tpr-io-table tbody tr:hover td { background:#f0fdf4; }
+        .tpr-shift-badge { font-size:.68rem; font-weight:700; padding:2px 8px; border-radius:9999px; white-space:nowrap; }
+        .tpr-shift-73  { background:#eff6ff; color:#1d4ed8; }
+        .tpr-shift-311 { background:#f5f3ff; color:#5b21b6; }
+        .tpr-shift-117 { background:#f0fdfa; color:#0f766e; }
+        .btn-tpr-add  { background:#059669; color:#fff; border:none; border-radius:7px; padding:8px 16px; font-size:.8rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; }
+        .btn-tpr-add:hover { background:#047857; }
+        .btn-tpr-save { background:#059669; color:#fff; border:none; border-radius:7px; padding:8px 20px; font-size:.83rem; font-weight:700; cursor:pointer; }
+        .btn-tpr-save:hover { background:#047857; }
+        .btn-tpr-del  { background:none; border:none; color:#d1d5db; cursor:pointer; font-size:.75rem; padding:3px 6px; border-radius:4px; }
+        .btn-tpr-del:hover { color:#ef4444; background:#fee2e2; }
         </style>
 
         {{-- ── Section header ──────────────────────────────────────────── --}}
@@ -1794,95 +1651,175 @@
         <div class="empty-state">
             <div class="empty-icon">🌡️</div>
             <p class="empty-title">No vital signs recorded yet</p>
-            <p class="empty-sub">Go to the 📊 Vital Signs tab to add the first vital signs entry. Charts will appear here once data is available.</p>
+            <p class="empty-sub">Go to the 📊 Vital Signs tab to add the first vital signs entry.</p>
         </div>
         @else
 
-        <div class="tpr-chart-wrap">
-            <div class="tpr-chart-title"><span class="tpr-dot" style="background:#ef4444;"></span> Temperature (°C) <span style="font-size:.67rem;color:#9ca3af;font-weight:400;margin-left:auto;">Normal: 36.0–37.5°C</span></div>
-            <div style="position:relative;height:220px;"><canvas id="{{ $uid }}-temp"></canvas></div>
-        </div>
+        @php
+        /**
+        * Render a line chart as an inline SVG string.
+        * Zero JS dependencies — pure PHP/SVG.
+        */
+        function tprSvgChart(
+            array  $labels,
+            array  $values,
+            string $color,
+            float  $yMin,
+            float  $yMax,
+            float  $yStep,
+            string $unit
+        ): string {
+            $svgW  = 700; $svgH  = 210;
+            $padL  = 54;  $padR  = 20;
+            $padT  = 18;  $padB  = 50;
+            $cW    = $svgW - $padL - $padR;
+            $cH    = $svgH - $padT - $padB;
+            $range = $yMax - $yMin;
+            $n     = count($labels);
 
-        <div class="tpr-chart-wrap">
-            <div class="tpr-chart-title"><span class="tpr-dot" style="background:#f97316;"></span> Pulse Rate (/min) <span style="font-size:.67rem;color:#9ca3af;font-weight:400;margin-left:auto;">Normal: 60–100 bpm</span></div>
-            <div style="position:relative;height:220px;"><canvas id="{{ $uid }}-pulse"></canvas></div>
-        </div>
-
-        <div class="tpr-chart-wrap">
-            <div class="tpr-chart-title"><span class="tpr-dot" style="background:#3b82f6;"></span> Respiratory Rate (/min) <span style="font-size:.67rem;color:#9ca3af;font-weight:400;margin-left:auto;">Normal: 12–20 /min</span></div>
-            <div style="position:relative;height:220px;"><canvas id="{{ $uid }}-rr"></canvas></div>
-        </div>
-
-        {{-- Data island — safe from Livewire morphing --}}
-        <div id="{{ $uid }}-data"
-             data-chart="{{ htmlspecialchars($chartJson, ENT_QUOTES, 'UTF-8') }}"
-             style="display:none;"></div>
-
-        @script
-        <script>
-        (function () {
-            const uid      = {!! json_encode($uid) !!};
-            const dataEl   = document.getElementById(uid + '-data');
-            if (!dataEl) return;
-
-            const payload  = JSON.parse(dataEl.dataset.chart);
-
-            // Destroy any previous instances
-            if (!window.__tprCharts) window.__tprCharts = {};
-            ['temp','pulse','rr'].forEach(k => {
-                if (window.__tprCharts[uid + '-' + k]) {
-                    window.__tprCharts[uid + '-' + k].destroy();
-                    delete window.__tprCharts[uid + '-' + k];
-                }
-            });
-
-            if (typeof Chart === 'undefined') {
-                console.error('Chart.js is not loaded');
-                return;
-            }
-
-            const shared = {
-                type: 'line',
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    spanGaps: true,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 11 } } } },
-                    scales: {
-                        x: { ticks: { maxRotation: 45, font: { size: 10 } }, grid: { color: 'rgba(156,163,175,0.15)' } },
-                        y: { grid: { color: 'rgba(156,163,175,0.15)' }, ticks: { font: { size: 11 } } }
-                    }
-                }
+            /** Map a data-value → SVG Y pixel */
+            $toY = static function (float $v) use ($padT, $cH, $yMin, $range): float {
+                return round($padT + $cH - (($v - $yMin) / $range * $cH), 2);
             };
 
-            const ds = (label, data, color) => ({
-                label, data,
-                borderColor: color,
-                backgroundColor: color.replace(')', ',0.1)').replace('rgb', 'rgba'),
-                borderWidth: 2.5, tension: 0.3, pointRadius: 4, pointHoverRadius: 6, spanGaps: true
-            });
+            /** Map a label index → SVG X pixel */
+            $toX = static function (int $i) use ($padL, $cW, $n): float {
+                return round($padL + ($n > 1 ? ($i / ($n - 1)) * $cW : $cW / 2), 2);
+            };
 
-            window.__tprCharts[uid + '-temp'] = new Chart(
-                document.getElementById(uid + '-temp'),
-                { ...shared, data: { labels: payload.labels, datasets: [ds('Temperature (°C)', payload.temp, '#ef4444')] },
-                  options: { ...shared.options, scales: { ...shared.options.scales, y: { min: 34, max: 42, ticks: { stepSize: 0.5 } } } } }
-            );
+            $hex  = htmlspecialchars($color, ENT_QUOTES);
+            $out  = "<svg viewBox='0 0 {$svgW} {$svgH}' xmlns='http://www.w3.org/2000/svg'"
+                . " style='width:100%;height:100%;display:block;'>";
 
-            window.__tprCharts[uid + '-pulse'] = new Chart(
-                document.getElementById(uid + '-pulse'),
-                { ...shared, data: { labels: payload.labels, datasets: [ds('Pulse Rate (/min)', payload.pulse, '#f97316')] },
-                  options: { ...shared.options, scales: { ...shared.options.scales, y: { min: 40, max: 180, ticks: { stepSize: 10 } } } } }
-            );
+            // ── background ──────────────────────────────────────────────
+            $out .= "<rect x='0' y='0' width='{$svgW}' height='{$svgH}' fill='transparent'/>";
 
-            window.__tprCharts[uid + '-rr'] = new Chart(
-                document.getElementById(uid + '-rr'),
-                { ...shared, data: { labels: payload.labels, datasets: [ds('Respiratory Rate (/min)', payload.rr, '#3b82f6')] },
-                  options: { ...shared.options, scales: { ...shared.options.scales, y: { min: 8, max: 40, ticks: { stepSize: 4 } } } } }
-            );
-        })();
-        </script>
-        @endscript
+            // ── horizontal grid lines + Y-axis labels ───────────────────
+            $steps = (int) round(($yMax - $yMin) / $yStep);
+            for ($s = 0; $s <= $steps; $s++) {
+                $val  = $yMin + $s * $yStep;
+                $yPos = $toY((float) $val);
+                $out .= "<line x1='{$padL}' y1='{$yPos}' x2='" . ($svgW - $padR) . "' y2='{$yPos}'"
+                    . " stroke='#e5e7eb' stroke-width='1' stroke-dasharray='3 3'/>";
+                $label = (strpos((string) $yStep, '.') !== false)
+                    ? number_format((float) $val, 1)
+                    : (int) $val;
+                $out .= "<text x='" . ($padL - 6) . "' y='{$yPos}'"
+                    . " text-anchor='end' dominant-baseline='middle'"
+                    . " font-size='10' fill='#9ca3af'>{$label}</text>";
+            }
+
+            // ── vertical grid lines + X-axis labels ─────────────────────
+            for ($i = 0; $i < $n; $i++) {
+                $x    = $toX($i);
+                $xBot = $padT + $cH;
+                $out .= "<line x1='{$x}' y1='{$padT}' x2='{$x}' y2='{$xBot}'"
+                    . " stroke='#f3f4f6' stroke-width='1'/>";
+                $lbl  = htmlspecialchars($labels[$i], ENT_QUOTES);
+                $ty   = $xBot + 12;
+                $out .= "<text x='{$x}' y='{$ty}'"
+                    . " font-size='9' fill='#9ca3af' text-anchor='end'"
+                    . " transform='rotate(-38 {$x} {$ty})'>{$lbl}</text>";
+            }
+
+            // ── axes ─────────────────────────────────────────────────────
+            $axisBot = $padT + $cH;
+            $axisR   = $svgW - $padR;
+            $out .= "<line x1='{$padL}' y1='{$padT}' x2='{$padL}' y2='{$axisBot}'"
+                . " stroke='#d1d5db' stroke-width='1.5'/>";
+            $out .= "<line x1='{$padL}' y1='{$axisBot}' x2='{$axisR}' y2='{$axisBot}'"
+                . " stroke='#d1d5db' stroke-width='1.5'/>";
+
+            // ── collect non-null points ───────────────────────────────────
+            $pts = [];
+            for ($i = 0; $i < $n; $i++) {
+                if ($values[$i] !== null) {
+                    $pts[] = ['x' => $toX($i), 'y' => $toY((float) $values[$i]),
+                            'v' => $values[$i], 'lbl' => $labels[$i]];
+                }
+            }
+
+            if (count($pts) >= 2) {
+                // Area fill
+                $baseY = $padT + $cH;
+                $area  = "M {$pts[0]['x']} {$baseY} L {$pts[0]['x']} {$pts[0]['y']}";
+                foreach (array_slice($pts, 1) as $p) {
+                    $area .= " L {$p['x']} {$p['y']}";
+                }
+                $area .= ' L ' . end($pts)['x'] . " {$baseY} Z";
+                $out  .= "<path d='{$area}' fill='{$hex}' fill-opacity='0.09'/>";
+
+                // Line
+                $line = "M {$pts[0]['x']} {$pts[0]['y']}";
+                foreach (array_slice($pts, 1) as $p) {
+                    $line .= " L {$p['x']} {$p['y']}";
+                }
+                $out .= "<path d='{$line}' fill='none' stroke='{$hex}'"
+                    . " stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'/>";
+            } elseif (count($pts) === 1) {
+                // Single point — just draw the dot
+            }
+
+            // ── dots + value labels ───────────────────────────────────────
+            foreach ($pts as $p) {
+                $tip  = htmlspecialchars("{$p['lbl']}: {$p['v']} {$unit}", ENT_QUOTES);
+                $out .= "<circle cx='{$p['x']}' cy='{$p['y']}' r='5'"
+                    . " fill='{$hex}' stroke='white' stroke-width='2'>"
+                    . "<title>{$tip}</title></circle>";
+                $vy   = round($p['y'] - 11, 2);
+                $out .= "<text x='{$p['x']}' y='{$vy}'"
+                    . " text-anchor='middle' font-size='10' font-weight='700'"
+                    . " fill='{$hex}'>{$p['v']}</text>";
+            }
+
+            // ── "no data" message ─────────────────────────────────────────
+            if (empty($pts)) {
+                $cx   = round($svgW / 2, 0);
+                $cy   = round($svgH / 2, 0);
+                $out .= "<text x='{$cx}' y='{$cy}' text-anchor='middle'"
+                    . " font-size='13' fill='#d1d5db'>No data</text>";
+            }
+
+            $out .= '</svg>';
+            return $out;
+        }
+        @endphp
+
+        {{-- ── Temperature chart ─────────────────────────────────────── --}}
+        <div class="tpr-chart-wrap">
+            <div class="tpr-chart-title">
+                <span class="tpr-dot" style="background:#ef4444;"></span>
+                Temperature (°C)
+                <span style="font-size:.67rem;color:#9ca3af;font-weight:400;margin-left:auto;">Normal: 36.0–37.5°C</span>
+            </div>
+            <div style="position:relative;height:220px;">
+                {!! tprSvgChart($labels, $tempPoints, '#ef4444', 34, 42, 0.5, '°C') !!}
+            </div>
+        </div>
+
+        {{-- ── Pulse Rate chart ───────────────────────────────────────── --}}
+        <div class="tpr-chart-wrap">
+            <div class="tpr-chart-title">
+                <span class="tpr-dot" style="background:#f97316;"></span>
+                Pulse Rate (/min)
+                <span style="font-size:.67rem;color:#9ca3af;font-weight:400;margin-left:auto;">Normal: 60–100 bpm</span>
+            </div>
+            <div style="position:relative;height:220px;">
+                {!! tprSvgChart($labels, $pulsePoints, '#f97316', 40, 180, 20, '/min') !!}
+            </div>
+        </div>
+
+        {{-- ── Respiratory Rate chart ─────────────────────────────────── --}}
+        <div class="tpr-chart-wrap">
+            <div class="tpr-chart-title">
+                <span class="tpr-dot" style="background:#3b82f6;"></span>
+                Respiratory Rate (/min)
+                <span style="font-size:.67rem;color:#9ca3af;font-weight:400;margin-left:auto;">Normal: 12–20 /min</span>
+            </div>
+            <div style="position:relative;height:220px;">
+                {!! tprSvgChart($labels, $rrPoints, '#3b82f6', 8, 40, 4, '/min') !!}
+            </div>
+        </div>
 
         @endif {{-- tprVitals not empty --}}
 
@@ -1905,7 +1842,7 @@
 
             {{-- ── Add / Edit form ─────────────────────────────────────── --}}
             @if($tprAddingIo || $tprIoEditId)
-            <div class="tpr-io-form">
+            <div class="tpr-io-form" x-data="{ stoolCount: @js($tprIoStool) }">
                 <p style="font-size:.82rem;font-weight:700;color:#065f46;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #bbf7d0;">
                     {{ $tprIoEditId ? '✎ Edit Entry' : '➕ New Urine & Stool Entry' }}
                 </p>
@@ -1928,18 +1865,22 @@
                     </div>
 
                     <div>
-                        <label class="tpr-io-label">Urine (mL)</label>
-                        <input type="number" wire:model="tprIoUrine" min="0" max="9999"
+                        <label class="tpr-io-label">Urine (times)</label>
+                        <input type="number" wire:model="tprIoUrine" min="0" max="99"
                             class="tpr-io-input" placeholder="0">
                     </div>
 
                     <div>
                         <label class="tpr-io-label">Stool Count</label>
-                        <input type="number" wire:model="tprIoStool" min="0" max="99"
+                        <input type="number" 
+                            x-model="stoolCount"
+                            wire:model.live="tprIoStool" 
+                            min="0" max="99"
                             class="tpr-io-input" placeholder="0">
                     </div>
 
-                    <div>
+                    <!-- Stool Type -->
+                    <div x-show="stoolCount && stoolCount > 0" x-transition>
                         <label class="tpr-io-label">Stool Type</label>
                         <select wire:model="tprIoStoolType" class="tpr-io-input" style="cursor:pointer;">
                             <option value="">— Type —</option>
@@ -1977,7 +1918,7 @@
             <div style="text-align:center;padding:36px 24px;">
                 <div style="font-size:2rem;margin-bottom:8px;">🚽</div>
                 <p style="font-size:.88rem;font-weight:700;color:#374151;margin-bottom:4px;">No urine &amp; stool entries yet</p>
-                <p style="font-size:.78rem;color:#9ca3af;">Click "Add Entry" above to record per-shift urine &amp; stool output.</p>
+                <p style="font-size:.78rem;color:#9ca3af;">Click "Add Entry" above to record per-shift output.</p>
             </div>
             @else
             <table class="tpr-io-table">
@@ -1985,7 +1926,7 @@
                     <tr>
                         <th>Date</th>
                         <th>Shift</th>
-                        <th>Urine (mL)</th>
+                        <th>Urine (times)</th>
                         <th>Stool</th>
                         <th>Stool Type</th>
                         <th style="text-align:left;">Nurse</th>
@@ -2007,17 +1948,15 @@
                         <td style="font-family:monospace;font-size:.78rem;font-weight:600;">
                             {{ $io->date->format('M j, Y') }}
                         </td>
-                        <td>
-                            <span class="tpr-shift-badge {{ $shiftClass }}">{{ $io->shift }}</span>
-                        </td>
+                        <td><span class="tpr-shift-badge {{ $shiftClass }}">{{ $io->shift }}</span></td>
                         <td style="font-weight:700;color:#0284c7;">
-                            {{ $io->urine_ml !== null ? number_format($io->urine_ml) . ' mL' : '—' }}
+                            {{ $io->urine_count !== null ? $io->urine_count . '×' : '—' }}
                         </td>
                         <td style="font-weight:700;color:#7c3aed;">
-                            {{ $io->stool_count !== null ? $io->stool_count . 'x' : '—' }}
+                            {{ $io->stool_count !== null ? $io->stool_count . '×' : '—' }}
                         </td>
                         <td>
-                            @if($io->stool_type)
+                            @if($io->stool_count && $io->stool_count > 0 && $io->stool_type)
                                 <span style="font-size:.72rem;background:#f3f4f6;padding:1px 7px;border-radius:4px;color:#374151;font-weight:600;">
                                     {{ $io->stool_type_label }}
                                 </span>
@@ -2044,7 +1983,7 @@
                 </tbody>
             </table>
 
-            {{-- Daily totals summary --}}
+            {{-- Daily totals --}}
             @php
                 $dailyTotals = $tprIoEntries->groupBy(fn($io) => $io->date->format('Y-m-d'));
             @endphp
@@ -2053,23 +1992,22 @@
                 <span style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;">24-hr Totals:</span>
                 @foreach($dailyTotals as $date => $entries)
                 @php
-                    $totalUrine = $entries->sum('urine_ml');
+                    $totalUrine = $entries->sum('urine_count');
                     $totalStool = $entries->sum('stool_count');
                 @endphp
                 <span style="font-size:.75rem;color:#374151;background:#fff;border:1px solid #e5e7eb;padding:2px 10px;border-radius:6px;">
                     <strong>{{ \Carbon\Carbon::parse($date)->format('M j') }}</strong>
                     &nbsp;·&nbsp;
-                    🚱 <span style="color:#0284c7;font-weight:700;">{{ number_format($totalUrine) }}mL</span>
+                    🚱 <span style="color:#0284c7;font-weight:700;">{{ $totalUrine }}×</span>
                     &nbsp;·&nbsp;
-                    🚽 <span style="color:#7c3aed;font-weight:700;">{{ $totalStool }}x</span>
+                    🚽 <span style="color:#7c3aed;font-weight:700;">{{ $totalStool }}×</span>
                 </span>
                 @endforeach
             </div>
             @endif
+            @endif
 
-            @endif {{-- tprIoEntries not empty --}}
-
-        </div>{{-- /.tpr-io-section --}}
+        </div>
 
         {{-- ══ PLACEHOLDER TABS ════════════════════════════════════ --}}
 

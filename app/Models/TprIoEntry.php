@@ -18,7 +18,7 @@ class TprIoEntry extends Model
         'nurse_name',
         'date',
         'shift',         // 7-3 | 3-11 | 11-7
-        'urine_ml',
+        'urine_count',
         'stool_count',
         'stool_type',    // formed | loose | watery | bloody | none
         'notes',

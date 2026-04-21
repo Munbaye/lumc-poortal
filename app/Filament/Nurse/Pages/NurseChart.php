@@ -710,26 +710,24 @@ class NurseChart extends Page
 
     public function tprSaveIo(): void
     {
-        if (!filled($this->tprIoDate)) {
-            Notification::make()->title('Date is required.')->warning()->send();
-            return;
-        }
-        if (!filled($this->tprIoShift) || !in_array($this->tprIoShift, \App\Models\TprIoEntry::SHIFTS)) {
-            Notification::make()->title('Please select a shift.')->warning()->send();
+        if (!filled($this->tprIoDate) || !filled($this->tprIoShift)) {
+            Notification::make()->title('Date and Shift are required.')->warning()->send();
             return;
         }
 
         $data = [
-            'visit_id'     => $this->visitId,
-            'patient_id'   => $this->visit->patient_id,
-            'recorded_by'  => auth()->id(),
-            'nurse_name'   => auth()->user()->name,
-            'date'         => $this->tprIoDate,
-            'shift'        => $this->tprIoShift,
-            'urine_ml'     => $this->tprIoUrine  ?: null,
-            'stool_count'  => $this->tprIoStool  ?: null,
-            'stool_type'   => filled($this->tprIoStoolType) ? $this->tprIoStoolType : null,
-            'notes'        => trim($this->tprIoNotes) ?: null,
+            'visit_id'    => $this->visitId,
+            'patient_id'  => $this->visit->patient_id,
+            'recorded_by' => auth()->id(),
+            'nurse_name'  => auth()->user()->name,
+            'date'        => $this->tprIoDate,
+            'shift'       => $this->tprIoShift,
+            'urine_count' => $this->tprIoUrine ?: null,
+            'stool_count' => $this->tprIoStool ?: null,
+            'stool_type'  => ($this->tprIoStool && $this->tprIoStool > 0) 
+                            ? $this->tprIoStoolType 
+                            : null,
+            'notes'       => trim($this->tprIoNotes) ?: null,
         ];
 
         if ($this->tprIoEditId) {

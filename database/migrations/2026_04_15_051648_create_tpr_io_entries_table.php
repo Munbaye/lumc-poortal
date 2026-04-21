@@ -18,7 +18,7 @@ return new class extends Migration
             $table->date('date');
             $table->string('shift');          // 7-3 | 3-11 | 11-7
 
-            $table->unsignedSmallInteger('urine_ml')->nullable();
+            $table->unsignedSmallInteger('urine_count')->nullable();
             $table->unsignedTinyInteger('stool_count')->nullable();
             $table->string('stool_type')->nullable();   // formed | loose | watery | bloody | none
 
