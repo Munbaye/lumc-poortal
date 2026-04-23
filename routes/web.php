@@ -151,4 +151,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/forms/medication-records/{visit}', [NurseFormController::class, 'medicationRecords'])
         ->name('forms.medication-records');
 
+   Route::get('/nicu/dashboard', function () {
+    return view('nicu.dashboard');
 });
+});
+
