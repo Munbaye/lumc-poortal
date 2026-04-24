@@ -6,6 +6,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use App\Http\Middleware\Filament\StaffAuthenticate;
+use Illuminate\Support\HtmlString;
 
 class NursePanelProvider extends PanelProvider
 {
@@ -15,7 +16,12 @@ class NursePanelProvider extends PanelProvider
             ->id('nurse')
             ->path('nurse')
             ->colors(['primary' => Color::Rose])
-            ->brandName('LUMC — Nurse Portal')
+            ->brandLogo(fn() => new HtmlString(
+                '<div style="display:flex;align-items:center;gap:10px;">'
+                    . '<img src="' . asset('images/lumc-logo.png') . '" alt="LUMC Logo" style="height:40px;width:auto;">'
+                    . '<span style="font-weight:700;color:#111827;">LUMC — Nurse Portal</span>'
+                    . '</div>'
+            ))
             ->favicon(asset('images/lumc-logo.png'))
             ->discoverPages(
                 in: app_path('Filament/Nurse/Pages'),

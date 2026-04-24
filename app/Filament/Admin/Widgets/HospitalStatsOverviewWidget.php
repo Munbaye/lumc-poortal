@@ -15,7 +15,7 @@ class HospitalStatsOverviewWidget extends BaseWidget
     protected function getColumns(): int
     {
         // 3 columns -> 9 cards renders as a 3x3 grid.
-        return 3;
+        return 4;
     }
 
     protected function getStats(): array
@@ -54,10 +54,12 @@ class HospitalStatsOverviewWidget extends BaseWidget
         };
 
         $privateCount = Visit::where('payment_class', 'Private')
+            ->where('status', 'admitted')
             ->distinct('patient_id')
             ->count('patient_id');
 
         $charityCount = Visit::where('payment_class', 'Charity')
+            ->where('status', 'admitted')
             ->distinct('patient_id')
             ->count('patient_id');
 
@@ -66,10 +68,6 @@ class HospitalStatsOverviewWidget extends BaseWidget
         $charityPercentage = $totalPaymentClassCount > 0 ? round(($charityCount / $totalPaymentClassCount) * 100, 1) : 0;
 
         $dischargedToday = Visit::whereDate('discharged_at', $today)
-            ->distinct('patient_id')
-            ->count('patient_id');
-
-        $dischargedTotal = Visit::whereNotNull('discharged_at')
             ->distinct('patient_id')
             ->count('patient_id');
 
@@ -122,11 +120,7 @@ class HospitalStatsOverviewWidget extends BaseWidget
                 ->color('success')
                 ->icon('heroicon-o-arrow-right-end-on-rectangle'),
 
-            Stat::make('Total Discharged', $dischargedTotal)
-                ->description('Overall discharged patients')
-                ->descriptionIcon('heroicon-m-chart-bar')
-                ->color('info')
-                ->icon('heroicon-o-document-check'),
+
         ];
     }
 }
