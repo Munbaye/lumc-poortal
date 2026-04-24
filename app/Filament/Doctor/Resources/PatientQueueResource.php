@@ -5,6 +5,7 @@ use App\Models\Visit;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class PatientQueueResource extends Resource
 {
@@ -17,13 +18,13 @@ class PatientQueueResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            // Base query — tabs (modifyQueryUsing) refine this further
             ->query(
                 Visit::with(['patient', 'latestVitals', 'assignedDoctor'])
+                    ->whereNotIn('status', ['discharged', 'referred'])
+                    ->where('visit_type', '!=', 'NICU')  // Exclude NICU
                     ->latest('registered_at')
             )
             ->columns([
-
                 Tables\Columns\TextColumn::make('patient.case_no')
                     ->label('Case No')
                     ->searchable()
@@ -33,7 +34,12 @@ class PatientQueueResource extends Resource
 
                 Tables\Columns\TextColumn::make('patient.full_name')
                     ->label('Patient')
-                    ->searchable()
+                    ->searchable(query: function (Builder $query, string $search) {
+                        $query->whereHas('patient', function (Builder $q) use ($search) {
+                            $q->where('family_name', 'like', "%{$search}%")
+                              ->orWhere('first_name', 'like', "%{$search}%");
+                        });
+                    })
                     ->weight('semibold')
                     ->color(fn ($record) => $record->patient?->has_incomplete_info ? 'danger' : null)
                     ->description(fn ($record) => $record->patient?->has_incomplete_info
@@ -50,7 +56,10 @@ class PatientQueueResource extends Resource
                 Tables\Columns\TextColumn::make('visit_type')
                     ->label('Entry')
                     ->badge()
-                    ->color(fn ($state) => $state === 'ER' ? 'danger' : 'primary'),
+                    ->color(fn ($state) => match ($state) {
+                        'ER'   => 'danger',
+                        default => 'primary',
+                    }),
 
                 Tables\Columns\TextColumn::make('payment_class')
                     ->label('Class')
@@ -89,40 +98,41 @@ class PatientQueueResource extends Resource
 
                 Tables\Columns\TextColumn::make('status')
                     ->formatStateUsing(fn ($state) => match ($state) {
-                        'registered'  => 'Waiting',
-                        'vitals_done' => 'Vitals Done',
-                        'assessed'    => 'Assessed',
-                        'admitted'    => 'Admitted',
-                        'discharged'  => 'Discharged',
-                        'referred'    => 'Referred',
-                        default       => ucfirst(str_replace('_', ' ', $state)),
+                        'registered'              => 'Waiting',
+                        'vitals_done'             => 'Vitals Done',
+                        'assessed'                => 'Assessed',
+                        'admitted'                => 'Admitted',
+                        'discharged'              => 'Discharged',
+                        'referred'                => 'Referred',
+                        'provisional_registration' => 'Provisional',
+                        default                   => ucfirst(str_replace('_', ' ', $state)),
                     })
                     ->badge()
                     ->color(fn ($state) => match ($state) {
-                        'registered'  => 'warning',
-                        'vitals_done' => 'info',
-                        'assessed'    => 'success',
-                        'admitted'    => 'primary',
-                        'discharged'  => 'gray',
-                        'referred'    => 'gray',
-                        default       => 'gray',
+                        'registered'              => 'warning',
+                        'vitals_done'             => 'info',
+                        'assessed'                => 'success',
+                        'admitted'                => 'primary',
+                        'provisional_registration' => 'danger',
+                        default                   => 'gray',
                     }),
 
                 Tables\Columns\TextColumn::make('registered_at')
                     ->label('Time')
                     ->time('H:i')
                     ->sortable(),
-
             ])
             ->defaultSort('registered_at', 'asc')
             ->filters([
+                Tables\Filters\SelectFilter::make('visit_type')
+                    ->label('Entry Point')
+                    ->options(['OPD' => 'OPD', 'ER' => 'ER']),
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'registered'  => 'Registered',
                         'vitals_done' => 'Vitals Done',
                         'assessed'    => 'Assessed',
                         'admitted'    => 'Admitted',
-                        'discharged'  => 'Discharged',
                     ]),
                 Tables\Filters\TernaryFilter::make('patient.has_incomplete_info')
                     ->label('Incomplete Info')

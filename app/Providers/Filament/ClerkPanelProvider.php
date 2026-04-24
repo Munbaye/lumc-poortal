@@ -7,6 +7,8 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use App\Http\Middleware\Filament\StaffAuthenticate;
 use Illuminate\Support\HtmlString;
+use App\Filament\Clerk\Pages\ConvertToPermanent;
+use App\Filament\Clerk\Pages\EditBabyInformation;
 
 class ClerkPanelProvider extends PanelProvider
 {
@@ -35,6 +37,16 @@ class ClerkPanelProvider extends PanelProvider
                 in: app_path('Filament/Clerk/Widgets'),
                 for: 'App\Filament\Clerk\Widgets'
             )
+            ->pages([
+                // Only Clerk pages here - NICU pages are now in Nurse panel
+                ConvertToPermanent::class,
+                EditBabyInformation::class,
+            ])
+            ->navigationGroups([
+                'Patient Management',
+                'NICU Management',  // For clerk's NICU conversion page
+                'Reports',
+            ])
             ->middleware([
                 \Illuminate\Cookie\Middleware\EncryptCookies::class,
                 \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,

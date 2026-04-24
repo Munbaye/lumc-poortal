@@ -639,6 +639,16 @@
             💧 IV Fluid / Blood
             @if($ivCount > 0)<span class="tab-badge tab-badge-teal">{{ $ivCount }}</span>@endif
         </button>
+        {{-- Only show Breastfeeding tab for NICU patients --}}
+        @if($visit->visit_type === 'NICU')
+        <button wire:click="setTab('breastfeeding')" class="chart-tab {{ $activeTab==='breastfeeding' ? 'active':'' }}">
+            <span class="tab-icon">🍼</span> Breastfeeding
+            @if($this->breastfeedingObservationsCount > 0)
+                <span class="tab-badge tab-badge-green">{{ $this->breastfeedingObservationsCount }}</span>
+            @endif
+        </button>
+        @endif
+        </button>
         <button wire:click="setTab('forms')"    class="chart-tab {{ $activeTab==='forms'    ? 'active':'' }}">📄 Patient Forms</button>
         <button wire:click="setTab('mar')"      class="chart-tab {{ $activeTab==='mar'      ? 'active':'' }}">💊 MAR</button>
         <button wire:click="setTab('tpr')" class="chart-tab {{ $activeTab==='tpr' ? 'active':'' }}">🌡️ TPR Record</button>
@@ -1190,6 +1200,102 @@
             <span>✎ Edit allows updating <strong>Date &amp; Time Consumed</strong> and <strong>Remarks</strong> only.</span>
             <span>Other columns are locked after saving to preserve the original record.</span>
         </div>
+        @endif
+
+        {{-- ══ BREASTFEEDING OBSERVATIONS ═══════════════════════════════════ --}}
+        @elseif($activeTab === 'breastfeeding')
+        @php $observations = $this->breastfeedingObservations; @endphp
+
+        <div class="sec-head">
+            <h2 class="sec-title">🍼 Breastfeeding Observations (NUR-044-0)</h2>
+            <a href="{{ \App\Filament\Nurse\Pages\BreastfeedingObservation::getUrl(['visitId' => $visit->id]) }}" 
+            target="_blank" 
+            class="btn-primary" 
+            style="padding: 6px 14px; font-size: 0.75rem;">
+                + New Observation
+            </a>
+        </div>
+
+        @if($observations->isEmpty())
+        <div class="placeholder-card">
+            <div class="ph-icon">🍼</div>
+            <p class="ph-title">No breastfeeding observations recorded yet</p>
+            <p class="ph-sub">Click "New Observation" to record a breastfeeding assessment.</p>
+        </div>
+        @else
+        @foreach($observations as $obs)
+        <div class="bf-obs-card" style="background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 20px; overflow: hidden;">
+            <div style="background: #f0fdf4; border-bottom: 1px solid #bbf7d0; padding: 12px 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <span style="font-weight: 700;">{{ \Carbon\Carbon::parse($obs->observation_date)->format('M d, Y') }}</span>
+                        <span style="font-size: 0.7rem; color: #6b7280; margin-left: 10px;">at {{ \Carbon\Carbon::parse($obs->observation_time)->format('h:i A') }}</span>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <span class="badge-going-well">✅ {{ $obs->going_well_count }} going well</span>
+                        <span class="badge-difficulty">⚠️ {{ $obs->difficulty_count }} difficulty</span>
+                    </div>
+                    <span style="font-size: 0.7rem; color: #6b7280;">Observed by: {{ $obs->observer?->name ?? '—' }}</span>
+                </div>
+            </div>
+            <div style="padding: 16px 20px;">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                    <div>
+                        <p style="font-weight: 700; font-size: 0.8rem; margin: 0 0 8px 0; color: #166534;">✅ Going Well Signs</p>
+                        <ul style="margin: 0; padding-left: 20px; font-size: 0.8rem;">
+                            @if($obs->general_mother_healthy)<li>Mother looks healthy</li>@endif
+                            @if($obs->general_mother_relaxed)<li>Mother relaxed and comfortable</li>@endif
+                            @if($obs->general_mother_bonding)<li>Signs of bonding</li>@endif
+                            @if($obs->general_baby_healthy)<li>Baby looks healthy</li>@endif
+                            @if($obs->general_baby_calm)<li>Baby calm and relaxed</li>@endif
+                            @if($obs->general_baby_roots)<li>Baby reaches or roots for breast</li>@endif
+                            @if($obs->breast_healthy)<li>Breast looks healthy</li>@endif
+                            @if($obs->breast_no_pain)<li>No pain or discomfort</li>@endif
+                            @if($obs->breast_fingers_away)<li>Fingers away from nipple</li>@endif
+                            @if($obs->position_head_body_line)<li>Head and body in line</li>@endif
+                            @if($obs->position_held_close)<li>Baby held close</li>@endif
+                            @if($obs->position_body_supported)<li>Whole body supported</li>@endif
+                            @if($obs->position_nose_to_nipple)<li>Nose to nipple</li>@endif
+                            @if($obs->attachment_more_areola_above)<li>More areola above top lip</li>@endif
+                            @if($obs->attachment_mouth_open_wide)<li>Mouth open wide</li>@endif
+                            @if($obs->attachment_lip_turned_out)<li>Lower lip turned out</li>@endif
+                            @if($obs->attachment_chin_touches_breast)<li>Chin touches breast</li>@endif
+                            @if($obs->suckling_slow_deep_pauses)<li>Slow, deep sucks with pauses</li>@endif
+                            @if($obs->suckling_cheeks_round)<li>Cheeks round when suckling</li>@endif
+                            @if($obs->suckling_baby_releases)<li>Baby releases breast when finished</li>@endif
+                            @if($obs->suckling_oxytocin_reflex)<li>Oxytocin reflex signs</li>@endif
+                        </ul>
+                    </div>
+                    <div>
+                        <p style="font-weight: 700; font-size: 0.8rem; margin: 0 0 8px 0; color: #991b1b;">⚠️ Difficulty Signs</p>
+                        <ul style="margin: 0; padding-left: 20px; font-size: 0.8rem;">
+                            @if($obs->general_mother_ill)<li>Mother looks ill or depressed</li>@endif
+                            @if($obs->general_mother_tense)<li>Mother looks tense</li>@endif
+                            @if($obs->general_mother_no_eye_contact)<li>No eye contact</li>@endif
+                            @if($obs->general_baby_sleepy_ill)<li>Baby looks sleepy or ill</li>@endif
+                            @if($obs->general_baby_restless_crying)<li>Baby restless or crying</li>@endif
+                            @if($obs->general_baby_no_root)<li>Baby does not root</li>@endif
+                            @if($obs->breast_red_swollen_sore)<li>Breast red, swollen, or sore</li>@endif
+                            @if($obs->breast_painful)<li>Breast or nipple painful</li>@endif
+                            @if($obs->breast_fingers_on_areola)<li>Fingers on areola</li>@endif
+                            @if($obs->position_neck_twisted)<li>Neck and head twisted</li>@endif
+                            @if($obs->position_not_held_close)<li>Baby not held close</li>@endif
+                            @if($obs->position_head_neck_only)<li>Supported only by head/neck</li>@endif
+                            @if($obs->position_chin_to_nipple)<li>Chin to nipple approach</li>@endif
+                            @if($obs->attachment_more_areola_below)<li>More areola below bottom lip</li>@endif
+                            @if($obs->attachment_mouth_not_wide)<li>Mouth not wide</li>@endif
+                            @if($obs->attachment_lips_forward_turned_in)<li>Lips pointing forward or turned in</li>@endif
+                            @if($obs->attachment_chin_not_touching)<li>Chin not touching breast</li>@endif
+                            @if($obs->suckling_rapid_shallow)<li>Rapid shallow sucks</li>@endif
+                            @if($obs->suckling_cheeks_pulled_in)<li>Cheeks pulled in</li>@endif
+                            @if($obs->suckling_mother_takes_off)<li>Mother takes baby off breast</li>@endif
+                            @if($obs->suckling_no_oxytocin_reflex)<li>No oxytocin reflex signs</li>@endif
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endforeach
         @endif
 
         {{-- ══ PATIENT FORMS ══════════════════════════════════════ --}}

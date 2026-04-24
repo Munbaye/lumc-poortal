@@ -6,6 +6,9 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use App\Http\Middleware\Filament\StaffAuthenticate;
+use App\Filament\Nurse\Pages\CreateProvisionalRecord;
+use App\Filament\Nurse\Pages\CompleteBabyInformation;
+use App\Filament\Nurse\Pages\BreastfeedingObservation;
 
 class NursePanelProvider extends PanelProvider
 {
@@ -15,7 +18,12 @@ class NursePanelProvider extends PanelProvider
             ->id('nurse')
             ->path('nurse')
             ->colors(['primary' => Color::Rose])
-            ->brandName('LUMC — Nurse Portal')
+            ->brandName('LUMC — Nurse Portal (NICU)')
+            ->brandLogo(fn () => new \Illuminate\Support\HtmlString(
+                '<div style="display:flex;align-items:center;gap:10px;">'
+                . '<span style="font-weight:700;color:#fff;background:#be123c;padding:6px 12px;border-radius:8px;">🩺 NICU Nurse</span>'
+                . '</div>'
+            ))
             ->favicon(asset('images/lumc-logo.png'))
             ->discoverPages(
                 in: app_path('Filament/Nurse/Pages'),
@@ -29,6 +37,15 @@ class NursePanelProvider extends PanelProvider
                 in: app_path('Filament/Nurse/Widgets'),
                 for: 'App\Filament\Nurse\Widgets'
             )
+            ->pages([
+                // NICU-specific pages only
+                CreateProvisionalRecord::class,
+                CompleteBabyInformation::class,
+                BreastfeedingObservation::class,
+            ])
+            ->navigationGroups([
+                'NICU Care',  // Only NICU-related navigation
+            ])
             ->middleware([
                 \Illuminate\Cookie\Middleware\EncryptCookies::class,
                 \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
