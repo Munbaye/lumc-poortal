@@ -36,6 +36,8 @@ class PatientChart extends Page
 
     public ?Visit $visit = null;
 
+    public ?int $ballardExamId = null;
+
     public string $activeTab             = 'orders';
     public bool   $writingOrders         = false;
 
@@ -84,6 +86,11 @@ class PatientChart extends Page
             'patient',
             'medicalHistory.doctor',
             'doctorsOrders' => fn($q) => $q->with('doctor')->orderBy('order_date', 'desc'),
+            'ballardExams',
+            'erRecord',
+            'admissionRecord',
+            'consentRecord',
+            'vitals',
         ])->find($this->visitId);
 
         if (!$this->visit) {
@@ -146,9 +153,35 @@ class PatientChart extends Page
         $this->writingOrders       = false;
         $this->viewingLabRequestId = null;
         $this->viewingRadRequestId = null;
+        
+        // Reset history view when leaving history tab
+        if ($tab !== 'history') {
+            $this->viewingHistoryVisitId = null;
+        }
     }
 
-    // Orders Methods (unchanged)
+    // ── Result View Methods ───────────────────────────────────────────────────
+    
+    public function viewLabResult(int $requestId): void
+    {
+        $this->viewingLabRequestId = $requestId;
+        $this->viewingRadRequestId = null;
+    }
+
+    public function viewRadResult(int $requestId): void
+    {
+        $this->viewingRadRequestId = $requestId;
+        $this->viewingLabRequestId = null;
+    }
+
+    public function closeResultView(): void
+    {
+        $this->viewingLabRequestId = null;
+        $this->viewingRadRequestId = null;
+    }
+
+    // ── Orders Methods ────────────────────────────────────────────────────────
+
     public function toggleWriteOrders(): void
     {
         $this->writingOrders = !$this->writingOrders;
@@ -243,6 +276,8 @@ class PatientChart extends Page
         Notification::make()->title('Order discontinued.')->success()->send();
     }
 
+    // ── Form URL Helpers ──────────────────────────────────────────────────────
+
     public function getErRecordUrl(): string
     {
         return route('forms.er-record', ['visit' => $this->visitId]) . '?readonly=1';
@@ -267,6 +302,15 @@ class PatientChart extends Page
     {
         return route('forms.physical-exam-form', ['visit' => $this->visitId]);
     }
+
+    public function getPatientHistoryUrl(): string
+    {
+        return \App\Filament\Doctor\Pages\PatientHistory::getUrl([
+            'patientId' => $this->visit?->patient_id,
+        ]);
+    }
+
+    // ── Past Visits / History Tab Methods ─────────────────────────────────────
 
     public function getPastVisitsCountProperty(): int
     {
@@ -303,6 +347,16 @@ class PatientChart extends Page
             'admissionRecord',
             'consentRecord',
         ])->find($this->viewingHistoryVisitId);
+    }
+
+    public function viewHistoryVisit(int $visitId): void
+    {
+        $this->viewingHistoryVisitId = $visitId;
+    }
+
+    public function closeHistoryView(): void
+    {
+        $this->viewingHistoryVisitId = null;
     }
 
     public function getHistoryLabResults(int $visitId)
@@ -350,13 +404,15 @@ class PatientChart extends Page
         return route('forms.consent-to-care', ['visit' => $visitId]) . '?readonly=1';
     }
 
-    public function viewHistoryVisit(int $visitId): void
+    // ── Ballard Score Methods ─────────────────────────────────────────────────
+
+    public function getHasBallardScoreProperty(): bool
     {
-        $this->viewingHistoryVisitId = $visitId;
+        return $this->visit && $this->visit->ballardExams->count() > 0;
     }
 
-    public function closeHistoryView(): void
+    public function getBallardExamsProperty()
     {
-        $this->viewingHistoryVisitId = null;
+        return $this->visit ? $this->visit->ballardExams : collect();
     }
 }

@@ -10,6 +10,7 @@ use App\Models\MarEntry;
 use App\Models\NursesNote;
 use App\Models\Vital;
 use App\Models\Visit;
+use App\Models\NicuBreastfeedingObservation;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Livewire\Attributes\Url;
@@ -193,6 +194,19 @@ class NurseChart extends Page
     public function getIsReadonlyProperty(): bool
     {
         if (!$this->visit) return true;
+        
+        // NICU-specific: Allow editing for provisional and registered status (not admitted yet)
+        if ($this->visit->visit_type === 'NICU') {
+            // NICU is editable if:
+            // - Not yet admitted (provisional_registration or registered)
+            // OR admitted but not yet discharged
+            if ($this->visit->status === 'admitted' && $this->visit->discharged_at !== null) {
+                return true; // Discharged = read-only
+            }
+            return false; // All other NICU statuses are editable
+        }
+        
+        // Original logic for non-NICU visits
         return !($this->visit->status === 'admitted'
             && $this->visit->clerk_admitted_at !== null
             && $this->visit->discharged_at === null);
@@ -202,6 +216,16 @@ class NurseChart extends Page
 
     public function setTab(string $tab): void
     {
+
+        // Prevent switching to breastfeeding tab for non-NICU visits
+        if ($tab === 'breastfeeding' && $this->visit && $this->visit->visit_type !== 'NICU') {
+            Notification::make()
+                ->title('Breastfeeding observations are only available for NICU patients.')
+                ->warning()
+                ->send();
+            return;
+        }
+        
         $this->activeTab      = $tab;
         $this->confirmCarryId = null;
         $this->addingNote     = false;
@@ -814,4 +838,19 @@ class NurseChart extends Page
     }
 
     public function goBack(): void { $this->redirect(PatientList::getUrl()); }
+
+    // Add to the getBreastfeedingObservations property
+    public function getBreastfeedingObservationsProperty()
+    {
+        return NicuBreastfeedingObservation::where('visit_id', $this->visitId)
+            ->orderBy('observation_date', 'desc')
+            ->orderBy('observation_time', 'desc')
+            ->get();
+    }
+
+    // Add to the getBreastfeedingObservationsCount property
+    public function getBreastfeedingObservationsCountProperty(): int
+    {
+        return NicuBreastfeedingObservation::where('visit_id', $this->visitId)->count();
+    }
 }

@@ -7,9 +7,12 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use App\Filament\Doctor\Resources\PatientQueueResource;
 use App\Filament\Doctor\Resources\AdmittedPatientsResource;
+use App\Filament\Doctor\Resources\NicuBabyResource;
 use App\Filament\Doctor\Pages\PatientAssessment;
 use App\Filament\Doctor\Pages\PatientChart;
 use App\Filament\Doctor\Pages\PatientHistory;
+use App\Filament\Doctor\Pages\NicuAssessment;
+use App\Filament\Doctor\Pages\BallardScore;
 use App\Http\Middleware\Filament\StaffAuthenticate;
 use Illuminate\Support\HtmlString;
 
@@ -32,11 +35,14 @@ class DoctorPanelProvider extends PanelProvider
             ->resources([
                 PatientQueueResource::class,
                 AdmittedPatientsResource::class,
+                NicuBabyResource::class,
             ])
             ->pages([
                 PatientAssessment::class,
                 PatientChart::class,
                 PatientHistory::class,
+                NicuAssessment::class,
+                BallardScore::class,
             ])
             ->widgets([])
             ->middleware([

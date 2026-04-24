@@ -7,6 +7,9 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use App\Http\Middleware\Filament\StaffAuthenticate;
 use Illuminate\Support\HtmlString;
+use App\Filament\Nurse\Pages\CreateProvisionalRecord;
+use App\Filament\Nurse\Pages\CompleteBabyInformation;
+use App\Filament\Nurse\Pages\BreastfeedingObservation;
 
 class NursePanelProvider extends PanelProvider
 {
@@ -35,6 +38,15 @@ class NursePanelProvider extends PanelProvider
                 in: app_path('Filament/Nurse/Widgets'),
                 for: 'App\Filament\Nurse\Widgets'
             )
+            ->pages([
+                // NICU-specific pages only
+                CreateProvisionalRecord::class,
+                CompleteBabyInformation::class,
+                BreastfeedingObservation::class,
+            ])
+            ->navigationGroups([
+                'NICU Care',  // Only NICU-related navigation
+            ])
             ->middleware([
                 \Illuminate\Cookie\Middleware\EncryptCookies::class,
                 \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,

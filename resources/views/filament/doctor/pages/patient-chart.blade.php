@@ -1982,6 +1982,21 @@
         .hx-file-link-rad:hover {
             background: #ede9fe;
         }
+
+        /* Ballard Score Card */
+        .ballard-result-card {
+            transition: box-shadow 0.2s;
+        }
+        .ballard-result-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .dark .ballard-result-card {
+            background: #1f2937;
+            border-color: #374151;
+        }
+        .dark .ballard-result-header {
+            border-bottom-color: #374151;
+        }
     </style>
 
     @if($visit && $visit->patient)
@@ -2041,14 +2056,20 @@
             <span class="h-service-badge">{{ $service }}</span>
         </div>
 
-                        {{-- ════ TABS ═══════════════════════════════════════════════════ --}}
-                        <div class="chart-tabs">
-                            <button wire:click="setTab('profile')" class="chart-tab {{ $activeTab === 'profile' ? 'active' : '' }}"><x-heroicon-o-document class="w-4 h-4" /> Patient Forms</button>
-                            <button wire:click="setTab('history')" class="chart-tab {{ $activeTab === 'history' ? 'active' : '' }}"><x-heroicon-o-folder-open class="w-4 h-4" /> Visit History @if($pastCount > 0)<span class="tab-badge tab-badge-blue">{{ $pastCount }}</span>@endif</button>
-                            <button wire:click="setTab('vitals')" class="chart-tab {{ $activeTab === 'vitals' ? 'active' : '' }}"><x-heroicon-o-chart-bar class="w-4 h-4" /> Vital Signs @if($allVitals->count() > 0)<span class="tab-badge tab-badge-warn">{{ $allVitals->count() }}</span>@endif</button>
-                            <button wire:click="setTab('orders')" class="chart-tab {{ $activeTab === 'orders' ? 'active' : '' }}"><x-heroicon-o-pencil-square class="w-4 h-4" /> Doctor's Orders @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif</button>
-                            <button wire:click="setTab('results')" class="chart-tab {{ $activeTab === 'results' ? 'active' : '' }}"><x-heroicon-o-beaker class="w-4 h-4" /> Lab / Radiology @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif</button>
-                        </div>
+        {{-- ════ TABS ═══════════════════════════════════════════════════ --}}
+        <div class="chart-tabs">
+            <button wire:click="setTab('profile')" class="chart-tab {{ $activeTab==='profile'   ? 'active':'' }}"><span class="tab-icon">📄</span> Patient Forms</button>
+            <button wire:click="setTab('history')" class="chart-tab {{ $activeTab==='history'   ? 'active':'' }}"><span class="tab-icon">🗂️</span> Visit History @if($pastCount > 0)<span class="tab-badge tab-badge-blue">{{ $pastCount }}</span>@endif</button>
+            <button wire:click="setTab('vitals')" class="chart-tab {{ $activeTab==='vitals'    ? 'active':'' }}"><span class="tab-icon">📊</span> Vital Signs @if($allVitals->count() > 0)<span class="tab-badge tab-badge-warn">{{ $allVitals->count() }}</span>@endif</button>
+            <button wire:click="setTab('orders')" class="chart-tab {{ $activeTab==='orders'    ? 'active':'' }}"><span class="tab-icon">📝</span> Doctor's Orders @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif</button>
+            <button wire:click="setTab('results')" class="chart-tab {{ $activeTab==='results'   ? 'active':'' }}"><span class="tab-icon">🔬</span> Lab / Radiology @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif</button>
+            <button wire:click="setTab('ballard')" class="chart-tab {{ $activeTab==='ballard' ? 'active':'' }}">
+                <span class="tab-icon">📊</span> Ballard Score
+                @if($this->hasBallardScore)
+                    <span class="tab-badge tab-badge-green">✓</span>
+                @endif
+            </button>
+        </div>
 
                         <div class="chart-content">
 
@@ -2927,7 +2948,119 @@
                                     </div>@endif
                                 @endif {{-- viewing rad --}}
 
-                            @endif {{-- activeTab results --}}
+
+            {{-- ══ BALLARD SCORE ═══════════════════════════════════════════════ --}}
+            @elseif($activeTab === 'ballard')
+            @php $ballardExams = $this->ballardExams; @endphp
+
+            <div class="sec-head">
+                <h2 class="sec-title">📊 Ballard Maturity Score (Gestational Age Assessment)</h2>
+                @if($ballardExams->where('exam_number', 1)->isEmpty())
+                <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id]) }}" 
+                target="_blank" 
+                class="btn-primary" 
+                style="padding: 6px 14px; font-size: 0.75rem;">
+                    + Record 1st Exam
+                </a>
+                @endif
+            </div>
+
+            @if($ballardExams->isEmpty())
+            <div class="placeholder-card">
+                <div class="ph-icon">📊</div>
+                <p class="ph-title">No Ballard Score recorded yet</p>
+                <p class="ph-sub">Gestational age assessment not yet performed.</p>
+                <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id]) }}" 
+                target="_blank" 
+                style="margin-top: 12px; display: inline-block; background: #059669; color: #fff; padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+                    + Record First Exam
+                </a>
+            </div>
+            @else
+            @foreach($ballardExams as $exam)
+            <div class="ballard-result-card" style="background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 20px; overflow: hidden;">
+                <div class="ballard-result-header" style="background: {{ $exam->exam_number == 1 ? '#f0fdf4' : '#fffbeb' }}; border-bottom: 1px solid #e5e7eb; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="font-weight: 700; font-size: 0.9rem;">
+                            {{ $exam->exam_number == 1 ? '1st Exam' : '2nd Exam' }}
+                        </span>
+                        <span style="font-size: 0.7rem; color: #6b7280; margin-left: 10px;">
+                            {{ $exam->exam_datetime ? \Carbon\Carbon::parse($exam->exam_datetime)->format('M d, Y h:i A') : 'Date not set' }}
+                        </span>
+                    </div>
+                    <div>
+                        <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id]) }}" 
+                        target="_blank" 
+                        style="font-size: 0.7rem; color: #1d4ed8; text-decoration: none;">
+                            Edit / View
+                        </a>
+                    </div>
+                </div>
+                <div class="ballard-result-body" style="padding: 16px 20px;">
+                    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 16px;">
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Posture</span><br><strong>{{ $exam->nm_posture ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Square Window</span><br><strong>{{ $exam->nm_square_window ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Arm Recoil</span><br><strong>{{ $exam->nm_arm_recoil ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Popliteal Angle</span><br><strong>{{ $exam->nm_popliteal_angle ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Scarf Sign</span><br><strong>{{ $exam->nm_scarf_sign ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Heel to Ear</span><br><strong>{{ $exam->nm_heel_to_ear ?? '—' }}</strong></div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 16px;">
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Skin</span><br><strong>{{ $exam->pm_skin ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Lanugo</span><br><strong>{{ $exam->pm_lanugo ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Plantar Surface</span><br><strong>{{ $exam->pm_plantar_surface ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Breast</span><br><strong>{{ $exam->pm_breast ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Eye/Ear</span><br><strong>{{ $exam->pm_eye_ear ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Genitals</span><br><strong>{{ $exam->pm_genitals ?? '—' }}</strong></div>
+                    </div>
+                    <div style="background: #eff6ff; border-radius: 8px; padding: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <span style="font-size: 0.7rem; color: #6b7280;">Neuromuscular Subtotal</span>
+                                <p style="font-weight: 700; margin: 0;">{{ $exam->nm_subtotal }}</p>
+                            </div>
+                            <div>
+                                <span style="font-size: 0.7rem; color: #6b7280;">Physical Subtotal</span>
+                                <p style="font-weight: 700; margin: 0;">{{ $exam->pm_subtotal }}</p>
+                            </div>
+                            <div>
+                                <span style="font-size: 0.7rem; color: #6b7280;">TOTAL SCORE</span>
+                                <p style="font-size: 1.5rem; font-weight: 800; margin: 0; color: #1d4ed8;">{{ $exam->total_score ?? '—' }}</p>
+                            </div>
+                            <div>
+                                <span style="font-size: 0.7rem; color: #6b7280;">Gestational Age</span>
+                                <p style="font-size: 1.2rem; font-weight: 800; margin: 0; color: #059669;">{{ $exam->estimated_ga_weeks ? $exam->estimated_ga_weeks . ' weeks' : '—' }}</p>
+                            </div>
+                            @if($exam->estimated_ga_weeks)
+                            <div>
+                                @php $ga = $exam->estimated_ga_weeks; @endphp
+                                @if($ga < 37)
+                                    <span style="background: #fee2e2; color: #991b1b; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">Preterm</span>
+                                @elseif($ga > 42)
+                                    <span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">Post-term</span>
+                                @else
+                                    <span style="background: #d1fae5; color: #065f46; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">Term</span>
+                                @endif
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+
+            @if($ballardExams->where('exam_number', 2)->isEmpty())
+            <div style="margin-top: 12px; text-align: right;">
+                <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id, 'exam' => 2]) }}" 
+                target="_blank" 
+                class="btn-secondary" 
+                style="padding: 6px 14px; font-size: 0.75rem;">
+                    + Record 2nd Exam
+                </a>
+            </div>
+            @endif
+            @endif
+            @endif {{-- End of activeTab check --}}
 
                         </div>{{-- /.chart-content --}}
                     </div>{{-- /.chart-page --}}
