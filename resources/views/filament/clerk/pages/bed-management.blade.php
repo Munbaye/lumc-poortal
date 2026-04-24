@@ -235,7 +235,7 @@
     </div>
 @empty
     <div class="text-center py-16 text-gray-400">
-        <x-heroicon-o-inbox-stack class="w-12 h-12 mx-auto mb-3 opacity-40" />
+        <x-heroicon-o-inbox-stack class="w-8 h-8 mx-auto mb-3 opacity-40" />
         <p class="text-sm">No rooms found. Try adjusting your filters.</p>
     </div>
 @endforelse
