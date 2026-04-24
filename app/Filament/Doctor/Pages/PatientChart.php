@@ -86,6 +86,11 @@ class PatientChart extends Page
             'patient',
             'medicalHistory.doctor',
             'doctorsOrders' => fn($q) => $q->with('doctor')->orderBy('order_date', 'desc'),
+            'ballardExams',
+            'erRecord',
+            'admissionRecord',
+            'consentRecord',
+            'vitals',
         ])->find($this->visitId);
 
         if (!$this->visit) {
@@ -298,6 +303,15 @@ class PatientChart extends Page
         return route('forms.physical-exam-form', ['visit' => $this->visitId]);
     }
 
+    public function getPatientHistoryUrl(): string
+    {
+        return \App\Filament\Doctor\Pages\PatientHistory::getUrl([
+            'patientId' => $this->visit?->patient_id,
+        ]);
+    }
+
+    // ── Past Visits / History Tab Methods ─────────────────────────────────────
+
     public function getPastVisitsCountProperty(): int
     {
         if (!$this->visit) return 0;
@@ -333,6 +347,16 @@ class PatientChart extends Page
             'admissionRecord',
             'consentRecord',
         ])->find($this->viewingHistoryVisitId);
+    }
+
+    public function viewHistoryVisit(int $visitId): void
+    {
+        $this->viewingHistoryVisitId = $visitId;
+    }
+
+    public function closeHistoryView(): void
+    {
+        $this->viewingHistoryVisitId = null;
     }
 
     public function getHistoryLabResults(int $visitId)
@@ -380,13 +404,15 @@ class PatientChart extends Page
         return route('forms.consent-to-care', ['visit' => $visitId]) . '?readonly=1';
     }
 
-    public function viewHistoryVisit(int $visitId): void
+    // ── Ballard Score Methods ─────────────────────────────────────────────────
+
+    public function getHasBallardScoreProperty(): bool
     {
-        $this->viewingHistoryVisitId = $visitId;
+        return $this->visit && $this->visit->ballardExams->count() > 0;
     }
 
-    public function closeHistoryView(): void
+    public function getBallardExamsProperty()
     {
-        $this->viewingHistoryVisitId = null;
+        return $this->visit ? $this->visit->ballardExams : collect();
     }
 }
