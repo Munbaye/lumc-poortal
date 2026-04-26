@@ -2058,18 +2058,18 @@
 
         {{-- ════ TABS ═══════════════════════════════════════════════════ --}}
         <div class="chart-tabs">
-                <button wire:click="setTab('profile')" class="chart-tab {{ $activeTab === 'profile' ? 'active' : '' }}"><x-heroicon-o-document class="w-4 h-4" /> Patient Forms</button>
-                <button wire:click="setTab('history')" class="chart-tab {{ $activeTab === 'history' ? 'active' : '' }}"><x-heroicon-o-folder-open class="w-4 h-4" /> Visit History @if($pastCount > 0)<span class="tab-badge tab-badge-blue">{{ $pastCount }}</span>@endif</button>
-                <button wire:click="setTab('vitals')" class="chart-tab {{ $activeTab === 'vitals' ? 'active' : '' }}"><x-heroicon-o-chart-bar class="w-4 h-4" /> Vital Signs @if($allVitals->count() > 0)<span class="tab-badge tab-badge-warn">{{ $allVitals->count() }}</span>@endif</button>
-                <button wire:click="setTab('orders')" class="chart-tab {{ $activeTab === 'orders' ? 'active' : '' }}"><x-heroicon-o-pencil-square class="w-4 h-4" /> Doctor's Orders @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif</button>
-                <button wire:click="setTab('results')" class="chart-tab {{ $activeTab === 'results' ? 'active' : '' }}"><x-heroicon-o-beaker class="w-4 h-4" /> Lab / Radiology @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif</button>
-                <button wire:click="setTab('ballard')" class="chart-tab {{ $activeTab === 'ballard' ? 'active' : '' }}">
-                <x-heroicon-o-chart-bar class="w-4 h-4" /> Ballard Score
+            <button wire:click="setTab('profile')" class="chart-tab {{ $activeTab==='profile'   ? 'active':'' }}"><span class="tab-icon">📄</span> Patient Forms</button>
+            <button wire:click="setTab('history')" class="chart-tab {{ $activeTab==='history'   ? 'active':'' }}"><span class="tab-icon">🗂️</span> Visit History @if($pastCount > 0)<span class="tab-badge tab-badge-blue">{{ $pastCount }}</span>@endif</button>
+            <button wire:click="setTab('vitals')" class="chart-tab {{ $activeTab==='vitals'    ? 'active':'' }}"><span class="tab-icon">📊</span> Vital Signs @if($allVitals->count() > 0)<span class="tab-badge tab-badge-warn">{{ $allVitals->count() }}</span>@endif</button>
+            <button wire:click="setTab('orders')" class="chart-tab {{ $activeTab==='orders'    ? 'active':'' }}"><span class="tab-icon">📝</span> Doctor's Orders @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif</button>
+            <button wire:click="setTab('results')" class="chart-tab {{ $activeTab==='results'   ? 'active':'' }}"><span class="tab-icon">🔬</span> Lab / Radiology @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif</button>
+            <button wire:click="setTab('ballard')" class="chart-tab {{ $activeTab==='ballard' ? 'active':'' }}">
+                <span class="tab-icon">📊</span> Ballard Score
                 @if($this->hasBallardScore)
                     <span class="tab-badge tab-badge-green">✓</span>
                 @endif
             </button>
-        </div>  
+        </div>
 
                         <div class="chart-content">
 
@@ -2586,7 +2586,7 @@
                                                     'Strict aspiration precautions',
                                                     'Hook to cardiac monitor',
                                                 ] as $chip)
-                                                                                    <button type="button" wire:click="quickInsert('{{ addslashes($chip) }}')" class="quick-chip">+ {{ $chip }}</button>
+                                                                                <button type="button" wire:click="quickInsert('{{ addslashes($chip) }}')" class="quick-chip">+ {{ $chip }}</button>
                                             @endforeach
                                         </div>
                                         <textarea wire:model="orderText" class="order-textarea"
@@ -2649,418 +2649,417 @@
                                 {{-- ══ LAB / RADIOLOGY ═══════════════════════════════════════════ --}}
                             @elseif($activeTab === 'results')
 
-                                                    @if($viewingLabRequestId)
-                                                        @php
-                                                            $vlr = \App\Models\LabRequest::with(['visit.patient', 'doctor', 'results.uploadedBy'])->find($viewingLabRequestId);
-                                                            $vlrPatient = $vlr?->visit?->patient ?? $vlr?->patient;
-                                                            $vlrUploads = $vlr?->results()->with('uploadedBy')->latest()->get() ?? collect();
-                                                            $vlrNotes = $vlrUploads->pluck('notes')->filter()->unique()->values();
-                                                            $vlrUploader = $vlrUploads->first()?->uploadedBy?->name ?? '—';
-                                                            $vlrSelected = $vlr?->tests ?? [];
-                                                            $vc1 = [['style' => 'background:#dbeafe;color:#1e40af', 'dot' => '#3b82f6', 'label' => 'Hematology', 'tests' => ['Complete Blood Count (CBC)', 'Reticulocyte Count', 'Peripheral Blood Smear', 'Malarial Smear', 'Clotting / Bleeding Time', 'Prothrombin Time (PT-PA)', 'APTT', 'ESR']], ['style' => 'background:#f3f4f6;color:#374151', 'dot' => '#6b7280', 'label' => 'Blood Typing', 'tests' => ['Blood Typing', 'Crossmatching']], ['style' => 'background:#ede9fe;color:#5b21b6', 'dot' => '#8b5cf6', 'label' => 'Serology', 'tests' => ['Dengue NS1 + IgM/IgG (Combo)', 'Typhidot', 'ASTO — Qualitative', 'ASTO — Semi-Quantitative', 'CRP — Qualitative', 'CRP — Semi-Quantitative', 'Rheumatoid Factor — Qualitative', 'HBsAg — Rapid', 'HBsAg — EIA', 'Anti-HCV — Rapid', 'VDRL/RPR — Rapid', 'Referral HIV (HACT)']]];
-                                                            $vc2 = [['style' => 'background:#dcfce7;color:#166534', 'dot' => '#22c55e', 'label' => 'Clinical Chemistry', 'tests' => ['Fasting Blood Sugar', 'Random Blood Sugar', 'OGTT', '2-hr Post-prandial BG', 'HbA1c', 'Uric Acid', 'Amylase', 'LDH']], ['style' => 'background:#fee2e2;color:#991b1b', 'dot' => '#ef4444', 'label' => 'Lipid Profile', 'tests' => ['Total Cholesterol', 'Total, HDL & LDL Cholesterol', 'Triglycerides', 'Complete Lipid Profile']], ['style' => 'background:#fce7f3;color:#9d174d', 'dot' => '#ec4899', 'label' => 'Serum Electrolytes', 'tests' => ['Sodium, Potassium, Chloride', 'Phosphorus', 'Magnesium', 'Calcium — Total', 'Calcium — Ionized']], ['style' => 'background:#e0f2fe;color:#0c4a6e', 'dot' => '#0ea5e9', 'label' => 'Renal Profile', 'tests' => ['BUN', 'Creatinine', 'Creatinine Clearance', 'Sodium, Potassium, Chloride', 'Total Protein', 'Albumin']], ['style' => 'background:#d1fae5;color:#065f46', 'dot' => '#10b981', 'label' => 'HBT Profile', 'tests' => ['AST / SGOT', 'ALT / SGPT', 'Alkaline Phosphatase', 'Total Protein', 'Albumin', 'Total Bilirubin', 'Total, Direct & Indirect Bili.', 'PT-PA', 'Troponin-T']]];
-                                                            $vc3 = [['id' => 'micro', 'style' => 'background:#fef9c3;color:#854d0e', 'dot' => '#eab308', 'label' => 'Clinical Microscopy', 'tests' => ['Routine Urinalysis', 'Urine Ketones', 'Pregnancy Test — Urine', 'Pregnancy Test — Serum', 'Seminal Fluid Analysis', 'Body Fluid Analysis', 'Cell Count / Differential', 'Routine Fecalysis', 'Fecalysis with Concentration', 'Fecal Occult Blood']], ['id' => 'mbio', 'style' => 'background:#ffedd5;color:#9a3412', 'dot' => '#f97316', 'label' => 'Microbiology', 'tests' => ['Gram Stain', 'Acid Fast Stain (AFB)', 'India Ink Stain', 'KOH Preparation', 'Culture and Sensitivity']]];
-                                                        @endphp
-                                                        <button type="button" wire:click="closeResultView" class="rv-back-btn"><x-heroicon-o-chevron-left class="w-4 h-4 inline" /> Back to Results</button>
-                                                        <div class="rv-header-lab">
-                                                            <div>
-                                                                <p class="rv-req-no">{{ $vlr?->request_no }}</p>
-                                                                <p class="rv-patient">{{ $vlrPatient?->full_name ?? '—' }}</p>
-                                                                <p class="rv-case">{{ $vlrPatient?->case_no ?? '' }} · {{ $vlrPatient?->age_display ?? '' }} · {{ $vlrPatient?->sex ?? '' }}</p>
-                                                            </div>
-                                                            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;"><span class="rv-pill">✅ Completed</span>@if($vlr?->request_type === 'stat')<span style="background:#dc2626;color:#fff;padding:3px 10px;border-radius:9999px;font-size:.72rem;font-weight:800;">⚡ STAT</span>@endif</div>
-                                                        </div>
-                                                        <div class="rv-paper">
-                                                            <div class="rv-hdr">@if(file_exists(public_path('images/lumc-logo.png'))) <div class="rv-logo"><img src="{{ asset('images/lumc-logo.png') }}" alt="LUMC"></div> @else <div class="rv-logo">LUMC<br>Logo</div> @endif<div class="rv-center">
-                                                                    <div class="rv-h-name">La Union Medical Center</div>
-                                                                    <div class="rv-h-sub">Clinical Laboratory Request Form</div>
-                                                                    <div class="rv-h-ref">LAB-001-1 Rev. 1 &nbsp;·&nbsp; Brgy. Nazareno, Agoo, La Union &nbsp;·&nbsp; (072) 607-5541 loc. 117/118</div>
-                                                                </div>@if(file_exists(public_path('images/province-logo.png'))) <div class="rv-logo"><img src="{{ asset('images/province-logo.png') }}" alt="Province"></div> @else <div class="rv-logo">Province<br>Seal</div> @endif</div>
-                                                            <div class="rv-g4">
-                                                                <div class="rv-fg"><span class="rv-fl">Date of Request</span><span class="rv-val">{{ $vlr?->date_requested?->format('Y-m-d') ?? $vlr?->created_at->format('Y-m-d') }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl">Hospital No.</span><span class="rv-val">{{ $vlrPatient?->case_no ?? '—' }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl">Receipt No.</span><span class="rv-val" style="font-family:monospace;font-weight:bold;">{{ $vlr?->request_no }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl">Ward / Service</span><span class="rv-val">{{ $vlr?->ward ?? '—' }}</span></div>
-                                                            </div>
-                                                            <div class="rv-g4">
-                                                                <div class="rv-fg"><span class="rv-fl">Surname</span><span class="rv-val">{{ strtoupper($vlrPatient?->family_name ?? '—') }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl">First Name</span><span class="rv-val">{{ strtoupper($vlrPatient?->first_name ?? '—') }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl">Middle Name</span><span class="rv-val">{{ strtoupper($vlrPatient?->middle_name ?? '—') }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl">Address</span><span class="rv-val">{{ $vlrPatient?->address ?? '—' }}</span></div>
-                                                            </div>
-                                                            <div class="rv-g6">
-                                                                <div class="rv-fg"><span class="rv-fl">Birth Date</span><span class="rv-val">{{ $vlrPatient?->birthday?->format('Y-m-d') ?? '—' }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl">Age</span><span class="rv-val">{{ $vlrPatient?->age_display ?? $vlrPatient?->current_age ?? '—' }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl">Sex</span><span class="rv-val">{{ $vlrPatient?->sex ?? '—' }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl">Civil Status</span><span class="rv-val">—</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl">Request Type</span><span class="rv-val" style="font-weight:bold;color:{{ $vlr?->request_type === 'stat' ? '#dc2626' : '#000' }};">{{ strtoupper($vlr?->request_type ?? 'ROUTINE') }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl">Clinical Diagnosis</span><span class="rv-val">{{ $vlr?->clinical_diagnosis ?? '—' }}</span></div>
-                                                            </div>
-                                                            <hr class="rv-divider">
-                                                            <div class="rv-phys">
-                                                                <div class="rv-phys-label">Requesting Physician</div>
-                                                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-                                                                    <div><span class="rv-fl">Name</span>
-                                                                        <div class="rv-phys-name">{{ $vlr?->requesting_physician ?? ($vlr?->doctor ? 'Dr. ' . $vlr->doctor->name : '—') }}</div>
-                                                                    </div>
-                                                                    <div style="display:flex;flex-direction:column;justify-content:flex-end;">
-                                                                        <div style="border-bottom:1px solid #000;height:28px;"></div>
-                                                                        <div class="rv-sig-cap">Signature / PRC No. &amp; Date</div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="rv-tests-grid">
-                                                                <div style="display:flex;flex-direction:column;gap:5px;">@foreach($vc1 as $sec)<div class="rv-test-sec">
-                                                                    <div class="rv-test-head" style="{{ $sec['style'] }};"><span class="rv-test-dot" style="background:{{ $sec['dot'] }};"></span>{{ $sec['label'] }}</div>@foreach($sec['tests'] as $t)<div class="rv-test-item {{ in_array($t, $vlrSelected) ? 'checked' : '' }}">
-                                                                        <div class="rv-cb"></div><span class="rv-test-name">{{ $t }}</span>
-                                                                    </div>@endforeach
-                                                                </div>@endforeach</div>
-                                                                <div style="display:flex;flex-direction:column;gap:5px;">@foreach($vc2 as $sec)<div class="rv-test-sec">
-                                                                    <div class="rv-test-head" style="{{ $sec['style'] }};"><span class="rv-test-dot" style="background:{{ $sec['dot'] }};"></span>{{ $sec['label'] }}</div>@foreach($sec['tests'] as $t)<div class="rv-test-item {{ in_array($t, $vlrSelected) ? 'checked' : '' }}">
-                                                                        <div class="rv-cb"></div><span class="rv-test-name">{{ $t }}</span>
-                                                                    </div>@endforeach
-                                                                </div>@endforeach</div>
-                                                                <div style="display:flex;flex-direction:column;gap:5px;">@foreach($vc3 as $sec)<div class="rv-test-sec">
-                                                                    <div class="rv-test-head" style="{{ $sec['style'] }};"><span class="rv-test-dot" style="background:{{ $sec['dot'] }};"></span>{{ $sec['label'] }}</div>@foreach($sec['tests'] as $t)<div class="rv-test-item {{ in_array($t, $vlrSelected) ? 'checked' : '' }}">
-                                                                        <div class="rv-cb"></div><span class="rv-test-name">{{ $t }}</span>
-                                                                    </div>@endforeach@if(($sec['id'] ?? '') === 'mbio')<div style="padding:4px 7px;border-top:1px solid #e5e7eb;"><span style="font-size:7pt;color:#888;text-transform:uppercase;letter-spacing:.04em;">Specimen</span>
-                                                                            <div class="rv-micro-val">{{ $vlr?->specimen ?? '' }}</div>
-                                                                        </div>
-                                                                        <div style="padding:4px 7px;border-top:1px solid #e5e7eb;"><span style="font-size:7pt;color:#888;text-transform:uppercase;letter-spacing:.04em;">Antibiotics / Duration</span>
-                                                                            <div class="rv-micro-val">{{ $vlr?->antibiotics_taken ?? '' }}</div>
-                                                                    </div>@endif
-                                                                </div>@endforeach@if($vlr?->other_tests)<div class="rv-test-sec">
-                                                                    <div class="rv-test-head" style="background:#f3f4f6;color:#374151;"><span class="rv-test-dot" style="background:#9ca3af;"></span>Others</div>
-                                                                    <div style="padding:5px 7px;font-size:8pt;color:#374151;">{{ $vlr->other_tests }}</div>
-                                                                </div>@endif</div>
-                                                            </div>
-                                                            <hr class="rv-divider" style="margin:6px 0;">
-                                                            <div class="rv-footer5">
-                                                                <div class="rv-fg"><span class="rv-fl">Date</span><span class="rv-val">{{ $vlr?->date_requested?->format('Y-m-d') ?? '—' }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl">Request Received</span><span class="rv-val">{{ $vlr?->request_received_at?->timezone('Asia/Manila')->format('M j, Y g:i A') ?? '' }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl">Specimen Collected</span><span class="rv-val">{{ $vlr?->specimen_collected ?? '' }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl">Test Started</span><span class="rv-val">{{ $vlr?->test_started_at?->timezone('Asia/Manila')->format('M j, Y g:i A') ?? '' }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl">Test Done</span><span class="rv-val">{{ $vlr?->test_done_at?->timezone('Asia/Manila')->format('M j, Y g:i A') ?? '' }}</span></div>
-                                                            </div>
-                                                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:10px;">
-                                                                <div>
-                                                                    <div class="rv-sig-line"></div>
-                                                                    <div class="rv-sig-cap">Requesting Physician — Signature / PRC No.</div>
-                                                                </div>
-                                                                <div>
-                                                                    <div class="rv-sig-line"></div>
-                                                                    <div class="rv-sig-cap">Verified by (Lab Staff) / Date</div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="rv-result-box">
-                                                            <p class="rv-result-title">✅ {{ $vlrUploads->count() }} Result File(s) — {{ $vlr?->request_no }}</p>
-                                                            <p style="font-size:.82rem;color:#f97316;font-weight:600;margin:-4px 0 12px 2px;">Uploaded by {{ $vlrUploader }}</p>
-                                                            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:{{ $vlrNotes->isNotEmpty() ? '4px' : '0' }};">@foreach($vlrUploads as $u)<div><a href="{{ $u->file_url }}" target="_blank" class="rv-file-link-lab">{{ $u->file_type_icon }} {{ $u->file_name }} <span style="font-size:.7rem;font-weight:400;color:#6b7280;">({{ $u->file_size_human }})</span></a></div>@endforeach</div>@if($vlrNotes->isNotEmpty())<div class="rv-notes-box">
-                                                                <p class="rv-notes-label"><x-heroicon-o-pencil-square class="w-4 h-4 inline mr-1" /> Tech Notes</p>@foreach($vlrNotes as $note)<p style="font-size:.875rem;color:#374151;line-height:1.6;">{{ $note }}</p>@endforeach
-                                                            </div>@endif
-                                                        </div>
+                                @if($viewingLabRequestId)
+                                    @php
+                                        $vlr = \App\Models\LabRequest::with(['visit.patient', 'doctor', 'results.uploadedBy'])->find($viewingLabRequestId);
+                                        $vlrPatient = $vlr?->visit?->patient ?? $vlr?->patient;
+                                        $vlrUploads = $vlr?->results()->with('uploadedBy')->latest()->get() ?? collect();
+                                        $vlrNotes = $vlrUploads->pluck('notes')->filter()->unique()->values();
+                                        $vlrUploader = $vlrUploads->first()?->uploadedBy?->name ?? '—';
+                                        $vlrSelected = $vlr?->tests ?? [];
+                                        $vc1 = [['style' => 'background:#dbeafe;color:#1e40af', 'dot' => '#3b82f6', 'label' => 'Hematology', 'tests' => ['Complete Blood Count (CBC)', 'Reticulocyte Count', 'Peripheral Blood Smear', 'Malarial Smear', 'Clotting / Bleeding Time', 'Prothrombin Time (PT-PA)', 'APTT', 'ESR']], ['style' => 'background:#f3f4f6;color:#374151', 'dot' => '#6b7280', 'label' => 'Blood Typing', 'tests' => ['Blood Typing', 'Crossmatching']], ['style' => 'background:#ede9fe;color:#5b21b6', 'dot' => '#8b5cf6', 'label' => 'Serology', 'tests' => ['Dengue NS1 + IgM/IgG (Combo)', 'Typhidot', 'ASTO — Qualitative', 'ASTO — Semi-Quantitative', 'CRP — Qualitative', 'CRP — Semi-Quantitative', 'Rheumatoid Factor — Qualitative', 'HBsAg — Rapid', 'HBsAg — EIA', 'Anti-HCV — Rapid', 'VDRL/RPR — Rapid', 'Referral HIV (HACT)']]];
+                                        $vc2 = [['style' => 'background:#dcfce7;color:#166534', 'dot' => '#22c55e', 'label' => 'Clinical Chemistry', 'tests' => ['Fasting Blood Sugar', 'Random Blood Sugar', 'OGTT', '2-hr Post-prandial BG', 'HbA1c', 'Uric Acid', 'Amylase', 'LDH']], ['style' => 'background:#fee2e2;color:#991b1b', 'dot' => '#ef4444', 'label' => 'Lipid Profile', 'tests' => ['Total Cholesterol', 'Total, HDL & LDL Cholesterol', 'Triglycerides', 'Complete Lipid Profile']], ['style' => 'background:#fce7f3;color:#9d174d', 'dot' => '#ec4899', 'label' => 'Serum Electrolytes', 'tests' => ['Sodium, Potassium, Chloride', 'Phosphorus', 'Magnesium', 'Calcium — Total', 'Calcium — Ionized']], ['style' => 'background:#e0f2fe;color:#0c4a6e', 'dot' => '#0ea5e9', 'label' => 'Renal Profile', 'tests' => ['BUN', 'Creatinine', 'Creatinine Clearance', 'Sodium, Potassium, Chloride', 'Total Protein', 'Albumin']], ['style' => 'background:#d1fae5;color:#065f46', 'dot' => '#10b981', 'label' => 'HBT Profile', 'tests' => ['AST / SGOT', 'ALT / SGPT', 'Alkaline Phosphatase', 'Total Protein', 'Albumin', 'Total Bilirubin', 'Total, Direct & Indirect Bili.', 'PT-PA', 'Troponin-T']]];
+                                        $vc3 = [['id' => 'micro', 'style' => 'background:#fef9c3;color:#854d0e', 'dot' => '#eab308', 'label' => 'Clinical Microscopy', 'tests' => ['Routine Urinalysis', 'Urine Ketones', 'Pregnancy Test — Urine', 'Pregnancy Test — Serum', 'Seminal Fluid Analysis', 'Body Fluid Analysis', 'Cell Count / Differential', 'Routine Fecalysis', 'Fecalysis with Concentration', 'Fecal Occult Blood']], ['id' => 'mbio', 'style' => 'background:#ffedd5;color:#9a3412', 'dot' => '#f97316', 'label' => 'Microbiology', 'tests' => ['Gram Stain', 'Acid Fast Stain (AFB)', 'India Ink Stain', 'KOH Preparation', 'Culture and Sensitivity']]];
+                                    @endphp
+                                    <button type="button" wire:click="closeResultView" class="rv-back-btn"><x-heroicon-o-chevron-left class="w-4 h-4 inline" /> Back to Results</button>
+                                    <div class="rv-header-lab">
+                                        <div>
+                                            <p class="rv-req-no">{{ $vlr?->request_no }}</p>
+                                            <p class="rv-patient">{{ $vlrPatient?->full_name ?? '—' }}</p>
+                                            <p class="rv-case">{{ $vlrPatient?->case_no ?? '' }} · {{ $vlrPatient?->age_display ?? '' }} · {{ $vlrPatient?->sex ?? '' }}</p>
+                                        </div>
+                                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;"><span class="rv-pill">✅ Completed</span>@if($vlr?->request_type === 'stat')<span style="background:#dc2626;color:#fff;padding:3px 10px;border-radius:9999px;font-size:.72rem;font-weight:800;">⚡ STAT</span>@endif</div>
+                                    </div>
+                                    <div class="rv-paper">
+                                        <div class="rv-hdr">@if(file_exists(public_path('images/lumc-logo.png'))) <div class="rv-logo"><img src="{{ asset('images/lumc-logo.png') }}" alt="LUMC"></div> @else <div class="rv-logo">LUMC<br>Logo</div> @endif<div class="rv-center">
+                                                <div class="rv-h-name">La Union Medical Center</div>
+                                                <div class="rv-h-sub">Clinical Laboratory Request Form</div>
+                                                <div class="rv-h-ref">LAB-001-1 Rev. 1 &nbsp;·&nbsp; Brgy. Nazareno, Agoo, La Union &nbsp;·&nbsp; (072) 607-5541 loc. 117/118</div>
+                                            </div>@if(file_exists(public_path('images/province-logo.png'))) <div class="rv-logo"><img src="{{ asset('images/province-logo.png') }}" alt="Province"></div> @else <div class="rv-logo">Province<br>Seal</div> @endif</div>
+                                        <div class="rv-g4">
+                                            <div class="rv-fg"><span class="rv-fl">Date of Request</span><span class="rv-val">{{ $vlr?->date_requested?->format('Y-m-d') ?? $vlr?->created_at->format('Y-m-d') }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl">Hospital No.</span><span class="rv-val">{{ $vlrPatient?->case_no ?? '—' }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl">Receipt No.</span><span class="rv-val" style="font-family:monospace;font-weight:bold;">{{ $vlr?->request_no }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl">Ward / Service</span><span class="rv-val">{{ $vlr?->ward ?? '—' }}</span></div>
+                                        </div>
+                                        <div class="rv-g4">
+                                            <div class="rv-fg"><span class="rv-fl">Surname</span><span class="rv-val">{{ strtoupper($vlrPatient?->family_name ?? '—') }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl">First Name</span><span class="rv-val">{{ strtoupper($vlrPatient?->first_name ?? '—') }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl">Middle Name</span><span class="rv-val">{{ strtoupper($vlrPatient?->middle_name ?? '—') }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl">Address</span><span class="rv-val">{{ $vlrPatient?->address ?? '—' }}</span></div>
+                                        </div>
+                                        <div class="rv-g6">
+                                            <div class="rv-fg"><span class="rv-fl">Birth Date</span><span class="rv-val">{{ $vlrPatient?->birthday?->format('Y-m-d') ?? '—' }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl">Age</span><span class="rv-val">{{ $vlrPatient?->age_display ?? $vlrPatient?->current_age ?? '—' }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl">Sex</span><span class="rv-val">{{ $vlrPatient?->sex ?? '—' }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl">Civil Status</span><span class="rv-val">—</span></div>
+                                            <div class="rv-fg"><span class="rv-fl">Request Type</span><span class="rv-val" style="font-weight:bold;color:{{ $vlr?->request_type === 'stat' ? '#dc2626' : '#000' }};">{{ strtoupper($vlr?->request_type ?? 'ROUTINE') }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl">Clinical Diagnosis</span><span class="rv-val">{{ $vlr?->clinical_diagnosis ?? '—' }}</span></div>
+                                        </div>
+                                        <hr class="rv-divider">
+                                        <div class="rv-phys">
+                                            <div class="rv-phys-label">Requesting Physician</div>
+                                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                                                <div><span class="rv-fl">Name</span>
+                                                    <div class="rv-phys-name">{{ $vlr?->requesting_physician ?? ($vlr?->doctor ? 'Dr. ' . $vlr->doctor->name : '—') }}</div>
+                                                </div>
+                                                <div style="display:flex;flex-direction:column;justify-content:flex-end;">
+                                                    <div style="border-bottom:1px solid #000;height:28px;"></div>
+                                                    <div class="rv-sig-cap">Signature / PRC No. &amp; Date</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="rv-tests-grid">
+                                            <div style="display:flex;flex-direction:column;gap:5px;">@foreach($vc1 as $sec)<div class="rv-test-sec">
+                                                <div class="rv-test-head" style="{{ $sec['style'] }};"><span class="rv-test-dot" style="background:{{ $sec['dot'] }};"></span>{{ $sec['label'] }}</div>@foreach($sec['tests'] as $t)<div class="rv-test-item {{ in_array($t, $vlrSelected) ? 'checked' : '' }}">
+                                                    <div class="rv-cb"></div><span class="rv-test-name">{{ $t }}</span>
+                                                </div>@endforeach
+                                            </div>@endforeach</div>
+                                            <div style="display:flex;flex-direction:column;gap:5px;">@foreach($vc2 as $sec)<div class="rv-test-sec">
+                                                <div class="rv-test-head" style="{{ $sec['style'] }};"><span class="rv-test-dot" style="background:{{ $sec['dot'] }};"></span>{{ $sec['label'] }}</div>@foreach($sec['tests'] as $t)<div class="rv-test-item {{ in_array($t, $vlrSelected) ? 'checked' : '' }}">
+                                                    <div class="rv-cb"></div><span class="rv-test-name">{{ $t }}</span>
+                                                </div>@endforeach
+                                            </div>@endforeach</div>
+                                            <div style="display:flex;flex-direction:column;gap:5px;">@foreach($vc3 as $sec)<div class="rv-test-sec">
+                                                <div class="rv-test-head" style="{{ $sec['style'] }};"><span class="rv-test-dot" style="background:{{ $sec['dot'] }};"></span>{{ $sec['label'] }}</div>@foreach($sec['tests'] as $t)<div class="rv-test-item {{ in_array($t, $vlrSelected) ? 'checked' : '' }}">
+                                                    <div class="rv-cb"></div><span class="rv-test-name">{{ $t }}</span>
+                                                </div>@endforeach@if(($sec['id'] ?? '') === 'mbio')<div style="padding:4px 7px;border-top:1px solid #e5e7eb;"><span style="font-size:7pt;color:#888;text-transform:uppercase;letter-spacing:.04em;">Specimen</span>
+                                                        <div class="rv-micro-val">{{ $vlr?->specimen ?? '' }}</div>
+                                                    </div>
+                                                    <div style="padding:4px 7px;border-top:1px solid #e5e7eb;"><span style="font-size:7pt;color:#888;text-transform:uppercase;letter-spacing:.04em;">Antibiotics / Duration</span>
+                                                        <div class="rv-micro-val">{{ $vlr?->antibiotics_taken ?? '' }}</div>
+                                                </div>@endif
+                                            </div>@endforeach@if($vlr?->other_tests)<div class="rv-test-sec">
+                                                <div class="rv-test-head" style="background:#f3f4f6;color:#374151;"><span class="rv-test-dot" style="background:#9ca3af;"></span>Others</div>
+                                                <div style="padding:5px 7px;font-size:8pt;color:#374151;">{{ $vlr->other_tests }}</div>
+                                            </div>@endif</div>
+                                        </div>
+                                        <hr class="rv-divider" style="margin:6px 0;">
+                                        <div class="rv-footer5">
+                                            <div class="rv-fg"><span class="rv-fl">Date</span><span class="rv-val">{{ $vlr?->date_requested?->format('Y-m-d') ?? '—' }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl">Request Received</span><span class="rv-val">{{ $vlr?->request_received_at?->timezone('Asia/Manila')->format('M j, Y g:i A') ?? '' }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl">Specimen Collected</span><span class="rv-val">{{ $vlr?->specimen_collected ?? '' }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl">Test Started</span><span class="rv-val">{{ $vlr?->test_started_at?->timezone('Asia/Manila')->format('M j, Y g:i A') ?? '' }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl">Test Done</span><span class="rv-val">{{ $vlr?->test_done_at?->timezone('Asia/Manila')->format('M j, Y g:i A') ?? '' }}</span></div>
+                                        </div>
+                                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:10px;">
+                                            <div>
+                                                <div class="rv-sig-line"></div>
+                                                <div class="rv-sig-cap">Requesting Physician — Signature / PRC No.</div>
+                                            </div>
+                                            <div>
+                                                <div class="rv-sig-line"></div>
+                                                <div class="rv-sig-cap">Verified by (Lab Staff) / Date</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="rv-result-box">
+                                        <p class="rv-result-title">✅ {{ $vlrUploads->count() }} Result File(s) — {{ $vlr?->request_no }}</p>
+                                        <p style="font-size:.82rem;color:#f97316;font-weight:600;margin:-4px 0 12px 2px;">Uploaded by {{ $vlrUploader }}</p>
+                                        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:{{ $vlrNotes->isNotEmpty() ? '4px' : '0' }};">@foreach($vlrUploads as $u)<div><a href="{{ $u->file_url }}" target="_blank" class="rv-file-link-lab">{{ $u->file_type_icon }} {{ $u->file_name }} <span style="font-size:.7rem;font-weight:400;color:#6b7280;">({{ $u->file_size_human }})</span></a></div>@endforeach</div>@if($vlrNotes->isNotEmpty())<div class="rv-notes-box">
+                                            <p class="rv-notes-label"><x-heroicon-o-pencil-square class="w-4 h-4 inline mr-1" /> Tech Notes</p>@foreach($vlrNotes as $note)<p style="font-size:.875rem;color:#374151;line-height:1.6;">{{ $note }}</p>@endforeach
+                                        </div>@endif
+                                    </div>
 
-                                                    @elseif($viewingRadRequestId)
-                                                        @php
-                                                            $vrr = \App\Models\RadiologyRequest::with(['visit.patient', 'doctor', 'results.uploadedBy'])->find($viewingRadRequestId);
-                                                            $vrrPatient = $vrr?->visit?->patient ?? $vrr?->patient;
-                                                            $vrrUploads = $vrr?->results()->with('uploadedBy')->latest()->get() ?? collect();
-                                                            $vrrUploader = $vrrUploads->first()?->uploadedBy?->name ?? '—';
-                                                            $vrrInterp = $vrr?->radiologist_interpretation ?? $vrrUploads->firstWhere('interpretation', '!=', null)?->interpretation ?? null;
-                                                            $vrrSrc = strtoupper($vrr?->source ?? '');
-                                                        @endphp
-                                                        <button type="button" wire:click="closeResultView" class="rv-back-btn"><x-heroicon-o-chevron-left class="w-4 h-4 inline" /> Back to Results</button>
-                                                        <div class="rv-header-rad">
-                                                            <div>
-                                                                <p class="rv-req-no">{{ $vrr?->request_no }}</p>
-                                                                <p class="rv-patient">{{ $vrrPatient?->full_name ?? '—' }}</p>
-                                                                <p class="rv-case rv-case-rad">{{ $vrrPatient?->case_no ?? '' }} · {{ $vrrPatient?->age_display ?? '' }} · {{ $vrrPatient?->sex ?? '' }}</p>
-                                                            </div>
-                                                            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">@if($vrr?->modality)<span class="rv-modality">{{ $vrr->modality }}</span>@endif<span class="rv-pill">✅ Completed</span></div>
-                                                        </div>
-                                                        <div class="rv-paper rv-paper-rad">
-                                                            <div class="rv-hdr rv-hdr-rad">@if(file_exists(public_path('images/lumc-logo.png'))) <div class="rv-logo rv-logo-rad"><img src="{{ asset('images/lumc-logo.png') }}" alt="LUMC"></div> @else <div class="rv-logo rv-logo-rad">LUMC<br>Logo</div> @endif<div class="rv-center">
-                                                                    <div class="rv-h-name rv-h-name-rad">La Union Medical Center</div>
-                                                                    <div class="rv-h-sub rv-h-sub-rad">Radiology Request Form</div>
-                                                                    <div class="rv-h-addr">Brgy. Nazareno, Agoo, La Union &nbsp;·&nbsp; (072) 607-5541</div>
-                                                                </div>@if(file_exists(public_path('images/province-logo.png'))) <div class="rv-logo rv-logo-rad"><img src="{{ asset('images/province-logo.png') }}" alt="Province"></div> @else <div class="rv-logo rv-logo-rad">Province<br>Seal</div> @endif</div>
-                                                            <hr class="rv-divider-thick" style="margin-top:10px;">
-                                                            <div class="rv-modality-row">@foreach(['X-RAY', 'ULTRASOUND', 'CT SCAN'] as $mod)<div class="rv-modality-opt">
-                                                                <div class="rv-radio {{ $vrr?->modality === $mod ? 'on' : '' }}"></div>&nbsp;{{ $mod }}
-                                                            </div>@endforeach</div>
-                                                            <div class="rv-g4" style="margin-bottom:7px;">
-                                                                <div class="rv-fg"><span class="rv-fl rv-fl-rad">Date</span><span class="rv-val rv-val-rad">{{ $vrr?->date_requested?->format('Y-m-d') ?? $vrr?->created_at->format('Y-m-d') }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl rv-fl-rad">RAD File No.</span><span class="rv-val rv-val-rad" style="font-family:monospace;font-weight:bold;">{{ $vrr?->request_no }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl rv-fl-rad">Hospital No.</span><span class="rv-val rv-val-rad">{{ $vrrPatient?->case_no ?? '—' }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl rv-fl-rad">Service / Ward</span><span class="rv-val rv-val-rad">{{ $vrr?->ward ?? '—' }}</span></div>
-                                                            </div>
-                                                            <div class="rv-source-row">@foreach(['OPD', 'ER', 'PRIVATE', 'PHIC', 'CHARITY / INDIGENT'] as $s)@php $match = $vrrSrc === strtoupper($s) || ($vrrSrc === 'CHARITY' && str_contains($s, 'CHARITY')); @endphp<div class="rv-source-opt">
-                                                                <div class="rv-checkbox {{ $match ? 'on' : '' }}"></div>&nbsp;{{ $s }}
-                                                            </div>@endforeach</div>
-                                                            <div class="rv-sec-label">Patient Name</div>
-                                                            <div class="rv-g3">
-                                                                <div class="rv-fg"><span class="rv-fl rv-fl-rad">Family Name</span><span class="rv-val rv-val-rad">{{ strtoupper($vrrPatient?->family_name ?? '—') }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl rv-fl-rad">Given Name</span><span class="rv-val rv-val-rad">{{ strtoupper($vrrPatient?->first_name ?? '—') }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl rv-fl-rad">Middle Name</span><span class="rv-val rv-val-rad">{{ strtoupper($vrrPatient?->middle_name ?? '—') }}</span></div>
-                                                            </div>
-                                                            <div class="rv-g2x">
-                                                                <div class="rv-fg"><span class="rv-fl rv-fl-rad">Address</span><span class="rv-val rv-val-rad">{{ $vrrPatient?->address ?? '—' }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl rv-fl-rad">Date of Birth</span><span class="rv-val rv-val-rad">{{ $vrrPatient?->birthday?->format('Y-m-d') ?? '—' }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl rv-fl-rad">Age</span><span class="rv-val rv-val-rad">{{ $vrrPatient?->age_display ?? $vrrPatient?->current_age ?? '—' }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl rv-fl-rad">Sex</span><span class="rv-val rv-val-rad">{{ $vrrPatient?->sex ?? '—' }}</span></div>
-                                                            </div>
-                                                            <hr class="rv-divider">
-                                                            <div style="margin-bottom:7px;"><span class="rv-fl rv-fl-rad">Examination Desired</span>
-                                                                <div class="rv-area-val">{{ $vrr?->examination_desired ?? '—' }}</div>
-                                                            </div>
-                                                            <div style="margin-bottom:7px;"><span class="rv-fl rv-fl-rad">Clinical Diagnosis</span>
-                                                                <div class="rv-area-val">{{ $vrr?->clinical_diagnosis ?? '—' }}</div>
-                                                            </div>
-                                                            <div style="margin-bottom:9px;"><span class="rv-fl rv-fl-rad">Pertinent / Brief Clinical Findings</span>
-                                                                <div class="rv-area-val">{{ $vrr?->clinical_findings ?? '—' }}</div>
-                                                            </div>
-                                                            <hr class="rv-divider">
-                                                            <div style="margin-top:10px;margin-bottom:12px;">
-                                                                <div class="rv-sec-label">Requesting Physician</div>
-                                                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:end;">
-                                                                    <div><span class="rv-fl rv-fl-rad">Name</span>
-                                                                        <div class="rv-val rv-val-rad" style="font-size:11pt;font-weight:bold;">{{ $vrr?->requesting_physician ?? ($vrr?->doctor ? 'Dr. ' . $vrr->doctor->name : '—') }}</div>
-                                                                    </div>
-                                                                    <div>
-                                                                        <div class="rv-sig-line"></div>
-                                                                        <div class="rv-sig-cap">Signature over Printed Name / PRC No.</div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div>
-                                                                <div class="rv-sec-label">Radiologist Interpretation / Findings</div>
-                                                                <div class="rv-interp-area">{{ $vrr?->radiologist_interpretation ?? '' }}</div>
-                                                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:6px;">
-                                                                    <div>
-                                                                        <div class="rv-sig-line"></div>
-                                                                        <div class="rv-sig-cap">Radiologist — Signature / PRC No.</div>
-                                                                    </div>
-                                                                    <div>
-                                                                        <div class="rv-sig-line"></div>
-                                                                        <div class="rv-sig-cap">Date &amp; Time Reported</div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <hr class="rv-divider" style="margin-top:12px;">
-                                                            <div class="rv-footer4">
-                                                                <div class="rv-fg"><span class="rv-fl rv-fl-rad">Date Requested</span><span class="rv-val rv-val-rad">{{ $vrr?->date_requested?->format('Y-m-d') ?? '—' }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl rv-fl-rad">Request Received</span><span class="rv-val rv-val-rad" style="font-size:9pt;">{{ $vrr?->request_received_at?->timezone('Asia/Manila')->format('M j, Y g:i A') ?? '' }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl rv-fl-rad">Exam Started</span><span class="rv-val rv-val-rad" style="font-size:9pt;">{{ $vrr?->exam_started_at?->timezone('Asia/Manila')->format('M j, Y g:i A') ?? '' }}</span></div>
-                                                                <div class="rv-fg"><span class="rv-fl rv-fl-rad">Exam Done</span><span class="rv-val rv-val-rad" style="font-size:9pt;">{{ $vrr?->exam_done_at?->timezone('Asia/Manila')->format('M j, Y g:i A') ?? '' }}</span></div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="rv-result-box">
-                                                            <p class="rv-result-title">✅ {{ $vrrUploads->count() }} Result File(s) — {{ $vrr?->request_no }}</p>
-                                                            <p style="font-size:.82rem;color:#6d28d9;font-weight:600;margin:-4px 0 12px 2px;">Uploaded by {{ $vrrUploader }}</p>
-                                                            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;">@foreach($vrrUploads as $u)<div><a href="{{ $u->file_url }}" target="_blank" class="rv-file-link-rad">{{ $u->file_type_icon }} {{ $u->file_name }} <span style="font-size:.7rem;font-weight:400;color:#6b7280;">({{ $u->file_size_human }})</span></a></div>@endforeach</div>@if($vrrInterp)<div class="rv-interp-box">
-                                                                <p class="rv-interp-label"><x-heroicon-o-document-text class="w-4 h-4 inline mr-1" />Radiologist Interpretation</p>
-                                                                <div class="rv-interp-text">{{ $vrrInterp }}</div>
-                                                            </div>@endif
-                                                        </div>
+                                @elseif($viewingRadRequestId)
+                                    @php
+                                        $vrr = \App\Models\RadiologyRequest::with(['visit.patient', 'doctor', 'results.uploadedBy'])->find($viewingRadRequestId);
+                                        $vrrPatient = $vrr?->visit?->patient ?? $vrr?->patient;
+                                        $vrrUploads = $vrr?->results()->with('uploadedBy')->latest()->get() ?? collect();
+                                        $vrrUploader = $vrrUploads->first()?->uploadedBy?->name ?? '—';
+                                        $vrrInterp = $vrr?->radiologist_interpretation ?? $vrrUploads->firstWhere('interpretation', '!=', null)?->interpretation ?? null;
+                                        $vrrSrc = strtoupper($vrr?->source ?? '');
+                                    @endphp
+                                    <button type="button" wire:click="closeResultView" class="rv-back-btn"><x-heroicon-o-chevron-left class="w-4 h-4 inline" /> Back to Results</button>
+                                    <div class="rv-header-rad">
+                                        <div>
+                                            <p class="rv-req-no">{{ $vrr?->request_no }}</p>
+                                            <p class="rv-patient">{{ $vrrPatient?->full_name ?? '—' }}</p>
+                                            <p class="rv-case rv-case-rad">{{ $vrrPatient?->case_no ?? '' }} · {{ $vrrPatient?->age_display ?? '' }} · {{ $vrrPatient?->sex ?? '' }}</p>
+                                        </div>
+                                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">@if($vrr?->modality)<span class="rv-modality">{{ $vrr->modality }}</span>@endif<span class="rv-pill">✅ Completed</span></div>
+                                    </div>
+                                    <div class="rv-paper rv-paper-rad">
+                                        <div class="rv-hdr rv-hdr-rad">@if(file_exists(public_path('images/lumc-logo.png'))) <div class="rv-logo rv-logo-rad"><img src="{{ asset('images/lumc-logo.png') }}" alt="LUMC"></div> @else <div class="rv-logo rv-logo-rad">LUMC<br>Logo</div> @endif<div class="rv-center">
+                                                <div class="rv-h-name rv-h-name-rad">La Union Medical Center</div>
+                                                <div class="rv-h-sub rv-h-sub-rad">Radiology Request Form</div>
+                                                <div class="rv-h-addr">Brgy. Nazareno, Agoo, La Union &nbsp;·&nbsp; (072) 607-5541</div>
+                                            </div>@if(file_exists(public_path('images/province-logo.png'))) <div class="rv-logo rv-logo-rad"><img src="{{ asset('images/province-logo.png') }}" alt="Province"></div> @else <div class="rv-logo rv-logo-rad">Province<br>Seal</div> @endif</div>
+                                        <hr class="rv-divider-thick" style="margin-top:10px;">
+                                        <div class="rv-modality-row">@foreach(['X-RAY', 'ULTRASOUND', 'CT SCAN'] as $mod)<div class="rv-modality-opt">
+                                            <div class="rv-radio {{ $vrr?->modality === $mod ? 'on' : '' }}"></div>&nbsp;{{ $mod }}
+                                        </div>@endforeach</div>
+                                        <div class="rv-g4" style="margin-bottom:7px;">
+                                            <div class="rv-fg"><span class="rv-fl rv-fl-rad">Date</span><span class="rv-val rv-val-rad">{{ $vrr?->date_requested?->format('Y-m-d') ?? $vrr?->created_at->format('Y-m-d') }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl rv-fl-rad">RAD File No.</span><span class="rv-val rv-val-rad" style="font-family:monospace;font-weight:bold;">{{ $vrr?->request_no }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl rv-fl-rad">Hospital No.</span><span class="rv-val rv-val-rad">{{ $vrrPatient?->case_no ?? '—' }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl rv-fl-rad">Service / Ward</span><span class="rv-val rv-val-rad">{{ $vrr?->ward ?? '—' }}</span></div>
+                                        </div>
+                                        <div class="rv-source-row">@foreach(['OPD', 'ER', 'PRIVATE', 'PHIC', 'CHARITY / INDIGENT'] as $s)@php $match = $vrrSrc === strtoupper($s) || ($vrrSrc === 'CHARITY' && str_contains($s, 'CHARITY')); @endphp<div class="rv-source-opt">
+                                            <div class="rv-checkbox {{ $match ? 'on' : '' }}"></div>&nbsp;{{ $s }}
+                                        </div>@endforeach</div>
+                                        <div class="rv-sec-label">Patient Name</div>
+                                        <div class="rv-g3">
+                                            <div class="rv-fg"><span class="rv-fl rv-fl-rad">Family Name</span><span class="rv-val rv-val-rad">{{ strtoupper($vrrPatient?->family_name ?? '—') }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl rv-fl-rad">Given Name</span><span class="rv-val rv-val-rad">{{ strtoupper($vrrPatient?->first_name ?? '—') }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl rv-fl-rad">Middle Name</span><span class="rv-val rv-val-rad">{{ strtoupper($vrrPatient?->middle_name ?? '—') }}</span></div>
+                                        </div>
+                                        <div class="rv-g2x">
+                                            <div class="rv-fg"><span class="rv-fl rv-fl-rad">Address</span><span class="rv-val rv-val-rad">{{ $vrrPatient?->address ?? '—' }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl rv-fl-rad">Date of Birth</span><span class="rv-val rv-val-rad">{{ $vrrPatient?->birthday?->format('Y-m-d') ?? '—' }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl rv-fl-rad">Age</span><span class="rv-val rv-val-rad">{{ $vrrPatient?->age_display ?? $vrrPatient?->current_age ?? '—' }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl rv-fl-rad">Sex</span><span class="rv-val rv-val-rad">{{ $vrrPatient?->sex ?? '—' }}</span></div>
+                                        </div>
+                                        <hr class="rv-divider">
+                                        <div style="margin-bottom:7px;"><span class="rv-fl rv-fl-rad">Examination Desired</span>
+                                            <div class="rv-area-val">{{ $vrr?->examination_desired ?? '—' }}</div>
+                                        </div>
+                                        <div style="margin-bottom:7px;"><span class="rv-fl rv-fl-rad">Clinical Diagnosis</span>
+                                            <div class="rv-area-val">{{ $vrr?->clinical_diagnosis ?? '—' }}</div>
+                                        </div>
+                                        <div style="margin-bottom:9px;"><span class="rv-fl rv-fl-rad">Pertinent / Brief Clinical Findings</span>
+                                            <div class="rv-area-val">{{ $vrr?->clinical_findings ?? '—' }}</div>
+                                        </div>
+                                        <hr class="rv-divider">
+                                        <div style="margin-top:10px;margin-bottom:12px;">
+                                            <div class="rv-sec-label">Requesting Physician</div>
+                                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:end;">
+                                                <div><span class="rv-fl rv-fl-rad">Name</span>
+                                                    <div class="rv-val rv-val-rad" style="font-size:11pt;font-weight:bold;">{{ $vrr?->requesting_physician ?? ($vrr?->doctor ? 'Dr. ' . $vrr->doctor->name : '—') }}</div>
+                                                </div>
+                                                <div>
+                                                    <div class="rv-sig-line"></div>
+                                                    <div class="rv-sig-cap">Signature over Printed Name / PRC No.</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="rv-sec-label">Radiologist Interpretation / Findings</div>
+                                            <div class="rv-interp-area">{{ $vrr?->radiologist_interpretation ?? '' }}</div>
+                                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:6px;">
+                                                <div>
+                                                    <div class="rv-sig-line"></div>
+                                                    <div class="rv-sig-cap">Radiologist — Signature / PRC No.</div>
+                                                </div>
+                                                <div>
+                                                    <div class="rv-sig-line"></div>
+                                                    <div class="rv-sig-cap">Date &amp; Time Reported</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <hr class="rv-divider" style="margin-top:12px;">
+                                        <div class="rv-footer4">
+                                            <div class="rv-fg"><span class="rv-fl rv-fl-rad">Date Requested</span><span class="rv-val rv-val-rad">{{ $vrr?->date_requested?->format('Y-m-d') ?? '—' }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl rv-fl-rad">Request Received</span><span class="rv-val rv-val-rad" style="font-size:9pt;">{{ $vrr?->request_received_at?->timezone('Asia/Manila')->format('M j, Y g:i A') ?? '' }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl rv-fl-rad">Exam Started</span><span class="rv-val rv-val-rad" style="font-size:9pt;">{{ $vrr?->exam_started_at?->timezone('Asia/Manila')->format('M j, Y g:i A') ?? '' }}</span></div>
+                                            <div class="rv-fg"><span class="rv-fl rv-fl-rad">Exam Done</span><span class="rv-val rv-val-rad" style="font-size:9pt;">{{ $vrr?->exam_done_at?->timezone('Asia/Manila')->format('M j, Y g:i A') ?? '' }}</span></div>
+                                        </div>
+                                    </div>
+                                    <div class="rv-result-box">
+                                        <p class="rv-result-title">✅ {{ $vrrUploads->count() }} Result File(s) — {{ $vrr?->request_no }}</p>
+                                        <p style="font-size:.82rem;color:#6d28d9;font-weight:600;margin:-4px 0 12px 2px;">Uploaded by {{ $vrrUploader }}</p>
+                                        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;">@foreach($vrrUploads as $u)<div><a href="{{ $u->file_url }}" target="_blank" class="rv-file-link-rad">{{ $u->file_type_icon }} {{ $u->file_name }} <span style="font-size:.7rem;font-weight:400;color:#6b7280;">({{ $u->file_size_human }})</span></a></div>@endforeach</div>@if($vrrInterp)<div class="rv-interp-box">
+                                            <p class="rv-interp-label"><x-heroicon-o-document-text class="w-4 h-4 inline mr-1" />Radiologist Interpretation</p>
+                                            <div class="rv-interp-text">{{ $vrrInterp }}</div>
+                                        </div>@endif
+                                    </div>
 
-                                                    @else
-                                                        <div class="sec-head">
-                                                            <h2 class="sec-title">Lab &amp; Radiology</h2><span style="font-size:.78rem;color:#6b7280;">{{ $this->labRequestsCount + $this->radRequestsCount }} request(s) &nbsp;·&nbsp; <span style="color:#059669;font-weight:700;">{{ $totalResults }} result(s) ready</span></span>
+                                @else
+                                    <div class="sec-head">
+                                        <h2 class="sec-title">Lab &amp; Radiology</h2><span style="font-size:.78rem;color:#6b7280;">{{ $this->labRequestsCount + $this->radRequestsCount }} request(s) &nbsp;·&nbsp; <span style="color:#059669;font-weight:700;">{{ $totalResults }} result(s) ready</span></span>
+                                    </div>
+                                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px;">
+                                        <a href="{{ route('forms.lab-request', ['visit' => $visit->id]) }}" target="_blank" rel="noopener" class="doc-card"><span class="doc-card-icon"><x-heroicon-o-beaker class="w-5 h-5" /></span>
+                                            <div class="doc-card-body">
+                                                <p class="doc-card-label doc-card-label-green">LAB-001-1</p>
+                                                <p class="doc-card-title">New Lab Request</p>
+                                                <p class="doc-card-meta">CBC · Chemistry · Serology · Microscopy · Microbiology</p>
+                                            </div><span class="doc-card-arrow">↗</span>
+                                        </a>
+                                        <a href="{{ route('forms.radiology-request', ['visit' => $visit->id]) }}" target="_blank" rel="noopener" class="doc-card"><span class="doc-card-icon"><x-heroicon-o-cube class="w-5 h-5" /></span>
+                                            <div class="doc-card-body">
+                                                <p class="doc-card-label doc-card-label-purple">RAD</p>
+                                                <p class="doc-card-title">New Radiology Request</p>
+                                                <p class="doc-card-meta">X-Ray · Ultrasound · CT Scan</p>
+                                            </div><span class="doc-card-arrow">↗</span>
+                                        </a>
+                                    </div>
+                                    @php $labByRequest = $labResults->groupBy('request_id');
+                                    $radByRequest = $radResults->groupBy('request_id'); @endphp
+                                    @if($labByRequest->isNotEmpty())<div class="results-section">
+                                        <div class="results-section-title"><span><x-heroicon-o-beaker class="w-4 h-4 inline mr-1" /> Laboratory Results</span>
+                                            <div class="results-section-line"></div><span class="results-badge results-badge-lab">{{ $labByRequest->count() }} ready</span>
+                                        </div>@foreach($labByRequest as $reqId => $uploads)@php $lReq = \App\Models\LabRequest::find($reqId);
+                                            $firstUpload = $uploads->first(); @endphp<div class="result-req-card" wire:click="viewLabResult({{ $reqId }})" wire:key="lab-req-{{ $reqId }}">
+                                                    <div class="rrc-top">
+                                                        <div style="flex:1;"><span class="rrc-req-no">{{ $lReq?->request_no ?? 'LAB' }}</span>@if($lReq?->request_type === 'stat')<span style="background:#fee2e2;color:#991b1b;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:9999px;margin-left:5px;">⚡ STAT</span>@endif<p class="rrc-diag">{{ $lReq?->clinical_diagnosis ?? 'Laboratory Result' }}</p>
+                                                            <p class="rrc-meta">Uploaded by {{ $firstUpload?->uploadedBy?->name ?? 'Tech' }} · {{ $firstUpload?->created_at->timezone('Asia/Manila')->format('M j, Y g:i A') }}</p>@if($lReq && $lReq->tests && count($lReq->tests))<div class="rrc-tests" style="margin-top:5px;">@foreach(array_slice($lReq->tests, 0, 5) as $t)<span class="rrc-test-chip">{{ $t }}</span>@endforeach @if(count($lReq->tests) > 5)<span class="rrc-test-chip" style="background:#e5e7eb;color:#6b7280;">+{{ count($lReq->tests) - 5 }} more</span>@endif</div>@endif
                                                         </div>
-                                                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px;">
-                                                            <a href="{{ route('forms.lab-request', ['visit' => $visit->id]) }}" target="_blank" rel="noopener" class="doc-card"><span class="doc-card-icon"><x-heroicon-o-beaker class="w-5 h-5" /></span>
-                                                                <div class="doc-card-body">
-                                                                    <p class="doc-card-label doc-card-label-green">LAB-001-1</p>
-                                                                    <p class="doc-card-title">New Lab Request</p>
-                                                                    <p class="doc-card-meta">CBC · Chemistry · Serology · Microscopy · Microbiology</p>
-                                                                </div><span class="doc-card-arrow">↗</span>
-                                                            </a>
-                                                            <a href="{{ route('forms.radiology-request', ['visit' => $visit->id]) }}" target="_blank" rel="noopener" class="doc-card"><span class="doc-card-icon"><x-heroicon-o-cube class="w-5 h-5" /></span>
-                                                                <div class="doc-card-body">
-                                                                    <p class="doc-card-label doc-card-label-purple">RAD</p>
-                                                                    <p class="doc-card-title">New Radiology Request</p>
-                                                                    <p class="doc-card-meta">X-Ray · Ultrasound · CT Scan</p>
-                                                                </div><span class="doc-card-arrow">↗</span>
-                                                            </a>
+                                                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;"><span class="rrc-badge">Lab Result</span><span class="rrc-arrow"><x-heroicon-o-chevron-right class="w-4 h-4 inline" /></span></div>
+                                                    </div>
+                                                    <div class="rrc-files">@foreach($uploads as $u)<span class="rrc-file-chip">{{ $u->file_type_icon }} {{ $u->file_name }}</span>@endforeach</div>
+                                        </div>@endforeach
+                                    </div>@endif
+                                    @if($radByRequest->isNotEmpty())<div class="results-section">
+                                        <div class="results-section-title"><span><x-heroicon-o-cube class="w-4 h-4 inline mr-1" /> Radiology Results</span>
+                                            <div class="results-section-line"></div><span class="results-badge results-badge-rad">{{ $radByRequest->count() }} ready</span>
+                                        </div>@foreach($radByRequest as $reqId => $uploads)@php $rReq = $uploads->first()?->radRequest;
+                                            $firstUpload = $uploads->first(); @endphp<div class="result-req-card result-req-card-rad" wire:click="viewRadResult({{ $reqId }})" wire:key="rad-req-{{ $reqId }}">
+                                                    <div class="rrc-top">
+                                                        <div style="flex:1;"><span class="rrc-req-no rrc-req-no-rad">{{ $rReq?->request_no ?? 'RAD' }}</span>@if($rReq?->modality)<span style="background:#f5f3ff;color:#5b21b6;font-size:.68rem;font-weight:700;padding:1px 7px;border-radius:9999px;margin-left:5px;">{{ $rReq->modality }}</span>@endif<p class="rrc-diag">{{ $rReq?->examination_desired ?? 'Radiology Result' }}</p>@if($rReq?->clinical_diagnosis)<p class="rrc-meta">Dx: {{ $rReq->clinical_diagnosis }}</p>@endif<p class="rrc-meta">Uploaded by {{ $firstUpload?->uploadedBy?->name ?? 'Tech' }} · {{ $firstUpload?->created_at->timezone('Asia/Manila')->format('M j, Y g:i A') }}</p>
                                                         </div>
-                                                        @php $labByRequest = $labResults->groupBy('request_id');
-                                                        $radByRequest = $radResults->groupBy('request_id'); @endphp
-                                                        @if($labByRequest->isNotEmpty())<div class="results-section">
-                                                            <div class="results-section-title"><span><x-heroicon-o-beaker class="w-4 h-4 inline mr-1" /> Laboratory Results</span>
-                                                                <div class="results-section-line"></div><span class="results-badge results-badge-lab">{{ $labByRequest->count() }} ready</span>
-                                                            </div>@foreach($labByRequest as $reqId => $uploads)@php $lReq = \App\Models\LabRequest::find($reqId);
-                                                                $firstUpload = $uploads->first(); @endphp<div class="result-req-card" wire:click="viewLabResult({{ $reqId }})" wire:key="lab-req-{{ $reqId }}">
-                                                                            <div class="rrc-top">
-                                                                                <div style="flex:1;"><span class="rrc-req-no">{{ $lReq?->request_no ?? 'LAB' }}</span>@if($lReq?->request_type === 'stat')<span style="background:#fee2e2;color:#991b1b;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:9999px;margin-left:5px;">⚡ STAT</span>@endif<p class="rrc-diag">{{ $lReq?->clinical_diagnosis ?? 'Laboratory Result' }}</p>
-                                                                                    <p class="rrc-meta">Uploaded by {{ $firstUpload?->uploadedBy?->name ?? 'Tech' }} · {{ $firstUpload?->created_at->timezone('Asia/Manila')->format('M j, Y g:i A') }}</p>@if($lReq && $lReq->tests && count($lReq->tests))<div class="rrc-tests" style="margin-top:5px;">@foreach(array_slice($lReq->tests, 0, 5) as $t)<span class="rrc-test-chip">{{ $t }}</span>@endforeach @if(count($lReq->tests) > 5)<span class="rrc-test-chip" style="background:#e5e7eb;color:#6b7280;">+{{ count($lReq->tests) - 5 }} more</span>@endif</div>@endif
-                                                                                </div>
-                                                                                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;"><span class="rrc-badge">Lab Result</span><span class="rrc-arrow"><x-heroicon-o-chevron-right class="w-4 h-4 inline" /></span></div>
-                                                                            </div>
-                                                                            <div class="rrc-files">@foreach($uploads as $u)<span class="rrc-file-chip">{{ $u->file_type_icon }} {{ $u->file_name }}</span>@endforeach</div>
-                                                            </div>@endforeach
-                                                        </div>@endif
-                                                        @if($radByRequest->isNotEmpty())<div class="results-section">
-                                                            <div class="results-section-title"><span><x-heroicon-o-cube class="w-4 h-4 inline mr-1" /> Radiology Results</span>
-                                                                <div class="results-section-line"></div><span class="results-badge results-badge-rad">{{ $radByRequest->count() }} ready</span>
-                                                            </div>@foreach($radByRequest as $reqId => $uploads)@php $rReq = $uploads->first()?->radRequest;
-                                                                $firstUpload = $uploads->first(); @endphp<div class="result-req-card result-req-card-rad" wire:click="viewRadResult({{ $reqId }})" wire:key="rad-req-{{ $reqId }}">
-                                                                            <div class="rrc-top">
-                                                                                <div style="flex:1;"><span class="rrc-req-no rrc-req-no-rad">{{ $rReq?->request_no ?? 'RAD' }}</span>@if($rReq?->modality)<span style="background:#f5f3ff;color:#5b21b6;font-size:.68rem;font-weight:700;padding:1px 7px;border-radius:9999px;margin-left:5px;">{{ $rReq->modality }}</span>@endif<p class="rrc-diag">{{ $rReq?->examination_desired ?? 'Radiology Result' }}</p>@if($rReq?->clinical_diagnosis)<p class="rrc-meta">Dx: {{ $rReq->clinical_diagnosis }}</p>@endif<p class="rrc-meta">Uploaded by {{ $firstUpload?->uploadedBy?->name ?? 'Tech' }} · {{ $firstUpload?->created_at->timezone('Asia/Manila')->format('M j, Y g:i A') }}</p>
-                                                                                </div>
-                                                                                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;"><span class="rrc-badge rrc-badge-rad">{{ $rReq?->modality ?? 'Radiology' }}</span><span class="rrc-arrow"><x-heroicon-o-chevron-right class="w-4 h-4 inline" /></span></div>
-                                                                            </div>
-                                                                            <div class="rrc-files">@foreach($uploads as $u)<span class="rrc-file-chip">{{ $u->file_type_icon }} {{ $u->file_name }}</span>@endforeach</div>
-                                                            </div>@endforeach
-                                                        </div>@endif
-                                                        @php $pendingLabReqs = \App\Models\LabRequest::where('visit_id', $visit->id)->whereIn('status', ['pending', 'in_progress'])->orderBy('created_at', 'desc')->get();
-                                                        $pendingRadReqs = \App\Models\RadiologyRequest::where('visit_id', $visit->id)->whereIn('status', ['pending', 'in_progress'])->orderBy('created_at', 'desc')->get(); @endphp
-                                                        @if($pendingLabReqs->isNotEmpty() || $pendingRadReqs->isNotEmpty())<div class="results-section" style="margin-top:4px;">
-                                                            <div class="results-section-title"><span><x-heroicon-o-clock class="w-4 h-4 inline mr-1" />Pending / In Progress</span>
-                                                                <div class="results-section-line"></div><span class="results-badge" style="background:#fef3c7;color:#92400e;">{{ $pendingLabReqs->count() + $pendingRadReqs->count() }} waiting</span>
-                                                            </div>@foreach($pendingLabReqs as $req)<div class="pending-req-card">
-                                                                <div class="pending-req-info">
-                                                                    <p class="pending-req-no">{{ $req->request_no }}</p>
-                                                                    <p class="pending-req-diag"><x-heroicon-o-beaker class="w-3 h-3 inline mr-1" /> Lab &nbsp;·&nbsp;@if($req->tests && count($req->tests)){{ implode(', ', array_slice($req->tests, 0, 3)) }}@if(count($req->tests) > 3) <span style="color:#9ca3af;">+{{ count($req->tests) - 3 }}</span>@endif@else—@endif</p>
-                                                                    <p style="font-size:.72rem;color:#9ca3af;margin-top:2px;">Requested {{ $req->created_at->timezone('Asia/Manila')->diffForHumans() }}</p>
-                                                                </div>
-                                                                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;"><span class="pending-badge {{ $req->request_type === 'stat' ? 'pending-badge-stat' : '' }}">{{ strtoupper($req->request_type ?? 'ROUTINE') }}</span><span style="font-size:.68rem;background:#f3f4f6;color:#6b7280;padding:2px 7px;border-radius:9999px;font-weight:600;">{{ ucfirst(str_replace('_', ' ', $req->status)) }}</span></div>
-                                                            </div>@endforeach@foreach($pendingRadReqs as $req)<div class="pending-req-card">
-                                                                <div class="pending-req-info">
-                                                                    <p class="pending-req-no" style="color:#6d28d9;">{{ $req->request_no }}</p>
-                                                                    <p class="pending-req-diag"><x-heroicon-o-cube class="w-3 h-3 inline mr-1" /> {{ $req->modality ?? 'Radiology' }} &nbsp;·&nbsp;{{ \Str::limit($req->examination_desired ?? '—', 55) }}</p>
-                                                                    <p style="font-size:.72rem;color:#9ca3af;margin-top:2px;">Requested {{ $req->created_at->timezone('Asia/Manila')->diffForHumans() }}</p>
-                                                                </div>
-                                                                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">@if($req->modality)<span style="background:#f5f3ff;color:#5b21b6;font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:9999px;">{{ $req->modality }}</span>@endif<span style="font-size:.68rem;background:#f3f4f6;color:#6b7280;padding:2px 7px;border-radius:9999px;font-weight:600;">{{ ucfirst(str_replace('_', ' ', $req->status)) }}</span></div>
-                                                            </div>@endforeach
-                                                        </div>@endif
-                                                        @if($labResults->isEmpty() && $radResults->isEmpty() && $pendingLabReqs->isEmpty() && $pendingRadReqs->isEmpty())<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px;">
-                                                            <div class="placeholder-card">
-                                                                <div class="ph-icon"><x-heroicon-o-beaker class="w-8 h-8" /></div>
-                                                                <p class="ph-title">No lab requests yet</p>
-                                                                <p class="ph-sub">Click "New Lab Request" above to submit a request to the lab.</p>
-                                                            </div>
-                                                            <div class="placeholder-card">
-                                                                <div class="ph-icon"><x-heroicon-o-cube class="w-8 h-8" /></div>
-                                                                <p class="ph-title">No radiology requests yet</p>
-                                                                <p class="ph-sub">Click "New Radiology Request" above to submit an imaging request.</p>
-                                                            </div>
-                                                        </div>@endif
-                                                    @endif {{-- viewing rad --}}
+                                                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;"><span class="rrc-badge rrc-badge-rad">{{ $rReq?->modality ?? 'Radiology' }}</span><span class="rrc-arrow"><x-heroicon-o-chevron-right class="w-4 h-4 inline" /></span></div>
+                                                    </div>
+                                                    <div class="rrc-files">@foreach($uploads as $u)<span class="rrc-file-chip">{{ $u->file_type_icon }} {{ $u->file_name }}</span>@endforeach</div>
+                                        </div>@endforeach
+                                    </div>@endif
+                                    @php $pendingLabReqs = \App\Models\LabRequest::where('visit_id', $visit->id)->whereIn('status', ['pending', 'in_progress'])->orderBy('created_at', 'desc')->get();
+                                    $pendingRadReqs = \App\Models\RadiologyRequest::where('visit_id', $visit->id)->whereIn('status', ['pending', 'in_progress'])->orderBy('created_at', 'desc')->get(); @endphp
+                                    @if($pendingLabReqs->isNotEmpty() || $pendingRadReqs->isNotEmpty())<div class="results-section" style="margin-top:4px;">
+                                        <div class="results-section-title"><span><x-heroicon-o-clock class="w-4 h-4 inline mr-1" />Pending / In Progress</span>
+                                            <div class="results-section-line"></div><span class="results-badge" style="background:#fef3c7;color:#92400e;">{{ $pendingLabReqs->count() + $pendingRadReqs->count() }} waiting</span>
+                                        </div>@foreach($pendingLabReqs as $req)<div class="pending-req-card">
+                                            <div class="pending-req-info">
+                                                <p class="pending-req-no">{{ $req->request_no }}</p>
+                                                <p class="pending-req-diag"><x-heroicon-o-beaker class="w-3 h-3 inline mr-1" /> Lab &nbsp;·&nbsp;@if($req->tests && count($req->tests)){{ implode(', ', array_slice($req->tests, 0, 3)) }}@if(count($req->tests) > 3) <span style="color:#9ca3af;">+{{ count($req->tests) - 3 }}</span>@endif@else—@endif</p>
+                                                <p style="font-size:.72rem;color:#9ca3af;margin-top:2px;">Requested {{ $req->created_at->timezone('Asia/Manila')->diffForHumans() }}</p>
+                                            </div>
+                                            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;"><span class="pending-badge {{ $req->request_type === 'stat' ? 'pending-badge-stat' : '' }}">{{ strtoupper($req->request_type ?? 'ROUTINE') }}</span><span style="font-size:.68rem;background:#f3f4f6;color:#6b7280;padding:2px 7px;border-radius:9999px;font-weight:600;">{{ ucfirst(str_replace('_', ' ', $req->status)) }}</span></div>
+                                        </div>@endforeach@foreach($pendingRadReqs as $req)<div class="pending-req-card">
+                                            <div class="pending-req-info">
+                                                <p class="pending-req-no" style="color:#6d28d9;">{{ $req->request_no }}</p>
+                                                <p class="pending-req-diag"><x-heroicon-o-cube class="w-3 h-3 inline mr-1" /> {{ $req->modality ?? 'Radiology' }} &nbsp;·&nbsp;{{ \Str::limit($req->examination_desired ?? '—', 55) }}</p>
+                                                <p style="font-size:.72rem;color:#9ca3af;margin-top:2px;">Requested {{ $req->created_at->timezone('Asia/Manila')->diffForHumans() }}</p>
+                                            </div>
+                                            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">@if($req->modality)<span style="background:#f5f3ff;color:#5b21b6;font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:9999px;">{{ $req->modality }}</span>@endif<span style="font-size:.68rem;background:#f3f4f6;color:#6b7280;padding:2px 7px;border-radius:9999px;font-weight:600;">{{ ucfirst(str_replace('_', ' ', $req->status)) }}</span></div>
+                                        </div>@endforeach
+                                    </div>@endif
+                                    @if($labResults->isEmpty() && $radResults->isEmpty() && $pendingLabReqs->isEmpty() && $pendingRadReqs->isEmpty())<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px;">
+                                        <div class="placeholder-card">
+                                            <div class="ph-icon"><x-heroicon-o-beaker class="w-8 h-8" /></div>
+                                            <p class="ph-title">No lab requests yet</p>
+                                            <p class="ph-sub">Click "New Lab Request" above to submit a request to the lab.</p>
+                                        </div>
+                                        <div class="placeholder-card">
+                                            <div class="ph-icon"><x-heroicon-o-cube class="w-8 h-8" /></div>
+                                            <p class="ph-title">No radiology requests yet</p>
+                                            <p class="ph-sub">Click "New Radiology Request" above to submit an imaging request.</p>
+                                        </div>
+                                    </div>@endif
+                                @endif {{-- viewing rad --}}
 
 
-                                {{-- ══ BALLARD SCORE ═══════════════════════════════════════════════ --}}
-                            @elseif($activeTab === 'ballard')
-                @php $ballardExams = $this->ballardExams; @endphp
+            {{-- ══ BALLARD SCORE ═══════════════════════════════════════════════ --}}
+            @elseif($activeTab === 'ballard')
+            @php $ballardExams = $this->ballardExams; @endphp
 
-                <div class="sec-head">
-                    <h2 class="sec-title">📊 Ballard Maturity Score (Gestational Age Assessment)</h2>
-                    @if($ballardExams->where('exam_number', 1)->isEmpty())
+            <div class="sec-head">
+                <h2 class="sec-title">📊 Ballard Maturity Score (Gestational Age Assessment)</h2>
+                @if($ballardExams->where('exam_number', 1)->isEmpty())
+                <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id]) }}" 
+                target="_blank" 
+                class="btn-primary" 
+                style="padding: 6px 14px; font-size: 0.75rem;">
+                    + Record 1st Exam
+                </a>
+                @endif
+            </div>
+
+            @if($ballardExams->isEmpty())
+            <div class="placeholder-card">
+                <div class="ph-icon">📊</div>
+                <p class="ph-title">No Ballard Score recorded yet</p>
+                <p class="ph-sub">Gestational age assessment not yet performed.</p>
+                <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id]) }}" 
+                target="_blank" 
+                style="margin-top: 12px; display: inline-block; background: #059669; color: #fff; padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+                    + Record First Exam
+                </a>
+            </div>
+            @else
+            @foreach($ballardExams as $exam)
+            <div class="ballard-result-card" style="background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 20px; overflow: hidden;">
+                <div class="ballard-result-header" style="background: {{ $exam->exam_number == 1 ? '#f0fdf4' : '#fffbeb' }}; border-bottom: 1px solid #e5e7eb; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="font-weight: 700; font-size: 0.9rem;">
+                            {{ $exam->exam_number == 1 ? '1st Exam' : '2nd Exam' }}
+                        </span>
+                        <span style="font-size: 0.7rem; color: #6b7280; margin-left: 10px;">
+                            {{ $exam->exam_datetime ? \Carbon\Carbon::parse($exam->exam_datetime)->format('M d, Y h:i A') : 'Date not set' }}
+                        </span>
+                    </div>
+                    <div>
                         <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id]) }}" 
                         target="_blank" 
-                        class="btn-primary" 
-                        style="padding: 6px 14px; font-size: 0.75rem;">
-                        <x-heroicon-o-plus class="w-4 h-4" />
-                            Record 1st Exam
-                        </a>
-                    @endif
-                </div>
-
-                @if($ballardExams->isEmpty())
-                    <div class="placeholder-card">
-                        <div class="ph-icon">📊</div>
-                        <p class="ph-title">No Ballard Score recorded yet</p>
-                        <p class="ph-sub">Gestational age assessment not yet performed.</p>
-                        <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id]) }}" 
-                        target="_blank" 
-                        style="margin-top: 12px; display: inline-block; background: #059669; color: #fff; padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;"><x-heroicon-o-plus class="w-4 h-4" />
-                            Record First Exam
+                        style="font-size: 0.7rem; color: #1d4ed8; text-decoration: none;">
+                            Edit / View
                         </a>
                     </div>
-                @else
-                    @foreach($ballardExams as $exam)
-                        <div class="ballard-result-card" style="background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 20px; overflow: hidden;">
-                            <div class="ballard-result-header" style="background: {{ $exam->exam_number == 1 ? '#f0fdf4' : '#fffbeb' }}; border-bottom: 1px solid #e5e7eb; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center;">
-                                <div>
-                                    <span style="font-weight: 700; font-size: 0.9rem;">
-                                        {{ $exam->exam_number == 1 ? '1st Exam' : '2nd Exam' }}
-                                    </span>
-                                    <span style="font-size: 0.7rem; color: #6b7280; margin-left: 10px;">
-                                        {{ $exam->exam_datetime ? \Carbon\Carbon::parse($exam->exam_datetime)->format('M d, Y h:i A') : 'Date not set' }}
-                                    </span>
-                                </div>
-                                <div>
-                                    <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id]) }}" 
-                                    target="_blank" 
-                                    style="font-size: 0.7rem; color: #1d4ed8; text-decoration: none;">
-                                        Edit / View
-                                    </a>
-                                </div>
+                </div>
+                <div class="ballard-result-body" style="padding: 16px 20px;">
+                    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 16px;">
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Posture</span><br><strong>{{ $exam->nm_posture ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Square Window</span><br><strong>{{ $exam->nm_square_window ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Arm Recoil</span><br><strong>{{ $exam->nm_arm_recoil ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Popliteal Angle</span><br><strong>{{ $exam->nm_popliteal_angle ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Scarf Sign</span><br><strong>{{ $exam->nm_scarf_sign ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Heel to Ear</span><br><strong>{{ $exam->nm_heel_to_ear ?? '—' }}</strong></div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 16px;">
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Skin</span><br><strong>{{ $exam->pm_skin ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Lanugo</span><br><strong>{{ $exam->pm_lanugo ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Plantar Surface</span><br><strong>{{ $exam->pm_plantar_surface ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Breast</span><br><strong>{{ $exam->pm_breast ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Eye/Ear</span><br><strong>{{ $exam->pm_eye_ear ?? '—' }}</strong></div>
+                        <div><span style="font-size: 0.7rem; color: #6b7280;">Genitals</span><br><strong>{{ $exam->pm_genitals ?? '—' }}</strong></div>
+                    </div>
+                    <div style="background: #eff6ff; border-radius: 8px; padding: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <span style="font-size: 0.7rem; color: #6b7280;">Neuromuscular Subtotal</span>
+                                <p style="font-weight: 700; margin: 0;">{{ $exam->nm_subtotal }}</p>
                             </div>
-                            <div class="ballard-result-body" style="padding: 16px 20px;">
-                                <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 16px;">
-                                    <div><span style="font-size: 0.7rem; color: #6b7280;">Posture</span><br><strong>{{ $exam->nm_posture ?? '—' }}</strong></div>
-                                    <div><span style="font-size: 0.7rem; color: #6b7280;">Square Window</span><br><strong>{{ $exam->nm_square_window ?? '—' }}</strong></div>
-                                    <div><span style="font-size: 0.7rem; color: #6b7280;">Arm Recoil</span><br><strong>{{ $exam->nm_arm_recoil ?? '—' }}</strong></div>
-                                    <div><span style="font-size: 0.7rem; color: #6b7280;">Popliteal Angle</span><br><strong>{{ $exam->nm_popliteal_angle ?? '—' }}</strong></div>
-                                    <div><span style="font-size: 0.7rem; color: #6b7280;">Scarf Sign</span><br><strong>{{ $exam->nm_scarf_sign ?? '—' }}</strong></div>
-                                    <div><span style="font-size: 0.7rem; color: #6b7280;">Heel to Ear</span><br><strong>{{ $exam->nm_heel_to_ear ?? '—' }}</strong></div>
-                                </div>
-                                <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 16px;">
-                                    <div><span style="font-size: 0.7rem; color: #6b7280;">Skin</span><br><strong>{{ $exam->pm_skin ?? '—' }}</strong></div>
-                                    <div><span style="font-size: 0.7rem; color: #6b7280;">Lanugo</span><br><strong>{{ $exam->pm_lanugo ?? '—' }}</strong></div>
-                                    <div><span style="font-size: 0.7rem; color: #6b7280;">Plantar Surface</span><br><strong>{{ $exam->pm_plantar_surface ?? '—' }}</strong></div>
-                                    <div><span style="font-size: 0.7rem; color: #6b7280;">Breast</span><br><strong>{{ $exam->pm_breast ?? '—' }}</strong></div>
-                                    <div><span style="font-size: 0.7rem; color: #6b7280;">Eye/Ear</span><br><strong>{{ $exam->pm_eye_ear ?? '—' }}</strong></div>
-                                    <div><span style="font-size: 0.7rem; color: #6b7280;">Genitals</span><br><strong>{{ $exam->pm_genitals ?? '—' }}</strong></div>
-                                </div>
-                                <div style="background: #eff6ff; border-radius: 8px; padding: 12px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                                        <div>
-                                            <span style="font-size: 0.7rem; color: #6b7280;">Neuromuscular Subtotal</span>
-                                            <p style="font-weight: 700; margin: 0;">{{ $exam->nm_subtotal }}</p>
-                                        </div>
-                                        <div>
-                                            <span style="font-size: 0.7rem; color: #6b7280;">Physical Subtotal</span>
-                                            <p style="font-weight: 700; margin: 0;">{{ $exam->pm_subtotal }}</p>
-                                        </div>
-                                        <div>
-                                            <span style="font-size: 0.7rem; color: #6b7280;">TOTAL SCORE</span>
-                                            <p style="font-size: 1.5rem; font-weight: 800; margin: 0; color: #1d4ed8;">{{ $exam->total_score ?? '—' }}</p>
-                                        </div>
-                                        <div>
-                                            <span style="font-size: 0.7rem; color: #6b7280;">Gestational Age</span>
-                                            <p style="font-size: 1.2rem; font-weight: 800; margin: 0; color: #059669;">{{ $exam->estimated_ga_weeks ? $exam->estimated_ga_weeks . ' weeks' : '—' }}</p>
-                                        </div>
-                                        @if($exam->estimated_ga_weeks)
-                                            <div>
-                                                @php $ga = $exam->estimated_ga_weeks; @endphp
-                                                @if($ga < 37)
-                                                    <span style="background: #fee2e2; color: #991b1b; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">Preterm</span>
-                                                @elseif($ga > 42)
-                                                    <span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">Post-term</span>
-                                                @else
-                                                    <span style="background: #d1fae5; color: #065f46; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">Term</span>
-                                                @endif
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
+                            <div>
+                                <span style="font-size: 0.7rem; color: #6b7280;">Physical Subtotal</span>
+                                <p style="font-weight: 700; margin: 0;">{{ $exam->pm_subtotal }}</p>
                             </div>
+                            <div>
+                                <span style="font-size: 0.7rem; color: #6b7280;">TOTAL SCORE</span>
+                                <p style="font-size: 1.5rem; font-weight: 800; margin: 0; color: #1d4ed8;">{{ $exam->total_score ?? '—' }}</p>
+                            </div>
+                            <div>
+                                <span style="font-size: 0.7rem; color: #6b7280;">Gestational Age</span>
+                                <p style="font-size: 1.2rem; font-weight: 800; margin: 0; color: #059669;">{{ $exam->estimated_ga_weeks ? $exam->estimated_ga_weeks . ' weeks' : '—' }}</p>
+                            </div>
+                            @if($exam->estimated_ga_weeks)
+                            <div>
+                                @php $ga = $exam->estimated_ga_weeks; @endphp
+                                @if($ga < 37)
+                                    <span style="background: #fee2e2; color: #991b1b; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">Preterm</span>
+                                @elseif($ga > 42)
+                                    <span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">Post-term</span>
+                                @else
+                                    <span style="background: #d1fae5; color: #065f46; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">Term</span>
+                                @endif
+                            </div>
+                            @endif
                         </div>
-                    @endforeach
+                    </div>
+                </div>
+            </div>
+            @endforeach
 
-                    @if($ballardExams->where('exam_number', 2)->isEmpty())
-                        <div style="margin-top: 12px; text-align: right;">
-                            <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id, 'exam' => 2]) }}" 
-                            target="_blank" 
-                            class="btn-secondary" 
-                            style="padding: 6px 14px; font-size: 0.75rem;">
-                                <x-heroicon-o-plus class="w-4 h-4" /> Record 2nd Exam
-                            </a>
-                        </div>
-                    @endif
-                @endif
+            @if($ballardExams->where('exam_number', 2)->isEmpty())
+            <div style="margin-top: 12px; text-align: right;">
+                <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id, 'exam' => 2]) }}" 
+                target="_blank" 
+                class="btn-secondary" 
+                style="padding: 6px 14px; font-size: 0.75rem;">
+                    + Record 2nd Exam
+                </a>
+            </div>
+            @endif
+            @endif
             @endif {{-- End of activeTab check --}}
 
                         </div>{{-- /.chart-content --}}

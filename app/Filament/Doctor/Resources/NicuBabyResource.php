@@ -8,12 +8,11 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-
 class NicuBabyResource extends Resource
 {
     protected static ?string $model = Visit::class;
-    protected static ?string $navigationIcon = 'heroicon-o-face-smile';
-    protected static ?string $navigationLabel = 'NICU Babies';
+    protected static ?string $navigationIcon = 'heroicon-o-heart';
+    protected static ?string $navigationLabel = '🍼 NICU Babies';
     protected static ?string $modelLabel = 'NICU Baby';
     protected static ?int $navigationSort = 3;
 
@@ -36,19 +35,19 @@ class NicuBabyResource extends Resource
                     ->label('Case No')
                     ->getStateUsing(function ($record) {
                         if (!$record->patient) return '—';
-                        return $record->patient->is_provisional
+                        return $record->patient->is_provisional 
                             ? ($record->patient->temporary_case_no ?? 'TEMP-' . $record->patient->id)
                             : ($record->patient->case_no ?? '—');
                     })
                     ->searchable(query: function (Builder $query, string $search) {
                         $query->whereHas('patient', function (Builder $q) use ($search) {
                             $q->where('case_no', 'like', "%{$search}%")
-                                ->orWhere('temporary_case_no', 'like', "%{$search}%");
+                              ->orWhere('temporary_case_no', 'like', "%{$search}%");
                         });
                     })
                     ->copyable()
                     ->fontFamily('mono')
-                    ->color(fn($record) => $record->patient && $record->patient->is_provisional ? 'warning' : 'primary'),
+                    ->color(fn ($record) => $record->patient && $record->patient->is_provisional ? 'warning' : 'primary'),
 
                 Tables\Columns\TextColumn::make('baby_name')
                     ->label('Baby Name')
@@ -59,9 +58,9 @@ class NicuBabyResource extends Resource
                     ->searchable(query: function (Builder $query, string $search) {
                         $query->whereHas('patient', function (Builder $q) use ($search) {
                             $q->where('baby_family_name', 'like', "%{$search}%")
-                                ->orWhere('baby_first_name', 'like', "%{$search}%")
-                                ->orWhere('temporary_case_no', 'like', "%{$search}%")
-                                ->orWhere('temporary_identifier', 'like', "%{$search}%");
+                              ->orWhere('baby_first_name', 'like', "%{$search}%")
+                              ->orWhere('temporary_case_no', 'like', "%{$search}%")
+                              ->orWhere('temporary_identifier', 'like', "%{$search}%");
                         });
                     })
                     ->weight('bold'),
@@ -105,14 +104,14 @@ class NicuBabyResource extends Resource
 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
-                    ->getStateUsing(fn($record) => match ($record->status) {
+                    ->getStateUsing(fn ($record) => match ($record->status) {
                         'provisional_registration' => '⚠️ Provisional',
                         'registered' => 'Registered',
                         'admitted' => 'Admitted',
                         default => ucfirst($record->status ?? '—'),
                     })
                     ->badge()
-                    ->color(fn($record) => match ($record->status) {
+                    ->color(fn ($record) => match ($record->status) {
                         'provisional_registration' => 'danger',
                         'registered' => 'warning',
                         'admitted' => 'success',
@@ -134,8 +133,7 @@ class NicuBabyResource extends Resource
                     ]),
                 Tables\Filters\Filter::make('needs_assessment')
                     ->label('Needs Assessment')
-                    ->query(
-                        fn(Builder $query) =>
+                    ->query(fn (Builder $query) => 
                         $query->whereIn('status', ['provisional_registration', 'registered'])
                     ),
             ])
@@ -146,29 +144,24 @@ class NicuBabyResource extends Resource
                     ->icon('heroicon-o-clipboard-document')
                     ->color('primary')
                     ->button()
-                    ->url(
-                        fn(Visit $record) =>
+                    ->url(fn (Visit $record) =>
                         \App\Filament\Doctor\Pages\NicuAssessment::getUrl(['visitId' => $record->id])
                     )
-                    ->visible(fn(Visit $record) => in_array($record->status, ['provisional_registration', 'registered'])),
+                    ->visible(fn (Visit $record) => in_array($record->status, ['provisional_registration', 'registered'])),
 
                 Tables\Actions\Action::make('view_chart')
                     ->label('View Chart')
                     ->icon('heroicon-o-document-text')
                     ->color('info')
                     ->button()
-                    ->url(
-                        fn(Visit $record) =>
+                    ->url(fn (Visit $record) =>
                         \App\Filament\Doctor\Pages\PatientChart::getUrl(['visitId' => $record->id])
                     )
-                    ->visible(fn(Visit $record) => $record->status === 'admitted'),
+                    ->visible(fn (Visit $record) => $record->status === 'admitted'),
             ]);
     }
 
-    public static function canCreate(): bool
-    {
-        return false;
-    }
+    public static function canCreate(): bool { return false; }
 
     public static function getPages(): array
     {
