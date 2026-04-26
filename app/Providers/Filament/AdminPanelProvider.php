@@ -49,7 +49,7 @@ class AdminPanelProvider extends PanelProvider
             ->authGuard('web')
             ->authMiddleware([StaffAuthenticate::class]);
     }
-}<?php
+}
 
 namespace App\Providers\Filament;
 
