@@ -6,6 +6,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use App\Http\Middleware\Filament\StaffAuthenticate;
+use Illuminate\Support\HtmlString;
 use App\Filament\Nurse\Pages\CreateProvisionalRecord;
 use App\Filament\Nurse\Pages\CompleteBabyInformation;
 use App\Filament\Nurse\Pages\BreastfeedingObservation;
@@ -18,11 +19,11 @@ class NursePanelProvider extends PanelProvider
             ->id('nurse')
             ->path('nurse')
             ->colors(['primary' => Color::Rose])
-            ->brandName('LUMC — Nurse Portal (NICU)')
-            ->brandLogo(fn () => new \Illuminate\Support\HtmlString(
+            ->brandLogo(fn() => new HtmlString(
                 '<div style="display:flex;align-items:center;gap:10px;">'
-                . '<span style="font-weight:700;color:#fff;background:#be123c;padding:6px 12px;border-radius:8px;">🩺 NICU Nurse</span>'
-                . '</div>'
+                    . '<img src="' . asset('images/lumc-logo.png') . '" alt="LUMC Logo" style="height:40px;width:auto;">'
+                    . '<span style="font-weight:700;color:#111827;">LUMC — Nurse Portal</span>'
+                    . '</div>'
             ))
             ->favicon(asset('images/lumc-logo.png'))
             ->discoverPages(

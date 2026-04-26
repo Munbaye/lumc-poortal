@@ -2364,7 +2364,7 @@
                                                 </div>@foreach($group as $i => $order)<div class="order-item">
                                                     <div>
                                                         <p class="order-num">{{ $i + 1 }}.</p>
-                                                        <p class="order-text {{ $order->isDiscontinued() ? 'order-text-discontinued' : '' }}">{{ $order->order_text }}</p>
+                                                        <p class="order-text {{ $order->isDiscontinued() ? 'order-text-discontinued' : '' }}"> aufidhsfdhg{{ $order->order_text }}</p>
                                                         <p class="order-meta">{{ $order->order_date?->timezone('Asia/Manila')->format('M j, Y H:i') }}</p>
                                                     </div><span class="status-badge status-{{ $order->status }}">{{ $order->status_label }}</span>
                                                 </div>@endforeach
