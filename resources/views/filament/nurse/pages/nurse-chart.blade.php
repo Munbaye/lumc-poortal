@@ -1,3 +1,8 @@
+@php
+use App\Helpers\WHOGrowthChart;
+@endphp
+
+
 <x-filament-panels::page>
 
 <style>
@@ -646,6 +651,9 @@
             @if($this->breastfeedingObservationsCount > 0)
                 <span class="tab-badge tab-badge-green">{{ $this->breastfeedingObservationsCount }}</span>
             @endif
+        </button>
+        <button wire:click="setTab('growth')" class="chart-tab {{ $activeTab==='growth' ? 'active':'' }}">
+            <span class="tab-icon">📈</span> Growth Chart
         </button>
         @endif
         </button>
@@ -1447,6 +1455,121 @@
         </div>
         @endforeach
         @endif
+
+        {{-- ══ GROWTH CHART (WHO) ═══════════════════════════════════════════ --}}
+        @elseif($activeTab === 'growth')
+        @php
+            $gender = $visit->patient->sex === 'Male' ? 'boy' : 'girl';
+            $measurements = $this->growthMeasurements;
+            $currentMeasurements = $measurements[$growthChartType] ?? [];
+            $allMeasurements = $measurements[$growthChartType] ?? [];
+        @endphp
+
+        <div class="sec-head">
+            <h2 class="sec-title">📈 WHO Growth Chart - {{ ucfirst($growthChartType) }}-for-Age ({{ $gender === 'boy' ? 'Boys' : 'Girls' }})</h2>
+            <div style="display: flex; gap: 8px;">
+                <button wire:click="setGrowthChartType('length')" 
+                    class="btn-secondary" 
+                    style="padding: 6px 14px; font-size: 0.75rem; {{ $growthChartType === 'length' ? 'background:#1d4ed8; color:#fff;' : '' }}">
+                    📏 Length
+                </button>
+                <button wire:click="setGrowthChartType('weight')" 
+                    class="btn-secondary" 
+                    style="padding: 6px 14px; font-size: 0.75rem; {{ $growthChartType === 'weight' ? 'background:#1d4ed8; color:#fff;' : '' }}">
+                    ⚖️ Weight
+                </button>
+            </div>
+        </div>
+
+        <div class="growth-chart-container" style="background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 24px; overflow-x: auto;">
+            {!! WHOGrowthChart::renderLegend() !!}
+            <div style="overflow-x: auto; text-align: center;">
+                {!! WHOGrowthChart::renderChart($growthChartType, $gender, $currentMeasurements) !!}
+            </div>
+        </div>
+
+        {{-- Measurement History Log --}}
+        @if(!empty($allMeasurements))
+        <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;">
+            <p style="font-weight: 700; font-size: 0.85rem; margin-bottom: 12px; color: #374151; display: flex; align-items: center; gap: 8px;">
+                📋 Measurement History Log
+                <span style="font-size: 0.7rem; font-weight: normal; color: #6b7280;">({{ count($allMeasurements) }} records)</span>
+            </p>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
+                    <thead>
+                        <tr style="background: #f3f4f6; border-bottom: 1px solid #e5e7eb;">
+                            <th style="padding: 8px 12px; text-align: left;">Date</th>
+                            <th style="padding: 8px 12px; text-align: left;">Age (months)</th>
+                            <th style="padding: 8px 12px; text-align: left;">{{ $growthChartType === 'length' ? 'Length (cm)' : 'Weight (kg)' }}</th>
+                            <th style="padding: 8px 12px; text-align: left;">Z-Score</th>
+                            <th style="padding: 8px 12px; text-align: left;">Recorded By</th>
+                            <th style="padding: 8px 12px; text-align: left;">Recorded At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($allMeasurements as $m)
+                        <tr style="border-bottom: 1px solid #f3f4f6;">
+                            <td style="padding: 8px 12px;">{{ \Carbon\Carbon::parse($m['date'])->format('M d, Y') }}</td>
+                            <td style="padding: 8px 12px;">{{ $m['age_months'] }}</td>
+                            <td style="padding: 8px 12px; font-weight: 600;">{{ $m['value'] }}</td>
+                            <td style="padding: 8px 12px;">
+                                @if($m['z_score'] !== null)
+                                    <span style="display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; 
+                                        {{ $m['z_score'] < -2 ? 'background: #fee2e2; color: #991b1b;' : '' }}
+                                        {{ $m['z_score'] > 2 ? 'background: #fee2e2; color: #991b1b;' : '' }}
+                                        {{ $m['z_score'] >= -2 && $m['z_score'] <= 2 ? 'background: #d1fae5; color: #065f46;' : '' }}">
+                                        {{ $m['z_score'] }}
+                                    </span>
+                                @else
+                                    <span style="color: #9ca3af;">—</span>
+                                @endif
+                            </td>
+                            <td style="padding: 8px 12px;">
+                                <span style="display: inline-flex; align-items: center; gap: 4px;">
+                                    <span>👩‍⚕️</span> {{ $m['recorded_by'] ?? 'Unknown' }}
+                                </span>
+                            </td>
+                            <td style="padding: 8px 12px; font-size: 0.7rem; color: #6b7280;">
+                                {{ isset($m['recorded_at']) ? \Carbon\Carbon::parse($m['recorded_at'])->format('M d, Y h:i A') : '—' }}
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @endif
+
+        {{-- Add Measurement Form --}}
+        <div class="measurement-form" style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; padding: 16px 20px; margin-top: 20px;">
+            <p style="font-weight: 700; font-size: 0.85rem; margin-bottom: 12px; color: #166534;">
+                ➕ Add New Measurement
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: end;">
+                <div>
+                    <label style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #6b7280;">Date</label>
+                    <input type="date" wire:model="measurementDate" class="form-input" style="margin-top: 4px;">
+                </div>
+                <div>
+                    <label style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #6b7280;">Weight (kg)</label>
+                    <input type="number" step="0.01" wire:model="newWeight" placeholder="e.g., 3.5" class="form-input" style="margin-top: 4px;">
+                </div>
+                <div>
+                    <label style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #6b7280;">Length (cm)</label>
+                    <input type="number" step="0.1" wire:model="newLength" placeholder="e.g., 52.0" class="form-input" style="margin-top: 4px;">
+                </div>
+                <div>
+                    <button wire:click="saveGrowthMeasurement" wire:loading.attr="disabled" class="btn-primary" style="width: 100%;">
+                        <span wire:loading.remove>💾 Save Measurement</span>
+                        <span wire:loading>Saving...</span>
+                    </button>
+                </div>
+            </div>
+            <p style="font-size: 0.7rem; color: #6b7280; margin-top: 8px;">
+                💡 Tip: You can enter weight OR length, or both. The chart will update automatically.
+            </p>
+        </div>
 
         {{-- ══ PATIENT FORMS ══════════════════════════════════════ --}}
         @elseif($activeTab === 'forms')

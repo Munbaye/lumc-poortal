@@ -11,6 +11,7 @@ use App\Models\NursesNote;
 use App\Models\Vital;
 use App\Models\Visit;
 use App\Models\NicuBreastfeedingObservation;
+use App\Helpers\WHOGrowthChart;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Livewire\Attributes\Url;
@@ -96,6 +97,13 @@ class NurseChart extends Page
     public string $tprIoNotes     = '';
     public ?int   $tprIoEditId    = null;
 
+    // Add to properties section
+    public string $growthChartType = 'length'; // 'length' or 'weight'
+    public $newWeight = '';
+    public $newLength = '';
+    public string $measurementDate = '';
+    public bool $savingMeasurement = false;
+
     public function mount(): void
     {
         if (!$this->visitId) {
@@ -107,6 +115,9 @@ class NurseChart extends Page
         if ($this->visit && $this->isReadonly) {
             $this->activeTab = 'forms';
         }
+
+        // Add growth chart related code
+        $this->measurementDate = now()->format('Y-m-d');
     }
 
     private function loadVisit(): void
@@ -237,6 +248,12 @@ class NurseChart extends Page
         $this->marNewMedName  = '';
         $this->tprAddingIo = false;
         $this->tprIoEditId = null;
+
+        // Add growth chart case
+        if ($tab === 'growth') {
+            $this->activeTab = 'growth';
+            return;
+        }
     }
 
     // ── Doctor's Orders — Mark as Carried (individual) ────────────────────────
@@ -852,5 +869,159 @@ class NurseChart extends Page
     public function getBreastfeedingObservationsCountProperty(): int
     {
         return NicuBreastfeedingObservation::where('visit_id', $this->visitId)->count();
+    }
+
+    // Add growth chart related methods
+    public function setGrowthChartType(string $type): void
+    {
+        $this->growthChartType = $type;
+    }
+
+    public function saveGrowthMeasurement(): void
+    {
+        $this->savingMeasurement = true;
+        
+        try {
+            $hasData = false;
+            $patient = $this->visit->patient;
+            
+            // Get or create today's vital record
+            $vital = Vital::where('visit_id', $this->visitId)
+                ->whereDate('taken_at', $this->measurementDate)
+                ->first();
+            
+            if (!$vital) {
+                $vital = new Vital();
+                $vital->visit_id = $this->visitId;
+                $vital->patient_id = $patient->id;
+                $vital->recorded_by = auth()->id(); // This stores the user ID
+                $vital->nurse_name = auth()->user()->name; // This stores the name as free text
+                $vital->taken_at = \Carbon\Carbon::parse($this->measurementDate);
+            }
+            
+            // Check and save weight
+            if (!empty($this->newWeight) && $this->newWeight !== '' && $this->newWeight !== null) {
+                $vital->weight_kg = (float)$this->newWeight;
+                $hasData = true;
+            }
+            
+            // Check and save length
+            if (!empty($this->newLength) && $this->newLength !== '' && $this->newLength !== null) {
+                $vital->height_cm = (float)$this->newLength;
+                $hasData = true;
+            }
+            
+            if (!$hasData) {
+                Notification::make()
+                    ->title('Please enter a weight or length measurement.')
+                    ->warning()
+                    ->send();
+                $this->savingMeasurement = false;
+                return;
+            }
+            
+            $vital->save();
+            
+            // Reset form
+            $this->newWeight = '';
+            $this->newLength = '';
+            $this->measurementDate = now()->format('Y-m-d');
+            
+            Notification::make()
+                ->title('Growth measurement saved!')
+                ->success()
+                ->send();
+                
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Error saving measurement')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+        }
+        
+        $this->savingMeasurement = false;
+    }
+
+    // Add growth chart data getters
+    public function getGrowthMeasurementsProperty(): array
+    {
+        $patient = $this->visit->patient;
+        
+        $vitals = Vital::where('patient_id', $patient->id)
+            ->where(function($q) {
+                $q->whereNotNull('weight_kg')->orWhereNotNull('height_cm');
+            })
+            ->with('recorder') // Eager load the recorder relationship
+            ->orderBy('taken_at', 'asc')
+            ->get();
+        
+        $measurements = [
+            'weight' => [],
+            'length' => [],
+        ];
+        
+        foreach ($vitals as $vital) {
+            $ageMonths = $this->calculateAgeInMonths($vital->taken_at);
+            
+            if ($ageMonths <= 24) {
+                if ($vital->weight_kg) {
+                    $zScore = WHOGrowthChart::calculateZScore(
+                        $vital->weight_kg, 
+                        $ageMonths, 
+                        $patient->sex === 'Male' ? 'boy' : 'girl', 
+                        'weight'
+                    );
+                    
+                    $measurements['weight'][] = [
+                        'date' => $vital->taken_at->format('Y-m-d'),
+                        'age_months' => $ageMonths,
+                        'value' => $vital->weight_kg,
+                        'z_score' => $zScore,
+                        'color' => $this->getDotColor($zScore),
+                        'recorded_by' => $vital->recorder?->name ?? $vital->nurse_name ?? 'Unknown',
+                        'recorded_at' => $vital->created_at?->format('Y-m-d H:i:s'),
+                    ];
+                }
+                
+                if ($vital->height_cm) {
+                    $zScore = WHOGrowthChart::calculateZScore(
+                        $vital->height_cm, 
+                        $ageMonths, 
+                        $patient->sex === 'Male' ? 'boy' : 'girl', 
+                        'length'
+                    );
+                    
+                    $measurements['length'][] = [
+                        'date' => $vital->taken_at->format('Y-m-d'),
+                        'age_months' => $ageMonths,
+                        'value' => $vital->height_cm,
+                        'z_score' => $zScore,
+                        'color' => $this->getDotColor($zScore),
+                        'recorded_by' => $vital->recorder?->name ?? $vital->nurse_name ?? 'Unknown',
+                        'recorded_at' => $vital->created_at?->format('Y-m-d H:i:s'),
+                    ];
+                }
+            }
+        }
+        
+        return $measurements;
+    }
+
+    private function calculateAgeInMonths($date): float
+    {
+        $birthDate = $this->visit->patient->birth_datetime ?? $this->visit->patient->birthday;
+        if (!$birthDate) return 0;
+        
+        $diff = \Carbon\Carbon::parse($birthDate)->diffInDays(\Carbon\Carbon::parse($date));
+        return round($diff / 30.44, 2); // Convert days to months
+    }
+
+    private function getDotColor($zScore): string
+    {
+        if ($zScore === null) return '#6b7280'; // Gray - unknown
+        if ($zScore < -3 || $zScore > 3) return '#dc2626'; // Red - severe
+        if ($zScore < -2 || $zScore > 2) return '#f97316'; // Orange - monitor
+        return '#10b981'; // Green - normal
     }
 }
