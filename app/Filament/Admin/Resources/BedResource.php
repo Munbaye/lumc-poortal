@@ -54,7 +54,33 @@ class BedResource extends Resource
                         ->label('Bed Label')
                         ->placeholder('e.g. Bed A, Bed 1, Aisle Bed 3')
                         ->required()
-                        ->maxLength(50),
+                        ->maxLength(50)
+                        ->dehydrateStateUsing(fn ($state) => trim(preg_replace('/\s+/', ' ', (string) $state)))
+                        ->rule(function (Forms\Get $get, ?Bed $record) {
+                            return function (string $attribute, $value, \Closure $fail) use ($get, $record): void {
+                                $roomId = $get('room_id');
+                                if (! $roomId) {
+                                    return;
+                                }
+
+                                $label = trim(preg_replace('/\s+/', ' ', (string) $value));
+                                if ($label === '') {
+                                    return;
+                                }
+
+                                $query = Bed::query()
+                                    ->where('room_id', $roomId)
+                                    ->whereRaw('LOWER(bed_label) = ?', [mb_strtolower($label)]);
+
+                                if ($record?->id) {
+                                    $query->whereKeyNot($record->id);
+                                }
+
+                                if ($query->exists()) {
+                                    $fail("Bed label already exists for the selected room. Please use a different label.");
+                                }
+                            };
+                        }),
 
                     Forms\Components\Select::make('status')
                         ->label('Status')

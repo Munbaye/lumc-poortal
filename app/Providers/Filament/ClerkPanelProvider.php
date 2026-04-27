@@ -7,6 +7,8 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use App\Http\Middleware\Filament\StaffAuthenticate;
 use Illuminate\Support\HtmlString;
+use App\Filament\Clerk\Pages\ConvertToPermanent;
+use App\Filament\Clerk\Pages\EditBabyInformation;
 
 class ClerkPanelProvider extends PanelProvider
 {
@@ -16,11 +18,11 @@ class ClerkPanelProvider extends PanelProvider
             ->id('clerk')
             ->path('clerk')
             ->colors(['primary' => Color::Amber])
-            ->brandLogo(fn () => new HtmlString(
+            ->brandLogo(fn() => new HtmlString(
                 '<div style="display:flex;align-items:center;gap:10px;">'
-                . '<img src="' . asset('images/lumc-logo.png') . '" alt="LUMC Logo" style="height:40px;width:auto;">'
-                . '<span style="font-weight:700;color:#111827;">LUMC — Clerk Portal</span>'
-                . '</div>'
+                    . '<img src="' . asset('images/lumc-logo.png') . '" alt="LUMC Logo" style="height:40px;width:auto;">'
+                    . '<span style="font-weight:700;color:#111827;">LUMC — Clerk Portal</span>'
+                    . '</div>'
             ))
             ->favicon(asset('images/lumc-logo.png'))
             ->discoverPages(
@@ -35,6 +37,16 @@ class ClerkPanelProvider extends PanelProvider
                 in: app_path('Filament/Clerk/Widgets'),
                 for: 'App\Filament\Clerk\Widgets'
             )
+            ->pages([
+                // Only Clerk pages here - NICU pages are now in Nurse panel
+                ConvertToPermanent::class,
+                EditBabyInformation::class,
+            ])
+            ->navigationGroups([
+                'Patient Management',
+                'NICU Management',  // For clerk's NICU conversion page
+                'Reports',
+            ])
             ->middleware([
                 \Illuminate\Cookie\Middleware\EncryptCookies::class,
                 \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,

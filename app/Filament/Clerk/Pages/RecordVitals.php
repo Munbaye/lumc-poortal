@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Filament\Clerk\Pages;
 
 use App\Models\Visit;
@@ -104,12 +105,12 @@ class RecordVitals extends Page
 
         // ── Activity log ──────────────────────────────────────────────────────
         ActivityLog::record(
-            action:       ActivityLog::ACT_RECORDED_VITALS,
-            category:     ActivityLog::CAT_VITALS,
-            subject:      $this->visit,
+            action: ActivityLog::ACT_RECORDED_VITALS,
+            category: ActivityLog::CAT_VITALS,
+            subject: $this->visit,
             subjectLabel: $this->visit->patient->full_name
-                          . ' (' . $this->visit->patient->case_no . ')'
-                          . ' — ' . $this->visit->visit_type,
+                . ' (' . $this->visit->patient->case_no . ')'
+                . ' — ' . $this->visit->visit_type,
             newValues: array_filter([
                 'recorded_by'      => $this->nurseName,
                 'temperature'      => $this->temperature . ' °C (' . $this->temperatureSite . ')',
