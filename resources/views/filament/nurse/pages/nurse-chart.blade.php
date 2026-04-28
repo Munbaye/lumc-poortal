@@ -1791,6 +1791,37 @@ use App\Helpers\WHOGrowthChart;
             @endif
         </div>
 
+        {{-- 10. Breastfeeding Observation Job Aid (NUR-044-0) — NICU only --}}
+        @if($visit->visit_type === 'NICU')
+        <div style="margin-bottom:32px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">🍼 Breastfeeding Observation Job Aid (NUR-044-0)</span>
+                <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
+                @php $bfCount = $this->breastfeedingObservationsCount; @endphp
+                <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $bfCount > 0 ? 'background:#dcfce7;color:#166534;' : 'background:#f3f4f6;color:#6b7280;' }}">
+                    {{ $bfCount > 0 ? $bfCount . ' observation' . ($bfCount === 1 ? '' : 's') : 'No observations yet' }}
+                </span>
+                <a href="{{ route('forms.breastfeeding-observation', ['visit' => $visit->id]) }}"
+                   target="_blank"
+                   style="font-size:.72rem;font-weight:700;color:#166534;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;padding:3px 10px;border-radius:5px;white-space:nowrap;">
+                    🖨️ Open / Print
+                </a>
+            </div>
+            @if($bfCount > 0)
+            <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+                <iframe src="{{ route('forms.breastfeeding-observation', ['visit' => $visit->id]) }}"
+                    title="Breastfeeding Observation Job Aid"
+                    style="width:100%;min-height:900px;border:none;display:block;"
+                    loading="lazy"></iframe>
+            </div>
+            @else
+            <div style="background:#fff;border:1.5px dashed #e5e7eb;border-radius:8px;padding:24px;text-align:center;">
+                <p style="font-size:.82rem;color:#9ca3af;">No breastfeeding observations recorded yet. Go to the 🍼 Breastfeeding tab to add observations.</p>
+            </div>
+            @endif
+        </div>
+        @endif
+
         {{-- ══ MAR TAB CONTENT ══════════════════════════════════════════ --}}
         @elseif($activeTab === 'mar')
         @php

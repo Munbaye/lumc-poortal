@@ -151,4 +151,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/forms/medication-records/{visit}', [NurseFormController::class, 'medicationRecords'])
         ->name('forms.medication-records');
 
+    // ── Breastfeeding Observation Job Aid (NUR-044-0) ─────────────────────────
+    Route::get('/forms/breastfeeding-observation/{visit}', [NurseFormController::class, 'breastfeedingObservation'])
+        ->name('forms.breastfeeding-observation');
+
 });
