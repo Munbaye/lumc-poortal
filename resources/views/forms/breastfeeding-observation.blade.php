@@ -113,9 +113,10 @@
 
         /* ── Signature line at bottom ── */
         .sig-section { margin-top: 20px; display: flex; justify-content: flex-end; }
-        .sig-line { text-align: center; min-width: 220px; }
-        .sig-top { border-top: 1.2px solid #000; padding-top: 3px; font-size: 8.5pt; }
-        .sig-label { font-size: 7.5pt; color: #444; }
+        .sig-line { text-align: center; min-width: 260px; }
+        .sig-name { font-size: 8.5pt; min-height: 20px; line-height: 1.4; padding-bottom: 4px; }
+        .sig-rule { border-bottom: 0.5px solid #000; width: 100%; display: block; margin-bottom: 3px; }
+        .sig-label { font-size: 7.5pt; color: #444; margin-top: 3px; }
     </style>
 </head>
 <body>
@@ -133,7 +134,9 @@
         ($patient->mother_middle_name ? $patient->mother_middle_name . ' ' : '') .
         ($patient->mother_family_name ?? $patient->mother_last_name_at_birth ?? '')
     );
-    if (!$motherName) $motherName = $patient->mother_name ?? '—';
+    if (!$motherName) {
+        $motherName = $patient->mother_name ?? '—';
+    }
 
     // Baby's name
     $babyName = $patient->display_name ?? $patient->full_name ?? ('Baby of ' . ($patient->mother_last_name_at_birth ?? '—'));
@@ -147,26 +150,6 @@
         ->orderBy('observation_date', 'asc')
         ->orderBy('observation_time', 'asc')
         ->get();
-
-    // Helper: compute age label from birth to observation
-    $ageLabel = function(?string $birthDtStr, $obsDate, $obsTime) {
-        if (!$birthDtStr) return '—';
-        try {
-            $birth = Carbon::parse($birthDtStr);
-            $obsDateStr = $obsDate instanceof Carbon ? $obsDate->toDateString() : (string) $obsDate;
-            $obsTimeStr = $obsTime ? (string) $obsTime : '00:00:00';
-            $obsAt = Carbon::parse($obsDateStr . ' ' . $obsTimeStr);
-            $hours = (int) $birth->diffInHours($obsAt);
-            $days  = (int) $birth->diffInDays($obsAt);
-            if ($days >= 1) {
-                $remHours = $hours - ($days * 24);
-                return $days . 'd ' . $remHours . 'h';
-            }
-            return $hours . ' hour(s)';
-        } catch (\Exception $e) {
-            return '—';
-        }
-    };
 
     // Field map: section => subsections => well/diff fields
     $sections = [
@@ -273,9 +256,7 @@
 
 @if($observations->isEmpty())
 <div class="paper">
-    {{-- Form Code --}}
     <div class="form-code">NUR-044-&#216;</div>
-    {{-- Header --}}
     <div class="header">
         @if(file_exists(public_path('images/province-logo.png')))
             <div class="logo-box"><img src="{{ asset('images/province-logo.png') }}" alt="Province of La Union"></div>
@@ -301,7 +282,26 @@
 </div>
 @else
     @foreach($observations as $obsIndex => $obs)
-    @php $totalObs = $observations->count(); @endphp
+    @php
+        $totalObs = $observations->count();
+
+        // Resolve observer's printed name and designation
+        $obsUser = $obs->observer ?? null;
+        if ($obsUser) {
+            $obsFullName = trim(
+                ($obsUser->first_name ?? '') . ' ' .
+                ($obsUser->middle_name ?? '') . ' ' .
+                ($obsUser->last_name ?? '')
+            );
+            if (!$obsFullName) {
+                $obsFullName = $obsUser->name ?? '';
+            }
+            $obsDesignation = $obsUser->designation ?? $obsUser->position ?? '';
+        } else {
+            $obsFullName    = '';
+            $obsDesignation = '';
+        }
+    @endphp
 
     <div class="paper">
 
@@ -440,7 +440,17 @@
         {{-- ── Signature Line ── --}}
         <div class="sig-section">
             <div class="sig-line">
-                <div class="sig-top">&nbsp;</div>
+                <div class="sig-name">
+                    @if($obsFullName)
+                        <strong>{{ strtoupper($obsFullName) }}</strong>
+                        @if($obsDesignation)
+                            <br><span style="font-size:7.5pt;font-weight:normal;">{{ $obsDesignation }}</span>
+                        @endif
+                    @else
+                        &nbsp;
+                    @endif
+                </div>
+                <div class="sig-rule"></div>
                 <div class="sig-label">Signature over Printed Name / Designation</div>
             </div>
         </div>
