@@ -10,12 +10,40 @@
         body { font-family: 'Times New Roman', Times, serif; font-size: 9pt; color: #000; background: #c9c9c9; }
         @media screen {
             body { padding: 52px 0 40px; }
-            .paper { width: 8.5in; min-height: 13in; margin: 0 auto; background: #fff; box-shadow: 0 4px 28px rgba(0,0,0,.28); padding: 0.45in 0.55in; }
+            .paper { width: 8.5in; margin: 0 auto 40px; background: #fff; box-shadow: 0 4px 28px rgba(0,0,0,.28); padding: 0.45in 0.55in; }
         }
         @media print {
-            body { background: #fff; padding: 0; }
-            .paper { width: 100%; padding: 0; box-shadow: none; }
-            .no-print { display: none !important; }
+            html, body { margin: 0; padding: 0; background: #fff; }
+            .toolbar, .no-print { display: none !important; }
+
+            /* Each .paper is exactly one printed page */
+            .paper {
+                display: block;
+                width: 100%;
+                min-height: 0;
+                padding: 0;
+                margin: 0;
+                box-shadow: none;
+                border: none;
+                page-break-before: always;
+                page-break-after: always;
+                page-break-inside: avoid;
+                break-before: page;
+                break-after: page;
+                break-inside: avoid;
+                overflow: hidden;
+            }
+            /* The very first .paper should not add a blank page before it */
+            .paper:first-of-type {
+                page-break-before: auto;
+                break-before: auto;
+            }
+            /* Prevent anything from breaking across pages */
+            .obs-columns, .header, .title-band, .pt-info-row,
+            .section-intro, .sig-section {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
         }
 
         /* ── Toolbar ── */
@@ -241,26 +269,25 @@
     <button class="btn-print" onclick="window.print()">&#128438;&nbsp;&nbsp;Print / Save as PDF</button>
 </div>
 
+{{-- ── One .paper div per observation — each is its own visible page on screen ── --}}
+
+@if($observations->isEmpty())
 <div class="paper">
-
-    {{-- ── Form Code ── --}}
+    {{-- Form Code --}}
     <div class="form-code">NUR-044-&#216;</div>
-
-    {{-- ── Institutional Header ── --}}
+    {{-- Header --}}
     <div class="header">
         @if(file_exists(public_path('images/province-logo.png')))
             <div class="logo-box"><img src="{{ asset('images/province-logo.png') }}" alt="Province of La Union"></div>
         @else
             <div class="logo-ph">Province<br>Seal</div>
         @endif
-
         <div class="header-center">
             <div class="h-rep">Republic of the Philippines</div>
             <div class="h-prov">Province of La Union</div>
             <div class="h-mun">Municipality of Agoo, La Union</div>
             <div class="h-hosp">La Union Medical Center</div>
         </div>
-
         @if(file_exists(public_path('images/lumc-logo.png')))
             <div class="logo-box"><img src="{{ asset('images/lumc-logo.png') }}" alt="LUMC Logo"></div>
         @elseif(file_exists(public_path('images/bagong-pilipinas-logo-only.png')))
@@ -269,150 +296,158 @@
             <div class="logo-ph">LUMC<br>Logo</div>
         @endif
     </div>
-
-    {{-- ── Form Title ── --}}
     <div class="title-band"><h1>Breastfeeding Observation Job Aid</h1></div>
+    <div class="empty-box">No breastfeeding observations recorded yet for this visit.</div>
+</div>
+@else
+    @foreach($observations as $obsIndex => $obs)
+    @php $totalObs = $observations->count(); @endphp
 
-    {{-- ── Patient Info ── --}}
-    <div class="pt-info-row" style="margin-bottom:8px;">
-        <div class="pt-info-left">
-            <div class="pt-field">
-                <span class="pt-label">Mother's Name:</span>
-                <span class="pt-value">{{ $motherName }}</span>
-            </div>
-            <div class="pt-field">
-                <span class="pt-label">Baby's Name:</span>
-                <span class="pt-value">{{ $babyName }}</span>
-            </div>
+    <div class="paper">
+
+        {{-- ── Page indicator (screen only) ── --}}
+        <div class="no-print" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:2px dashed #d1d5db;">
+            <span style="font-family:'Segoe UI',sans-serif;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">
+                Page {{ $obsIndex + 1 }} of {{ $totalObs }}
+            </span>
+            <span style="font-family:'Segoe UI',sans-serif;font-size:10px;color:#9ca3af;">
+                Breastfeeding Observation Job Aid &nbsp;·&nbsp; NUR-044-&#216;
+            </span>
         </div>
-        <div class="pt-info-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-            <div class="pt-inline">
-                <span class="pt-label">Date:</span>
-                <span class="pt-value" style="min-width:110px;">{{ now()->format('m / d / Y') }}</span>
+
+        {{-- ── Form Code ── --}}
+        <div class="form-code">NUR-044-&#216;</div>
+
+        {{-- ── Institutional Header ── --}}
+        <div class="header">
+            @if(file_exists(public_path('images/province-logo.png')))
+                <div class="logo-box"><img src="{{ asset('images/province-logo.png') }}" alt="Province of La Union"></div>
+            @else
+                <div class="logo-ph">Province<br>Seal</div>
+            @endif
+            <div class="header-center">
+                <div class="h-rep">Republic of the Philippines</div>
+                <div class="h-prov">Province of La Union</div>
+                <div class="h-mun">Municipality of Agoo, La Union</div>
+                <div class="h-hosp">La Union Medical Center</div>
             </div>
-            <div class="pt-inline">
-                <span class="pt-label">Baby's Age:</span>
-                <span class="pt-value" style="min-width:80px;">
-                    @if($birthDt)
-                        @php
-                            $birth = \Carbon\Carbon::parse($birthDt);
-                            $now   = now();
-                            $hrs   = (int) $birth->diffInHours($now);
-                            $days  = (int) $birth->diffInDays($now);
-                            $remH  = $hrs - ($days * 24);
-                        @endphp
-                        @if($days >= 1)
-                            {{ $days }}d {{ $remH }}h
-                        @else
-                            {{ $hrs }}h
-                        @endif
-                    @else
-                        &mdash;
-                    @endif
-                </span>
-            </div>
+            @if(file_exists(public_path('images/lumc-logo.png')))
+                <div class="logo-box"><img src="{{ asset('images/lumc-logo.png') }}" alt="LUMC Logo"></div>
+            @elseif(file_exists(public_path('images/bagong-pilipinas-logo-only.png')))
+                <div class="logo-box"><img src="{{ asset('images/bagong-pilipinas-logo-only.png') }}" alt="Bagong Pilipinas"></div>
+            @else
+                <div class="logo-ph">LUMC<br>Logo</div>
+            @endif
         </div>
-    </div>
 
-    {{-- ── Column Headers ── --}}
-    <div class="section-intro">
-        <div class="section-intro-left"><strong>Signs that breastfeeding is going well:</strong></div>
-        <div class="section-intro-right"><strong>Signs of possible difficulty</strong></div>
-    </div>
+        {{-- ── Form Title ── --}}
+        <div class="title-band"><h1>Breastfeeding Observation Job Aid</h1></div>
 
-    {{-- ── Observations ── --}}
-    @if($observations->isEmpty())
-        <div class="empty-box">No breastfeeding observations recorded yet for this visit.</div>
-    @else
-        @foreach($observations as $obsIndex => $obs)
-            @php
-                $obsDateObj = $obs->observation_date instanceof \Carbon\Carbon
-                    ? $obs->observation_date
-                    : \Carbon\Carbon::parse($obs->observation_date);
-
-                $obsTimeStr = $obs->observation_time
-                    ? \Carbon\Carbon::parse($obs->observation_time)->format('h:i A')
-                    : '&mdash;';
-
-                $babyAgeAtObs = $ageLabel(
-                    $birthDt,
-                    $obs->observation_date,
-                    $obs->observation_time
-                );
-
-                $observerName = $obs->observer?->name ?? '&mdash;';
-            @endphp
-
-            <div class="obs-block">
-                {{-- Observation header --}}
-                <div class="obs-block-header">
-                    <strong>Observation #{{ $obsIndex + 1 }}</strong>
-                    <span>Date: <strong>{{ $obsDateObj->format('M d, Y') }}</strong></span>
-                    <span>Time: <strong>{!! $obsTimeStr !!}</strong></span>
-                    <span>Baby's Age: <strong>{{ $babyAgeAtObs }}</strong></span>
-                    <span>Observer: <strong>{!! $observerName !!}</strong></span>
+        {{-- ── Patient Info ── --}}
+        <div class="pt-info-row" style="margin-bottom:8px;">
+            <div class="pt-info-left">
+                <div class="pt-field">
+                    <span class="pt-label">Mother's Name:</span>
+                    <span class="pt-value">{{ $motherName }}</span>
                 </div>
-
-                {{-- Two-column checklist --}}
-                <div class="obs-columns">
-
-                    {{-- LEFT — Going Well --}}
-                    <div class="obs-col-left">
-                        @foreach($sections as $sectionName => $subsections)
-                            <span class="section-label">{{ $sectionName }}:</span>
-                            @foreach($subsections as $subName => $fields)
-                                @if($subName)
-                                    <span class="sub-label"><em>{{ $subName }}:</em></span>
-                                @endif
-                                @foreach($fields['well'] as $field => $label)
-                                    <div class="cb-item">
-                                        <span class="cb-box {{ $obs->{$field} ? 'checked' : '' }}"></span>
-                                        <span>{{ $label }}</span>
-                                    </div>
-                                @endforeach
-                            @endforeach
-                            @if(!$loop->last)
-                                <hr class="sec-divider">
+                <div class="pt-field">
+                    <span class="pt-label">Baby's Name:</span>
+                    <span class="pt-value">{{ $babyName }}</span>
+                </div>
+            </div>
+            <div class="pt-info-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                <div class="pt-inline">
+                    <span class="pt-label">Date:</span>
+                    <span class="pt-value" style="min-width:110px;">{{ now()->format('m / d / Y') }}</span>
+                </div>
+                <div class="pt-inline">
+                    <span class="pt-label">Baby's Age:</span>
+                    <span class="pt-value" style="min-width:80px;">
+                        @if($birthDt)
+                            @php
+                                $birth = \Carbon\Carbon::parse($birthDt);
+                                $nowDt = now();
+                                $hrs   = (int) $birth->diffInHours($nowDt);
+                                $days  = (int) $birth->diffInDays($nowDt);
+                                $remH  = $hrs - ($days * 24);
+                            @endphp
+                            @if($days >= 1)
+                                {{ $days }}d {{ $remH }}h
+                            @else
+                                {{ $hrs }}h
                             @endif
-                        @endforeach
-                    </div>
-
-                    {{-- RIGHT — Possible Difficulty --}}
-                    <div class="obs-col-right">
-                        @foreach($sections as $sectionName => $subsections)
-                            {{-- hidden spacer to align with section label on left --}}
-                            <span class="section-label" style="visibility:hidden;">{{ $sectionName }}:</span>
-                            @foreach($subsections as $subName => $fields)
-                                @if($subName)
-                                    <span class="sub-label" style="visibility:hidden;"><em>{{ $subName }}:</em></span>
-                                @endif
-                                @foreach($fields['diff'] as $field => $label)
-                                    <div class="cb-item">
-                                        <span class="cb-box {{ $obs->{$field} ? 'checked' : '' }}"></span>
-                                        <span>{{ $label }}</span>
-                                    </div>
-                                @endforeach
-                            @endforeach
-                            @if(!$loop->last)
-                                <hr class="sec-divider">
-                            @endif
-                        @endforeach
-                    </div>
-
-                </div>{{-- /.obs-columns --}}
-            </div>{{-- /.obs-block --}}
-
-        @endforeach
-    @endif
-
-    {{-- ── Signature Line ── --}}
-    <div class="sig-section">
-        <div class="sig-line">
-            <div class="sig-top">&nbsp;</div>
-            <div class="sig-label">Signature over Printed Name / Designation</div>
+                        @else
+                            &mdash;
+                        @endif
+                    </span>
+                </div>
+            </div>
         </div>
-    </div>
 
-</div>{{-- /.paper --}}
+        {{-- ── Column Headers ── --}}
+        <div class="section-intro">
+            <div class="section-intro-left"><strong>Signs that breastfeeding is going well:</strong></div>
+            <div class="section-intro-right"><strong>Signs of possible difficulty</strong></div>
+        </div>
+
+        {{-- ── Checklist ── --}}
+        <div class="obs-columns">
+
+            {{-- LEFT — Going Well --}}
+            <div class="obs-col-left">
+                @foreach($sections as $sectionName => $subsections)
+                    <span class="section-label">{{ $sectionName }}:</span>
+                    @foreach($subsections as $subName => $fields)
+                        @if($subName)
+                            <span class="sub-label"><em>{{ $subName }}:</em></span>
+                        @endif
+                        @foreach($fields['well'] as $field => $label)
+                            <div class="cb-item">
+                                <span class="cb-box {{ $obs->{$field} ? 'checked' : '' }}"></span>
+                                <span>{{ $label }}</span>
+                            </div>
+                        @endforeach
+                    @endforeach
+                    @if(!$loop->last)
+                        <hr class="sec-divider">
+                    @endif
+                @endforeach
+            </div>
+
+            {{-- RIGHT — Possible Difficulty --}}
+            <div class="obs-col-right">
+                @foreach($sections as $sectionName => $subsections)
+                    <span class="section-label" style="visibility:hidden;">{{ $sectionName }}:</span>
+                    @foreach($subsections as $subName => $fields)
+                        @if($subName)
+                            <span class="sub-label" style="visibility:hidden;"><em>{{ $subName }}:</em></span>
+                        @endif
+                        @foreach($fields['diff'] as $field => $label)
+                            <div class="cb-item">
+                                <span class="cb-box {{ $obs->{$field} ? 'checked' : '' }}"></span>
+                                <span>{{ $label }}</span>
+                            </div>
+                        @endforeach
+                    @endforeach
+                    @if(!$loop->last)
+                        <hr class="sec-divider">
+                    @endif
+                @endforeach
+            </div>
+
+        </div>{{-- /.obs-columns --}}
+
+        {{-- ── Signature Line ── --}}
+        <div class="sig-section">
+            <div class="sig-line">
+                <div class="sig-top">&nbsp;</div>
+                <div class="sig-label">Signature over Printed Name / Designation</div>
+            </div>
+        </div>
+
+    </div>{{-- /.paper --}}
+
+    @endforeach
+@endif
 </body>
 </html>
