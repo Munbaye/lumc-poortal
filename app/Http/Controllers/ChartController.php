@@ -244,4 +244,19 @@ class ChartController extends Controller
             'message'    => "Radiology request {$radRequest->request_no} saved.",
         ]);
     }
+
+    public function dischargeSummaryPrint(Visit $visit): \Illuminate\View\View
+    {
+        $visit->loadMissing(['patient', 'medicalHistory.doctor', 'dischargeSummary']);
+    
+        if (!$visit->dischargeSummary) {
+            abort(404, 'No discharge summary found for this visit.');
+        }
+    
+        return view('forms.discharge-summary-print', [
+            'visit'             => $visit,
+            'patient'           => $visit->patient,
+            'dischargeSummary'  => $visit->dischargeSummary,
+        ]);
+    }
 }

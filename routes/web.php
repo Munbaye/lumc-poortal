@@ -155,4 +155,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/forms/breastfeeding-observation/{visit}', [NurseFormController::class, 'breastfeedingObservation'])
         ->name('forms.breastfeeding-observation');
 
+    // Doctor Discharge Summary — printable standalone page
+    Route::get('/forms/discharge-summary/{visit}', [ChartController::class, 'dischargeSummaryPrint'])
+        ->name('forms.discharge-summary')
+        ->middleware('auth');
+
 });
