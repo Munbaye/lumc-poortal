@@ -175,15 +175,27 @@
     
     <div class="form-card">
         <div class="form-card-header">
-            <h3>✏️ Edit Baby Information</h3>
+            <h3 style="display:flex;align-items:center;gap:8px;">
+                <x-heroicon-o-pencil-square class="w-5 h-5" />
+                Edit Baby Information
+            </h3>
         </div>
         <div class="form-card-body">
             
             <div class="info-box">
                 <p style="margin:0; font-size:0.85rem;">
-                    <strong>👶 Temporary ID:</strong> {{ $baby->temporary_case_no ?? '—' }}<br>
-                    <strong>📅 Birth Date/Time:</strong> {{ $baby->birth_datetime ? \Carbon\Carbon::parse($baby->birth_datetime)->format('M d, Y h:i A') : '—' }}<br>
-                    <strong>⚥ Sex:</strong> {{ $baby->sex ?? '—' }}
+                    <strong>
+                        <x-heroicon-o-user class="w-4 h-4 inline -mt-0.5 mr-1 text-gray-500" />
+                        Temporary ID:
+                    </strong> {{ $baby->temporary_case_no ?? '—' }}<br>
+                    <strong>
+                        <x-heroicon-o-calendar class="w-4 h-4 inline -mt-0.5 mr-1 text-gray-500" />
+                        Birth Date/Time:
+                    </strong> {{ $baby->birth_datetime ? \Carbon\Carbon::parse($baby->birth_datetime)->format('M d, Y h:i A') : '—' }}<br>
+                    <strong>
+                        <x-heroicon-o-identification class="w-4 h-4 inline -mt-0.5 mr-1 text-gray-500" />
+                        Sex:
+                    </strong> {{ $baby->sex ?? '—' }}
                 </p>
             </div>
             
@@ -405,7 +417,10 @@
                         Cancel
                     </button>
                     <button type="submit" class="btn-primary" wire:loading.attr="disabled">
-                        <span wire:loading.remove>💾 Save Changes</span>
+                        <span wire:loading.remove>
+                            <x-heroicon-o-document-check class="w-4 h-4 inline -mt-0.5 mr-1" />
+                            Save Changes
+                        </span>
                         <span wire:loading>Saving...</span>
                     </button>
                 </div>

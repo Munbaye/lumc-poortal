@@ -210,13 +210,19 @@
     
     <div class="review-card">
         <div class="review-card-header">
-            <h3>📝 Review & Convert Provisional Record</h3>
+            <h3 style="display:flex;align-items:center;gap:8px;">
+                <x-heroicon-o-pencil-square class="w-5 h-5" />
+                Review & Convert Provisional Record
+            </h3>
         </div>
         <div class="review-card-body">
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                 <div>
-                    <span class="badge-provisional">⚠️ Provisional Record</span>
+                    <span class="badge-provisional">
+                        <x-heroicon-o-exclamation-triangle class="w-4 h-4 inline -mt-0.5 mr-1" />
+                        Provisional Record
+                    </span>
                     <span style="margin-left: 10px; font-size:0.8rem; color:#6b7280;">
                         Temporary ID: {{ $baby?->temporary_case_no ?? '—' }}
                     </span>
@@ -237,7 +243,10 @@
             @endif
             
             <!-- Baby Information -->
-            <div class="section-title">👶 Baby Information</div>
+            <div class="section-title" style="display:flex;align-items:center;gap:8px;">
+                <x-heroicon-o-user class="w-5 h-5 text-gray-500" />
+                Baby Information
+            </div>
             <div class="info-row">
                 <div class="info-label">Baby's Full Name:</div>
                 <div class="info-value">
@@ -271,7 +280,10 @@
             @endif
             
             <!-- Mother Information -->
-            <div class="section-title">👩 Mother Information (Reference Only)</div>
+            <div class="section-title" style="display:flex;align-items:center;gap:8px;">
+                <x-heroicon-o-user class="w-5 h-5 text-gray-500" />
+                Mother Information (Reference Only)
+            </div>
             <div class="info-row">
                 <div class="info-label">Mother's Full Name:</div>
                 <div class="info-value">
@@ -299,14 +311,20 @@
             
             @if($nicuAdmission)
             <!-- Obstetric History -->
-            <div class="section-title">📊 Obstetric History</div>
+            <div class="section-title" style="display:flex;align-items:center;gap:8px;">
+                <x-heroicon-o-chart-bar class="w-5 h-5 text-gray-500" />
+                Obstetric History
+            </div>
             <div class="info-row">
                 <div class="info-label">Gravida / Para:</div>
                 <div class="info-value">{{ $nicuAdmission->mother_gravida ?? '—' }} / {{ $nicuAdmission->mother_para ?? '—' }}</div>
             </div>
             
             <!-- Prenatal Care -->
-            <div class="section-title">🏥 Prenatal Care</div>
+            <div class="section-title" style="display:flex;align-items:center;gap:8px;">
+                <x-heroicon-o-building-office-2 class="w-5 h-5 text-gray-500" />
+                Prenatal Care
+            </div>
             <div class="info-row">
                 <div class="info-label">Checkup Site:</div>
                 <div class="info-value">{{ $nicuAdmission->prenatal_checkup_site ?? '—' }}</div>
@@ -317,7 +335,10 @@
             </div>
             
             <!-- Maternal History -->
-            <div class="section-title">📋 Maternal History</div>
+            <div class="section-title" style="display:flex;align-items:center;gap:8px;">
+                <x-heroicon-o-document-text class="w-5 h-5 text-gray-500" />
+                Maternal History
+            </div>
             <div class="info-row">
                 <div class="info-label">Medical History:</div>
                 <div class="info-value">{{ $nicuAdmission->maternal_history ?: '—' }}</div>
@@ -328,7 +349,10 @@
             </div>
             
             <!-- Pregnancy Interventions -->
-            <div class="section-title">💊 Pregnancy Interventions</div>
+            <div class="section-title" style="display:flex;align-items:center;gap:8px;">
+                <x-heroicon-o-beaker class="w-5 h-5 text-gray-500" />
+                Pregnancy Interventions
+            </div>
             <div class="info-row">
                 <div class="info-label">Multivitamins:</div>
                 <div class="info-value">{{ $nicuAdmission->took_multivitamins ? 'Yes' : 'No' }}</div>
@@ -353,7 +377,8 @@
             @if($baby && $baby->is_provisional)
             <div style="display: flex; justify-content: flex-start; margin: 20px 0 10px 0;">
                 <button type="button" wire:click="editBabyInfo" class="btn-warning">
-                    ✏️ Edit Baby Information
+                    <x-heroicon-o-pencil-square class="w-4 h-4 inline -mt-0.5 mr-1" />
+                    Edit Baby Information
                 </button>
                 <span style="margin-left: 12px; font-size:0.7rem; color:#6b7280; align-self: center;">
                     Click to edit/correct any information before converting
@@ -364,7 +389,10 @@
             <!-- Conversion Warning & Buttons -->
             @if($baby && $baby->is_provisional)
             <div class="info-box-yellow">
-                <p style="margin: 0 0 8px 0; font-weight: 700; color: #92400e;">⚠️ Before Converting</p>
+                <p style="margin: 0 0 8px 0; font-weight: 700; color: #92400e;">
+                    <x-heroicon-o-exclamation-triangle class="w-4 h-4 inline -mt-0.5 mr-1 text-amber-700" />
+                    Before Converting
+                </p>
                 <p style="margin: 0; font-size: 0.8rem; color: #92400e;">
                     This will generate a permanent case number (LUMC-YYYY-xxxxxx) and convert this provisional record.
                     All clinical data (vitals, medications, nurse's notes, doctor's orders) will remain linked.
@@ -377,7 +405,10 @@
                     ← Back to List
                 </button>
                 <button type="button" wire:click="convert" class="btn-success" wire:loading.attr="disabled">
-                    <span wire:loading.remove>✅ Convert to Permanent Record</span>
+                    <span wire:loading.remove>
+                        <x-heroicon-o-check-circle class="w-4 h-4 inline -mt-0.5 mr-1" />
+                        Convert to Permanent Record
+                    </span>
                     <span wire:loading>Converting...</span>
                 </button>
             </div>

@@ -47,6 +47,20 @@ class PatientHistory extends Page
         }
     }
 
+    // ── Header Actions ───────────────────────────────────────────────────────
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            \Filament\Actions\Action::make('back')
+                ->label('Back to Patient Visits')
+                ->icon('heroicon-o-arrow-left')
+                ->url($this->getPatientListUrl())
+                ->color('gray')
+                ->outlined(),
+        ];
+    }
+
     // ── Data ──────────────────────────────────────────────────────────────────
 
     public function getVisitsProperty(): \Illuminate\Database\Eloquent\Collection

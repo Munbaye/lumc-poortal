@@ -96,10 +96,10 @@
             <span class="ph-pill" style="font-size:.72rem;">{{ \Str::limit($patient->address, 40) }}</span>
         @endif
         @if($patient->contact_number)
-            <span class="ph-pill">📞 {{ $patient->contact_number }}</span>
+            <span class="ph-pill"><x-heroicon-o-phone class="w-4 h-4 inline -mt-0.5 mr-1" />{{ $patient->contact_number }}</span>
         @endif
         @if($patient->has_incomplete_info)
-            <span class="ph-pill" style="background:rgba(220,38,38,.3);">⚠️ Incomplete Info</span>
+            <span class="ph-pill" style="background:rgba(220,38,38,.3);"><x-heroicon-o-exclamation-triangle class="w-4 h-4 inline -mt-0.5 mr-1" />Incomplete Info</span>
         @endif
     </div>
 </div>
@@ -122,7 +122,7 @@
 <div class="vt-wrap">
     @if($visits->isEmpty())
     <div class="empty-state">
-        <div class="empty-icon">🗂️</div>
+        <div class="empty-icon"><x-heroicon-o-rectangle-stack class="w-12 h-12 inline text-gray-400" /></div>
         <p class="empty-title">No visits found</p>
         <p class="empty-sub">This patient has no recorded visits yet.</p>
     </div>
@@ -178,7 +178,7 @@
 
                 <td class="col-type">
                     <span class="type-badge {{ $visit->visit_type === 'ER' ? 'type-er' : 'type-opd' }}">
-                        {{ $visit->visit_type === 'ER' ? '🚑 ER' : '📋 OPD' }}
+                        {{ $visit->visit_type === 'ER' ? 'ER' : 'OPD' }}
                     </span>
                     @if($isCurrent)<span class="current-badge">Active</span>@endif
                 </td>
@@ -244,7 +244,7 @@
 <p style="font-size:.7rem;color:#9ca3af;margin-top:8px;">
     Tags: <strong>ER</strong> ER-001 · <strong>ADM</strong> Admission Record ·
     <strong>CTC</strong> Consent to Care · <strong>VS</strong> Vital Signs ·
-    <strong>Rx</strong> Doctor's Orders · 🟡 = currently admitted
+    <strong>Rx</strong> Doctor's Orders · Active = currently admitted
 </p>
 @endif
 
