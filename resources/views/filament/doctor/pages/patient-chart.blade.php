@@ -2022,7 +2022,7 @@
 
                     <div class="chart-page">
 
-            {{-- ════ HEADER ════════════════════════════════════════════════ --}}
+        {{-- ════ HEADER ════════════════════════════════════════════════ --}}
         <div class="chart-header">
             <div class="chart-header-left">
                 <p class="patient-name">{{ $patient->full_name }}</p>
@@ -2036,16 +2036,16 @@
                 </div>
                 <div class="pill-cell wide">
                     <p class="pill-label">Admitting Diagnosis</p>
-                    <p class="pill-value">{{ $visit->admitting_diagnosis ?? $history?->diagnosis ?? '—' }}</p>
+                <p class="pill-value">{{ $visit->admitting_diagnosis ?? $history?->diagnosis ?? '—' }}</p>
                 </div>
                 <div class="pill-cell">
                     <p class="pill-label">Admitted</p>
                     <p class="pill-value">
-                        @if($visit->clerk_admitted_at)
+                    @if($visit->clerk_admitted_at)
                             {{ $visit->clerk_admitted_at->timezone('Asia/Manila')->format('M j, Y H:i') }}
                         @elseif($visit->doctor_admitted_at)
                             {{ $visit->doctor_admitted_at->timezone('Asia/Manila')->format('M j, Y H:i') }}
-                            <span class="pending-badge"><x-heroicon-o-clock class="w-3 h-3 inline mr-1" />Pending Clerk</span>
+                        <span class="pending-badge"><x-heroicon-o-clock class="w-3 h-3 inline mr-1" />Pending Clerk</span>
                         @else
                             —
                         @endif
@@ -2054,6 +2054,47 @@
             </div>
 
             <span class="h-service-badge">{{ $service }}</span>
+
+            {{-- ── Discharge / View Summary button in header ── --}}
+            @if ($visit->status === 'admitted' && !$this->isReadonly)
+                <a href="{{ \App\Filament\Doctor\Pages\DischargeSummaryPage::getUrl(['visitId' => $visit->id]) }}"
+                    style="
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        background: linear-gradient(135deg, #059669, #047857);
+                        color: #fff;
+                        font-size: 0.75rem;
+                        font-weight: 700;
+                        padding: 8px 16px;
+                        border-radius: 8px;
+                        text-decoration: none;
+                        box-shadow: 0 2px 8px rgba(5,150,105,.35);
+                        white-space: nowrap;
+                        flex-shrink: 0;
+                    ">
+                    📋 Discharge Patient
+                </a>
+            @elseif($visit->status === 'discharged' && $visit->dischargeSummary)
+                <a href="{{ \App\Filament\Doctor\Pages\DischargeSummaryPage::getUrl(['visitId' => $visit->id]) }}"
+                    style="
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        background: rgba(255,255,255,.15);
+                        border: 1px solid rgba(255,255,255,.3);
+                        color: #fff;
+                        font-size: 0.74rem;
+                        font-weight: 600;
+                        padding: 7px 14px;
+                        border-radius: 7px;
+                        text-decoration: none;
+                        white-space: nowrap;
+                        flex-shrink: 0;
+                    ">
+                    📋 View Discharge Summary
+                </a>
+            @endif
         </div>
 
         {{-- ════ TABS ═══════════════════════════════════════════════════ --}}

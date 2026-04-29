@@ -13,6 +13,7 @@ use App\Filament\Doctor\Pages\PatientChart;
 use App\Filament\Doctor\Pages\PatientHistory;
 use App\Filament\Doctor\Pages\NicuAssessment;
 use App\Filament\Doctor\Pages\BallardScore;
+use App\Filament\Doctor\Pages\DischargeSummaryPage;
 use App\Http\Middleware\Filament\StaffAuthenticate;
 use Illuminate\Support\HtmlString;
 
@@ -43,6 +44,7 @@ class DoctorPanelProvider extends PanelProvider
                 PatientHistory::class,
                 NicuAssessment::class,
                 BallardScore::class,
+                DischargeSummaryPage::class,
             ])
             ->widgets([])
             ->middleware([
