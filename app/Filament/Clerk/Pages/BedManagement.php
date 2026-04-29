@@ -8,7 +8,6 @@ use App\Models\Visit;
 use App\Models\Ward;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Illuminate\Database\QueryException;
 use Livewire\WithPagination;
 
 class BedManagement extends Page
@@ -175,19 +174,7 @@ class BedManagement extends Page
 
     public function addBed(): void
     {
-        $label = trim(preg_replace('/\s+/', ' ', (string) $this->newBedLabel));
-        $this->newBedLabel = $label;
-
-        $this->validate([
-            'newBedLabel' => [
-                'required',
-                'string',
-                'max:50',
-                'regex:/^[A-Za-z0-9][A-Za-z0-9 \-#\/()_.]*$/',
-            ],
-        ], [
-            'newBedLabel.regex' => 'Bed label may only contain letters, numbers, spaces, and - # / ( ) _ .',
-        ]);
+        $this->validate(['newBedLabel' => 'required|string|max:50']);
 
         $room = Room::find($this->selectedRoomId);
 
@@ -212,47 +199,29 @@ class BedManagement extends Page
         }
 
         $exists = Bed::where('room_id', $room->id)
-            ->whereRaw('LOWER(bed_label) = ?', [mb_strtolower($label)])
+            ->where('bed_label', trim($this->newBedLabel))
             ->exists();
 
         if ($exists) {
             Notification::make()
-                ->warning()
-                ->title('Bed label already exists.')
-                ->body("A bed labeled '{$label}' already exists in Room {$room->room_number}. Please use a different label.")
-                ->send();
-            return;
-        }
-
-        try {
-            Bed::create([
-                'room_id'   => $room->id,
-                'ward_id'   => $room->ward_id,
-                'bed_label' => $label,
-                'status'    => 'available',
-                'is_active' => true,
-            ]);
-        } catch (QueryException $e) {
-            if ((string) $e->getCode() === '23000') {
-                Notification::make()
-                    ->warning()
-                    ->title('Bed label already exists.')
-                    ->body("A bed labeled '{$label}' already exists in Room {$room->room_number}. Please use a different label.")
-                    ->send();
-                return;
-            }
-
-            Notification::make()
                 ->danger()
-                ->title('Unable to add bed.')
-                ->body('Please try again. If the problem continues, contact the administrator.')
+                ->title('Duplicate bed label.')
+                ->body("A bed labeled '{$this->newBedLabel}' already exists in this room.")
                 ->send();
             return;
         }
+
+        Bed::create([
+            'room_id'   => $room->id,
+            'ward_id'   => $room->ward_id,
+            'bed_label' => trim($this->newBedLabel),
+            'status'    => 'available',
+            'is_active' => true,
+        ]);
 
         Notification::make()
             ->success()
-            ->title("Bed '{$label}' added to Room {$room->room_number}.")
+            ->title("Bed '{$this->newBedLabel}' added to Room {$room->room_number}.")
             ->send();
 
         $this->showAddBedModal = false;
