@@ -2298,11 +2298,9 @@ use App\Helpers\WHOGrowthChart;
             @endif
             @endif
 
-        </div>
+       </div>
 
-        {{-- ══ PLACEHOLDER TABS ════════════════════════════════════ --}}
-
-=======
+        @elseif($activeTab === 'io')
         @include('filament.nurse.pages.partials.placeholder', ['icon'=>'📏','title'=>'Intake & Output Record','desc'=>'Monitor all fluid intake (oral, IV, NG) and output (urine, drain, emesis, stool) with shift and 24-hour totals.','full'=>true])
 
         @elseif($activeTab === 'handover')
