@@ -148,70 +148,16 @@ class PatientChart extends Page
             && $this->visit->discharged_at === null);
     }
 
-<<<<<<< Updated upstream
-    public function getIsNicuProperty(): bool
-    {
-        if (!$this->visit) return false;
-        return $this->visit->visit_type === 'NICU';
-    }
-
-    public function getHasBallardScoreProperty(): bool
-    {
-        if (!$this->visitId) return false;
-        return NicuBallardExam::where('visit_id', $this->visitId)->exists();
-=======
     // ── Ballard Score ─────────────────────────────────────────────────────────
 
     public function getHasBallardScoreProperty(): bool
     {
         return $this->visit && $this->visit->ballardExams->count() > 0;
->>>>>>> Stashed changes
     }
 
     public function getBallardExamsProperty()
     {
-<<<<<<< Updated upstream
-        if (!$this->visitId) return collect();
-        return NicuBallardExam::where('visit_id', $this->visitId)
-            ->orderBy('exam_number')
-            ->get();
-    }
-
-    public function getPastVisitsCountProperty(): int
-    {
-        if (!$this->visit) return 0;
-        return Visit::where('patient_id', $this->visit->patient_id)
-            ->where('id', '!=', $this->visitId)
-            ->whereNotNull('discharged_at')
-            ->count();
-    }
-
-    public function getPastVisitsProperty()
-    {
-        if (!$this->visit) return collect();
-        return Visit::where('patient_id', $this->visit->patient_id)
-            ->where('id', '!=', $this->visitId)
-            ->whereNotNull('discharged_at')
-            ->with(['medicalHistory.doctor', 'vitals', 'doctorsOrders', 'erRecord', 'admissionRecord', 'consentRecord'])
-            ->orderBy('registered_at', 'desc')
-            ->get();
-    }
-
-    public function getHistoryVisitProperty()
-    {
-        if (!$this->viewingHistoryVisitId) return null;
-        return Visit::with([
-            'patient',
-            'medicalHistory.doctor',
-            'doctorsOrders.doctor',
-            'vitals',
-            'erRecord',
-            'admissionRecord',
-            'consentRecord',
-        ])->find($this->viewingHistoryVisitId);
-=======
         return $this->visit ? $this->visit->ballardExams : collect();
->>>>>>> Stashed changes
     }
 
     // ── Tab Navigation ────────────────────────────────────────────────────────
@@ -370,8 +316,6 @@ class PatientChart extends Page
         return route('forms.physical-exam-form', ['visit' => $this->visitId]);
     }
 
-<<<<<<< Updated upstream
-=======
     // ── Visit History ─────────────────────────────────────────────────────────
 
     public function getPastVisitsCountProperty(): int
@@ -411,7 +355,6 @@ class PatientChart extends Page
         ])->find($this->viewingHistoryVisitId);
     }
 
->>>>>>> Stashed changes
     public function getHistoryLabResults(int $visitId)
     {
         $requestIds = LabRequest::where('visit_id', $visitId)
