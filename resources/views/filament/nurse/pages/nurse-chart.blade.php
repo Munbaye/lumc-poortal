@@ -1672,7 +1672,7 @@ use App\Helpers\WHOGrowthChart;
         </div>
         @endif
 
-        {{-- ══ MAR TAB CONTENT ══════════════════════════════════════════ --}}
+        {{-- MAR --}}
         @elseif($activeTab === 'mar')
         @php
             $marDates   = $this->marDateColumns->dates ?? [];
@@ -2271,7 +2271,7 @@ use App\Helpers\WHOGrowthChart;
 
         {{-- ══ PLACEHOLDER TABS ════════════════════════════════════ --}}
 
-        @elseif($activeTab === 'io')
+=======
         @include('filament.nurse.pages.partials.placeholder', ['icon'=>'📏','title'=>'Intake & Output Record','desc'=>'Monitor all fluid intake (oral, IV, NG) and output (urine, drain, emesis, stool) with shift and 24-hour totals.','full'=>true])
 
         @elseif($activeTab === 'handover')

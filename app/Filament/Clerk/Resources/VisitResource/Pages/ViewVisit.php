@@ -30,6 +30,7 @@ class ViewVisit extends ViewRecord
             'consentRecord',   // eager-load consent so hasConsentRecord() is free
         ])->findOrFail($key);
     }
+    
 
     public function getTitle(): string
     {
@@ -96,6 +97,14 @@ class ViewVisit extends ViewRecord
 
     protected function getHeaderActions(): array
     {
-        return [];
+        return [
+            \Filament\Actions\Action::make('back')
+                ->label('Back to Patient Visits')
+                ->icon('heroicon-o-arrow-left')
+                ->url($this->getPatientHistoryUrl())
+                ->color('gray')
+                ->outlined(),
+        ];
+
     }
 }

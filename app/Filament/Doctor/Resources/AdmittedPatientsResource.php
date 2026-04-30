@@ -107,7 +107,7 @@ class AdmittedPatientsResource extends Resource
                     ->description(fn ($record) =>
                         $record->clerk_admitted_at
                             ? 'Clerk admitted ' . $record->clerk_admitted_at->timezone('Asia/Manila')->diffForHumans()
-                            : '⏳ Pending clerk admission'
+                            : 'Pending clerk admission'
                     ),
                 Tables\Columns\TextColumn::make('nicuAdmission.birth_weight_grams')
                     ->label('Birth Weight')
@@ -133,8 +133,8 @@ class AdmittedPatientsResource extends Resource
                 \Filament\Tables\Filters\SelectFilter::make('viewFilter')
                     ->label('Show')
                     ->options([
-                        'admitted' => '🏥 Admitted Only',
-                        'all'      => '🗂️ All Patients',
+                        'admitted' => 'Admitted Only',
+                        'all'      => 'All Patients',
                     ])
                     ->default('admitted')
                     ->query(fn (Builder $query, array $data) => $query), // query is handled in ListAdmittedPatients

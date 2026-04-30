@@ -26,7 +26,10 @@
                     <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:8px;padding:11px 14px;font-family:monospace;font-size:1rem;font-weight:700;color:#dc2626;user-select:all;letter-spacing:.02em;">{{ $credPassword }}</div>
                 </div>
                 <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:20px;">
-                    <p style="font-size:.78rem;color:#92400e;font-weight:600;margin:0;">⚠️ Patient must change this password on first login. Note it down before continuing.</p>
+                    <p style="font-size:.78rem;color:#92400e;font-weight:600;margin:0;">
+                        <x-heroicon-o-exclamation-triangle class="w-4 h-4 inline -mt-0.5 mr-1 text-amber-700" />
+                        Patient must change this password on first login. Note it down before continuing.
+                    </p>
                 </div>
                 <button wire:click="dismissCredentialsModal" wire:loading.attr="disabled" wire:loading.class="opacity-60"
                     style="width:100%;background:#1e3a5f;color:#fff;border:none;padding:11px 20px;border-radius:8px;font-size:.875rem;font-weight:600;cursor:pointer;letter-spacing:.01em;"
@@ -46,7 +49,9 @@
                 @if(file_exists(public_path('images/province-logo.png')))
                 <img src="{{ asset('images/province-logo.png') }}" alt="La Union Seal" style="height:64px;width:64px;object-fit:contain;">
                 @else
-                <div style="height:64px;width:64px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:1.8rem;">🏛️</div>
+                <div style="height:64px;width:64px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;">
+                    <x-heroicon-o-building-library class="w-10 h-10 text-white/90" />
+                </div>
                 @endif
             </div>
             <div style="text-align:center;flex:1;margin:0 16px;">
@@ -66,7 +71,9 @@
                 @if(file_exists(public_path('images/bagong-pilipinas-logo-only.png')))
                 <img src="{{ asset('images/bagong-pilipinas-logo-only.png') }}" alt="Philippine Flag" style="height:64px;width:64px;object-fit:contain;">
                 @else
-                <div style="height:64px;width:64px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:1.8rem;">🇵🇭</div>
+                <div style="height:64px;width:64px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;">
+                    <x-heroicon-o-flag class="w-10 h-10 text-white/90" />
+                </div>
                 @endif
             </div>
         </div>
@@ -286,7 +293,9 @@
                     placeholder="e.g., 25" min="0" max="120"
                     {{ $searchBirthday ? 'disabled' : '' }}
                     class="lumc-input"
-                    style="{{ $searchBirthday ? 'background:#f3f4f6;color:#374151;cursor:not-allowed;font-weight:700;' : '' }}">
+                    @style([
+                        'background:#f3f4f6;color:#374151;cursor:not-allowed;font-weight:700;' => (bool) $searchBirthday,
+                    ])>
             </div>
         </div>
         @if($hasSearched)
@@ -302,9 +311,17 @@
                 </thead>
                 <tbody>
                     @foreach($searchResults as $r)
-                    <tr style="border-top:1px solid #f3f4f6;background:{{ $selectedPatientId==$r['id']?'#f0fdf4':($r['has_incomplete']?'#fef2f2':'#fff') }};">
+                    <tr @style([
+                        'border-top:1px solid #f3f4f6;' => true,
+                        'background:#f0fdf4;' => $selectedPatientId == $r['id'],
+                        'background:#fef2f2;' => $selectedPatientId != $r['id'] && $r['has_incomplete'],
+                        'background:#fff;' => $selectedPatientId != $r['id'] && !$r['has_incomplete'],
+                    ])>
                         <td style="padding:9px 12px;font-family:monospace;font-size:.75rem;color:#1d4ed8;">{{ $r['case_no'] }}</td>
-                        <td style="padding:9px 12px;font-weight:600;color:{{ $r['has_incomplete']?'#dc2626':'#111827' }};">
+                        <td style="padding:9px 12px;font-weight:600;" @style([
+                            'color:#dc2626;' => $r['has_incomplete'],
+                            'color:#111827;' => !$r['has_incomplete'],
+                        ])>
                             {{ $r['full_name'] }}
                             @if($r['has_incomplete'])<span style="display:inline-block;background:#fef2f2;border:1px solid #fca5a5;color:#dc2626;font-size:.6rem;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:4px;">INCOMPLETE</span>@endif
                         </td>
@@ -313,7 +330,10 @@
                         <td style="padding:9px 12px;color:#6b7280;font-size:.78rem;">{{ $r['last_visit'] ?? 'No visit' }}</td>
                         <td style="padding:9px 12px;color:#6b7280;font-size:.78rem;">{{ $r['address'] }}…</td>
                         <td style="padding:9px 12px;">
-                            @if($r['has_incomplete'])<span style="font-size:.68rem;color:#dc2626;font-weight:600;">⚠️ Incomplete</span>
+                            @if($r['has_incomplete'])<span style="font-size:.68rem;color:#dc2626;font-weight:600;">
+                                <x-heroicon-o-exclamation-triangle class="w-4 h-4 inline -mt-0.5 mr-1 text-red-600" />
+                                Incomplete
+                            </span>
                             @else<span style="font-size:.68rem;color:#16a34a;font-weight:600;">Complete</span>@endif
                         </td>
                         <td style="padding:9px 12px;">
