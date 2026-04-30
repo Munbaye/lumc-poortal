@@ -2099,17 +2099,18 @@
 
         {{-- ════ TABS ═══════════════════════════════════════════════════ --}}
         <div class="chart-tabs">
-            <button wire:click="setTab('profile')" class="chart-tab {{ $activeTab==='profile'   ? 'active':'' }}"><span class="tab-icon">📄</span> Patient Forms</button>
-            <button wire:click="setTab('history')" class="chart-tab {{ $activeTab==='history'   ? 'active':'' }}"><span class="tab-icon">🗂️</span> Visit History @if($pastCount > 0)<span class="tab-badge tab-badge-blue">{{ $pastCount }}</span>@endif</button>
-            <button wire:click="setTab('vitals')" class="chart-tab {{ $activeTab==='vitals'    ? 'active':'' }}"><span class="tab-icon">📊</span> Vital Signs @if($allVitals->count() > 0)<span class="tab-badge tab-badge-warn">{{ $allVitals->count() }}</span>@endif</button>
-            <button wire:click="setTab('orders')" class="chart-tab {{ $activeTab==='orders'    ? 'active':'' }}"><span class="tab-icon">📝</span> Doctor's Orders @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif</button>
-            <button wire:click="setTab('results')" class="chart-tab {{ $activeTab==='results'   ? 'active':'' }}"><span class="tab-icon">🔬</span> Lab / Radiology @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif</button>
+            <button wire:click="setTab('profile')" class="chart-tab {{ $activeTab==='profile' ? 'active':'' }}"><span class="tab-icon">📄</span> Patient Forms</button>
+            <button wire:click="setTab('history')" class="chart-tab {{ $activeTab==='history' ? 'active':'' }}"><span class="tab-icon">🗂️</span> Visit History @if($pastCount > 0)<span class="tab-badge tab-badge-blue">{{ $pastCount }}</span>@endif</button>
+            <button wire:click="setTab('orders')" class="chart-tab {{ $activeTab==='orders' ? 'active':'' }}"><span class="tab-icon">📝</span> Doctor's Orders @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif</button>
+            <button wire:click="setTab('results')" class="chart-tab {{ $activeTab==='results' ? 'active':'' }}"><span class="tab-icon">🔬</span> Lab / Radiology @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif</button>
+            @if($this->isNicu)
             <button wire:click="setTab('ballard')" class="chart-tab {{ $activeTab==='ballard' ? 'active':'' }}">
                 <span class="tab-icon">📊</span> Ballard Score
                 @if($this->hasBallardScore)
                     <span class="tab-badge tab-badge-green">✓</span>
                 @endif
             </button>
+            @endif
         </div>
 
                         <div class="chart-content">
@@ -2536,51 +2537,6 @@
                                     @endif
                                 @endif {{-- viewingHistoryVisitId --}}
 
-                                {{-- ══ VITALS ═══════════════════════════════════════════════════ --}}
-                            @elseif($activeTab === 'vitals')
-                                <div class="sec-head">
-                                    <h2 class="sec-title"><x-heroicon-o-chart-bar class="w-5 h-5 inline mr-2" />Vital Signs</h2><span style="font-size:.78rem;color:#6b7280;">{{ $allVitals->count() }} recording(s)</span>
-                                </div>
-                                @if($allVitals->isEmpty())
-                                    <div class="placeholder-card">
-                                        <div class="ph-icon"><x-heroicon-o-chart-bar class="w-12 h-12" /></div>
-                                        <p class="ph-title">No vital signs recorded yet</p>
-                                        <p class="ph-sub">Vitals are recorded by the nurse from the Nurse panel.</p>
-                                    </div>
-                                @else
-                                    <div class="vitals-wrap">
-                                        <table class="vitals-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Date / Time</th>
-                                                    <th>Nurse</th>
-                                                    <th>BP</th>
-                                                    <th>PR (bpm)</th>
-                                                    <th>RR (/min)</th>
-                                                    <th>Temp (°C)</th>
-                                                    <th>O₂ Sat (%)</th>
-                                                    <th>Pain /10</th>
-                                                    <th>Wt (kg)</th>
-                                                    <th>Ht (cm)</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach($allVitals as $v)<tr>
-                                                    <td style="white-space:nowrap;font-family:monospace;font-size:.76rem;">{{ $v->taken_at->timezone('Asia/Manila')->format('M j, Y H:i') }}</td>
-                                                    <td style="font-size:.78rem;">{{ $v->nurse_name }}</td>
-                                                    <td>{{ $v->blood_pressure ?? '—' }}</td>
-                                                    <td class="{{ ($v->pulse_rate && ($v->pulse_rate < 60 || $v->pulse_rate > 100)) ? 'abnormal' : '' }}">{{ $v->pulse_rate ?? '—' }}</td>
-                                                    <td class="{{ ($v->respiratory_rate && ($v->respiratory_rate < 12 || $v->respiratory_rate > 20)) ? 'abnormal' : '' }}">{{ $v->respiratory_rate ?? '—' }}</td>
-                                                    <td class="{{ ($v->temperature && ($v->temperature < 36.0 || $v->temperature > 37.5)) ? 'abnormal' : '' }}">{{ $v->temperature ?? '—' }}</td>
-                                                    <td class="{{ ($v->o2_saturation && $v->o2_saturation < 95) ? 'abnormal' : '' }}">{{ $v->o2_saturation ?? '—' }}</td>
-                                                    <td class="{{ ($v->pain_scale !== null && (int) $v->pain_scale >= 7) ? 'abnormal' : '' }}">{{ $v->pain_scale ?? '—' }}</td>
-                                                    <td>{{ $v->weight_kg ?? '—' }}</td>
-                                                    <td>{{ $v->height_cm ?? '—' }}</td>
-                                                </tr>@endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                @endif
 
                                 {{-- ══ DOCTOR'S ORDERS ══════════════════════════════════════════ --}}
                             @elseif($activeTab === 'orders')
