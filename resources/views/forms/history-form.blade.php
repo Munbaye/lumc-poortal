@@ -118,8 +118,8 @@
 
         /* ── SECTION HEADING ────────────────────────────────────────── */
         .sec-h {
-            background: #111827;
-            color: #fff;
+            background: none;
+            color: #000;
             font-size: 9.5pt;
             font-weight: bold;
             text-transform: uppercase;
@@ -347,9 +347,9 @@
     </div>
 
     {{-- ══ CHIEF COMPLAINT ══ --}}
-    <div class="sec-h">Chief Complaint</div>
+    <div class="sec-h"></div>
     <div class="field-row">
-        <span class="field-label">Chief Complaint:</span>
+        <span class="sec-h">Chief Complaint:</span>
     </div>
     <div
         class="field-block"
@@ -465,7 +465,7 @@
 
     </div>
 
-    <div style="text-align:right;margin-top:10px;">
+    <div style="text-align:right;margin-top:60px;">
         <div style="display:inline-flex;flex-direction:column;align-items:center;min-width:200px;">
             <div style="border-bottom:1px solid #000;width:200px;height:32px;display:flex;align-items:flex-end;padding-bottom:2px;">
                 <span

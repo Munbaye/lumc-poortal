@@ -120,7 +120,7 @@
             border: 1px solid #000;
             margin-bottom: 12px;
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
+            grid-template-columns: repeat(6, 1fr);
         }
         .vb-cell {
             padding: 5px 7px;
@@ -138,8 +138,8 @@
 
         /* ── SECTION HEADING ────────────────────────────────────────── */
         .sec-h {
-            background: #111827;
-            color: #fff;
+            background: none;
+            color: #000;
             font-size: 9.5pt;
             font-weight: bold;
             text-transform: uppercase;
@@ -159,7 +159,7 @@
         }
         .pe-label {
             font-size: 10pt;
-            font-weight: bold;
+            font-weight: normal;
             text-align: right;
             padding-right: 4px;
         }
@@ -341,7 +341,6 @@
         $vrr  = $vitals?->respiratory_rate    ? $vitals->respiratory_rate . '/min' : '—';
         $vt   = $vitals?->temperature         ? $vitals->temperature . '°C' : '—';
         $vo2  = $vitals?->o2_saturation       ? $vitals->o2_saturation . '%' : '—';
-        $vwt  = $vitals?->weight_kg           ? $vitals->weight_kg . ' kg' : '—';
         $vpain= $vitals?->pain_scale !== null ? $vitals->pain_scale . '/10' : '—';
 
         $prAbn  = $vitals?->pulse_rate        && ($vitals->pulse_rate < 60 || $vitals->pulse_rate > 100);
@@ -356,7 +355,6 @@
         <div class="vb-cell"><p class="vb-label">Resp. Rate</p><p class="vb-value {{ $rrAbn ? 'abnormal':'' }}">{{ $vrr }}</p></div>
         <div class="vb-cell"><p class="vb-label">Temp</p><p class="vb-value {{ $tAbn ? 'abnormal':'' }}">{{ $vt }}</p></div>
         <div class="vb-cell"><p class="vb-label">O₂ Sat</p><p class="vb-value {{ $o2Abn ? 'abnormal':'' }}">{{ $vo2 }}</p></div>
-        <div class="vb-cell"><p class="vb-label">Weight</p><p class="vb-value">{{ $vwt }}</p></div>
         <div class="vb-cell"><p class="vb-label">Pain Scale</p><p class="vb-value {{ $pnAbn ? 'abnormal':'' }}">{{ $vpain }}</p></div>
     </div>
 
@@ -444,7 +442,7 @@
         </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:12px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:70px;">
         <div style="display:flex;flex-direction:column;align-items:center;">
             <div style="border-bottom:1px solid #000;width:100%;height:32px;display:flex;align-items:flex-end;padding-bottom:2px;">
                 <span class="field" style="width:100%;border:none;text-align:center;" contenteditable="true" spellcheck="false">{{ $today ?? '' }}</span>
