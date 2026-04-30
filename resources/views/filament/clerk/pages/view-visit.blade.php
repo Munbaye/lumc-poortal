@@ -91,38 +91,6 @@
             border-color: #374151;
         }
 
-        /* ── Back button ─────────────────────────────────────────────── */
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: none;
-            border: 1px solid #e5e7eb;
-            border-radius: 7px;
-            padding: 8px 16px;
-            font-size: .82rem;
-            font-weight: 800;
-            color: #374151;
-            cursor: pointer;
-            text-decoration: none;
-            margin-bottom: 16px;
-            width: fit-content;
-            max-width: 100%;
-        }
-
-        .btn-back:hover {
-            background: #f3f4f6;
-        }
-
-        .dark .btn-back {
-            color: #e5e7eb;
-            border-color: #374151;
-        }
-
-        .dark .btn-back:hover {
-            background: #374151;
-        }
-
         /* ── Open-in-new-tab small button ────────────────────────────── */
         .btn-open {
             display: inline-flex;
@@ -149,12 +117,6 @@
     $history = $record->medicalHistory;
     $svc = $record->admitted_service ?? $history?->service ?? null;
     @endphp
-
-    {{-- Back button --}}
-    <a href="{{ \App\Filament\Clerk\Resources\VisitResource::getUrl('index') }}" class="btn-back">
-        <x-filament::icon icon="heroicon-o-arrow-left" class="w-4 h-4" />
-        Back to Patient Visits
-    </a>
 
     {{-- Patient header --}}
     <div class="vv-header">

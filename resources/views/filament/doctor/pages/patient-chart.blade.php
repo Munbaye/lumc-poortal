@@ -2099,13 +2099,14 @@
 
         {{-- ════ TABS ═══════════════════════════════════════════════════ --}}
         <div class="chart-tabs">
-            <button wire:click="setTab('profile')" class="chart-tab {{ $activeTab==='profile' ? 'active':'' }}"><span class="tab-icon">📄</span> Patient Forms</button>
-            <button wire:click="setTab('history')" class="chart-tab {{ $activeTab==='history' ? 'active':'' }}"><span class="tab-icon">🗂️</span> Visit History @if($pastCount > 0)<span class="tab-badge tab-badge-blue">{{ $pastCount }}</span>@endif</button>
-            <button wire:click="setTab('orders')" class="chart-tab {{ $activeTab==='orders' ? 'active':'' }}"><span class="tab-icon">📝</span> Doctor's Orders @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif</button>
-            <button wire:click="setTab('results')" class="chart-tab {{ $activeTab==='results' ? 'active':'' }}"><span class="tab-icon">🔬</span> Lab / Radiology @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif</button>
+            <button wire:click="setTab('profile')" class="chart-tab {{ $activeTab==='profile'   ? 'active':'' }}"><span class="tab-icon"><x-heroicon-o-document-text class="w-4 h-4" /></span> Patient Forms</button>
+            <button wire:click="setTab('history')" class="chart-tab {{ $activeTab==='history'   ? 'active':'' }}"><span class="tab-icon"><x-heroicon-o-clock class="w-4 h-4" /></span> Visit History @if($pastCount > 0)<span class="tab-badge tab-badge-blue">{{ $pastCount }}</span>@endif</button>
+            <button wire:click="setTab('orders')" class="chart-tab {{ $activeTab==='orders'    ? 'active':'' }}"><span class="tab-icon"><x-heroicon-o-clipboard-document-list class="w-4 h-4" /></span> Doctor's Orders @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif</button>
+            <button wire:click="setTab('results')" class="chart-tab {{ $activeTab==='results'   ? 'active':'' }}"><span class="tab-icon"><x-heroicon-o-beaker class="w-4 h-4" /></span> Lab / Radiology @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif</button>
+            
             @if($this->isNicu)
             <button wire:click="setTab('ballard')" class="chart-tab {{ $activeTab==='ballard' ? 'active':'' }}">
-                <span class="tab-icon">📊</span> Ballard Score
+                <span class="tab-icon"><x-heroicon-o-document-chart-bar class="w-4 h-4" /></span> Ballard Score
                 @if($this->hasBallardScore)
                     <span class="tab-badge tab-badge-green">✓</span>
                 @endif
@@ -2951,7 +2952,7 @@
             @php $ballardExams = $this->ballardExams; @endphp
 
             <div class="sec-head">
-                <h2 class="sec-title">📊 Ballard Maturity Score (Gestational Age Assessment)</h2>
+                <h2 class="sec-title"><x-heroicon-o-document-chart-bar class="w-5 h-5 inline mr-2" />Ballard Maturity Score (Gestational Age Assessment)</h2>
                 @if($ballardExams->where('exam_number', 1)->isEmpty())
                 <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id]) }}" 
                 target="_blank" 
@@ -2964,7 +2965,7 @@
 
             @if($ballardExams->isEmpty())
             <div class="placeholder-card">
-                <div class="ph-icon">📊</div>
+                <div class="ph-icon"><x-heroicon-o-document-chart-bar class="w-8 h-8" /></div>
                 <p class="ph-title">No Ballard Score recorded yet</p>
                 <p class="ph-sub">Gestational age assessment not yet performed.</p>
                 <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id]) }}" 
