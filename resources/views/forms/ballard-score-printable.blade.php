@@ -526,5 +526,41 @@
     }
 </script>
 
+{{-- ══ AUTO-POPULATE SAVED SCORES FROM DATABASE ══════════════════════════ --}}
+@php
+    $exam1 = isset($visit)
+        ? \App\Models\NicuBallardExam::where('visit_id', $visit->id)
+            ->where('exam_number', 1)
+            ->first()
+        : null;
+@endphp
+
+@if($exam1)
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const saved = {
+        posture:   {{ $exam1->nm_posture         ?? 'null' }},
+        square:    {{ $exam1->nm_square_window   ?? 'null' }},
+        arm:       {{ $exam1->nm_arm_recoil      ?? 'null' }},
+        popliteal: {{ $exam1->nm_popliteal_angle ?? 'null' }},
+        scarf:     {{ $exam1->nm_scarf_sign      ?? 'null' }},
+        heel:      {{ $exam1->nm_heel_to_ear     ?? 'null' }},
+        skin:      {{ $exam1->pm_skin            ?? 'null' }},
+        lanugo:    {{ $exam1->pm_lanugo          ?? 'null' }},
+        plantar:   {{ $exam1->pm_plantar_surface ?? 'null' }},
+        breast:    {{ $exam1->pm_breast          ?? 'null' }},
+        eye:       {{ $exam1->pm_eye_ear         ?? 'null' }},
+        genm:      {{ $exam1->pm_genitals        ?? 'null' }},
+    };
+
+    Object.entries(saved).forEach(([row, score]) => {
+        if (score === null) return;
+        const cell = document.querySelector(`[data-row="${row}"][data-score="${score}"]`);
+        if (cell) selectScore(cell);
+    });
+});
+</script>
+@endif
+
 </body>
 </html>

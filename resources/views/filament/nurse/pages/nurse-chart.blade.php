@@ -1672,7 +1672,38 @@ use App\Helpers\WHOGrowthChart;
         </div>
         @endif
 
-        {{-- MAR --}}
+        {{-- 11. Growth Chart Printable (WHO 0–24 months) --}}
+        @php $growthMeasurements = $this->growthMeasurements; $growthTotal = count($growthMeasurements['weight'] ?? []) + count($growthMeasurements['length'] ?? []); @endphp
+        <div style="margin-bottom:32px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">📈 Growth Chart — WHO 0–24 Months</span>
+                <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
+                <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $growthTotal > 0 ? 'background:#ede9fe;color:#5b21b6;' : 'background:#f3f4f6;color:#6b7280;' }}">
+                    {{ $growthTotal > 0 ? $growthTotal . ' measurement' . ($growthTotal === 1 ? '' : 's') : 'No measurements yet' }}
+                </span>
+                @if($growthTotal > 0)
+                <a href="{{ route('forms.growth-chart', ['visit' => $visitId]) }}"
+                   target="_blank"
+                   style="font-size:.72rem;font-weight:700;color:#5b21b6;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#ede9fe;border:1px solid #ddd6fe;padding:3px 10px;border-radius:5px;white-space:nowrap;">
+                    🖨️ Open / Print
+                </a>
+                @endif
+            </div>
+            @if($growthTotal > 0)
+            <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+                <iframe src="{{ route('forms.growth-chart', ['visit' => $visitId]) }}"
+                    title="WHO Growth Chart"
+                    style="width:100%;min-height:1000px;border:none;display:block;"
+                    loading="lazy"></iframe>
+            </div>
+            @else
+            <div style="background:#fff;border:1.5px dashed #e5e7eb;border-radius:8px;padding:24px;text-align:center;">
+                <p style="font-size:.82rem;color:#9ca3af;">No growth measurements yet. Go to the 📈 Growth Chart tab to add weight and length measurements.</p>
+            </div>
+            @endif
+        </div>
+
+        {{-- ══ MAR TAB CONTENT ══════════════════════════════════════════ --}}
         @elseif($activeTab === 'mar')
         @php
             $marDates   = $this->marDateColumns->dates ?? [];
