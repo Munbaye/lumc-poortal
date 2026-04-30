@@ -3,137 +3,136 @@
 namespace Database\Seeders;
 
 use App\Models\Bed;
+use App\Models\Patient;
 use App\Models\Room;
+use App\Models\Visit;
 use App\Models\Ward;
 use Illuminate\Database\Seeder;
 
-/**
- * WardRoomSeeder
- *
- * Seeds wards and rooms based on known room numbers from LUMC.
- * Run: php artisan db:seed --class=WardRoomSeeder
- */
 class WardRoomSeeder extends Seeder
 {
     public function run(): void
     {
-        // ── Ward 14 (service rooms + aisle) ──────────────────────────────────
-        $this->seedWard('Ward 14', 'W14', [
-            ['room_number' => '1418', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '1421', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '1424', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '1425', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '1426', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '1427', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '1432', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '1433', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '1434', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '1435', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '1436', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '1437', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '1438', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '1444', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '1448', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '1450', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '1451', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => 'Aisle 1', 'classification' => 'aisle', 'bed_capacity' => 10],
-        ]);
+        $this->command->info('🌟 Seeding LUMC Wards, Rooms, Beds + Patient Assignment...');
 
-        // ── Ward 12 Private ───────────────────────────────────────────────────
-        $this->seedWard('Ward 12 Private', 'W12P', [
-            ['room_number' => '1218', 'classification' => 'private', 'bed_capacity' => 1],
-            ['room_number' => '1224', 'classification' => 'private', 'bed_capacity' => 1],
-            ['room_number' => '1225', 'classification' => 'private', 'bed_capacity' => 1],
-            ['room_number' => '1227', 'classification' => 'private', 'bed_capacity' => 1],
-            ['room_number' => '1232', 'classification' => 'private', 'bed_capacity' => 1],
-            ['room_number' => '1233', 'classification' => 'private', 'bed_capacity' => 1],
-            ['room_number' => '1234', 'classification' => 'private', 'bed_capacity' => 1],
-            ['room_number' => '1235', 'classification' => 'private', 'bed_capacity' => 1],
-            ['room_number' => '1236', 'classification' => 'private', 'bed_capacity' => 1],
-            ['room_number' => '1237', 'classification' => 'private', 'bed_capacity' => 1],
-            ['room_number' => '1238', 'classification' => 'private', 'bed_capacity' => 1],
-            ['room_number' => '1239', 'classification' => 'private', 'bed_capacity' => 1],
-            ['room_number' => '1250', 'classification' => 'private', 'bed_capacity' => 1],
-            ['room_number' => '1251', 'classification' => 'private', 'bed_capacity' => 1],
-            ['room_number' => '1288', 'classification' => 'private', 'bed_capacity' => 1],
-        ]);
+        // Create Wards + Rooms + Beds
+        $this->seedAllWards();
 
-        // ── Ward 16 ───────────────────────────────────────────────────────────
-        $this->seedWard('Ward 16', 'W16', [
-            ['room_number' => '1416', 'classification' => 'service', 'bed_capacity' => 4],
-        ]);
+        // Assign already admitted patients to rooms/beds
+        $this->assignPatientsToBeds();
 
-        // ── REPSI Ward ────────────────────────────────────────────────────────
-        $this->seedWard('REPSI Ward', 'REPSI', [
-            ['room_number' => 'REPSI 2801', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => 'REPSI 2802', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => 'REPSI 2803', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => 'REPSI 2804', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => 'REPSI 2805', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '2806',       'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '2807',       'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '2808',       'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '2809',       'classification' => 'service', 'bed_capacity' => 4],
-        ]);
-
-        // ── Pay Ward ──────────────────────────────────────────────────────────
-        $this->seedWard('Pay Ward', 'PW', [
-            ['room_number' => '2810', 'classification' => 'pay_ward', 'bed_capacity' => 4],
-            ['room_number' => '2811', 'classification' => 'pay_ward', 'bed_capacity' => 4],
-        ]);
-
-        // ── Ward 26 ───────────────────────────────────────────────────────────
-        $this->seedWard('Ward 26', 'W26', [
-            ['room_number' => '2602', 'classification' => 'service', 'bed_capacity' => 4],
-            ['room_number' => '2603', 'classification' => 'service', 'bed_capacity' => 4],
-        ]);
-
-        // ── General Aisles ────────────────────────────────────────────────────
-        $this->seedWard('General Aisles', 'AISLE', [
-            ['room_number' => 'Aisle A-K', 'classification' => 'aisle', 'bed_capacity' => 11],
-            ['room_number' => 'Aisle L-U', 'classification' => 'aisle', 'bed_capacity' => 9],
-            ['room_number' => 'Aisle 1-5', 'classification' => 'aisle', 'bed_capacity' => 5],
-        ]);
+        $this->command->info('✅ Wards, Rooms, Beds & Patient Assignments completed!');
     }
 
-    // ── Helper ────────────────────────────────────────────────────────────────
-
-    protected function seedWard(string $name, string $code, array $rooms): void
+    private function seedAllWards(): void
     {
-        $ward = Ward::firstOrCreate(
-            ['code' => $code],
-            ['name' => $name, 'is_active' => true]
-        );
+        $wardsData = [
+            ['name' => 'Internal Medicine Ward',      'code' => 'IMW'],
+            ['name' => 'Surgical Ward',               'code' => 'SURG'],
+            ['name' => 'Pediatrics Ward',             'code' => 'PEDIA'],
+            ['name' => 'OB-Gyne / Maternity Ward',    'code' => 'OBGY'],
+            ['name' => 'Neonatal Intensive Care Unit','code' => 'NICU'],
+            ['name' => 'Intensive Care Unit',         'code' => 'ICU'],
+            ['name' => 'Isolation Ward',              'code' => 'ISOL'],
+        ];
 
-        if ($ward->name !== $name) {
-            $ward->update(['name' => $name]);
+        foreach ($wardsData as $w) {
+            $ward = Ward::firstOrCreate(
+                ['code' => $w['code']],
+                ['name' => $w['name'], 'is_active' => true]
+            );
+
+            $this->seedRoomsForWard($ward);
         }
+    }
 
-        foreach ($rooms as $roomData) {
+    private function seedRoomsForWard(Ward $ward): void
+    {
+        // Service Rooms (Charity) - max 4 beds
+        $this->createRoomGroup($ward, 'service', [
+            $ward->code . '01', $ward->code . '02', $ward->code . '03', $ward->code . '04'
+        ], 4);
+
+        // Pay Ward (Semi-Private) - max 4 beds
+        $this->createRoomGroup($ward, 'pay', [
+            'P-' . $ward->code . '01', 'P-' . $ward->code . '02'
+        ], 4);
+
+        // Private Rooms - 1 bed only
+        $this->createRoomGroup($ward, 'private', [
+            'PR-' . $ward->code . '01', 'PR-' . $ward->code . '02'
+        ], 1);
+
+        // Aisle (only in large wards)
+        if (in_array($ward->code, ['IMW', 'PEDIA', 'SURG'])) {
+            $this->createRoomGroup($ward, 'aisle', [
+                'Aisle-1', 'Aisle-2'
+            ], 15);
+        }
+    }
+
+    private function createRoomGroup(Ward $ward, string $classification, array $roomNumbers, int $bedCapacity): void
+    {
+        foreach ($roomNumbers as $roomNo) {
             $room = Room::firstOrCreate(
-                ['ward_id' => $ward->id, 'room_number' => $roomData['room_number']],
+                ['ward_id' => $ward->id, 'room_number' => $roomNo],
                 [
-                    'classification'       => $roomData['classification'],
-                    'bed_capacity'         => $roomData['bed_capacity'],
-                    'is_aisle'             => $roomData['classification'] === 'aisle',
-                    'is_under_maintenance' => false,
-                    'is_active'            => true,
+                    'classification' => $classification,
+                    'bed_capacity'   => $bedCapacity,
+                    'is_active'      => true,
                 ]
             );
 
-            // Auto-create 1 bed for private rooms
-            if ($room->classification === 'private') {
+            for ($i = 1; $i <= $bedCapacity; $i++) {
                 Bed::firstOrCreate(
-                    ['room_id' => $room->id, 'bed_label' => 'Bed 1'],
-                    [
-                        'ward_id'   => $ward->id,
-                        'status'    => 'available',
-                        'is_active' => true,
-                    ]
+                    ['room_id' => $room->id, 'bed_label' => "Bed {$i}"],
+                    ['ward_id' => $ward->id, 'status' => 'available']
                 );
             }
         }
+    }
 
-        $this->command->info("Seeded ward: {$name}");
+    /**
+     * Assign currently admitted patients to available beds
+     */
+    private function assignPatientsToBeds(): void
+    {
+        $admittedVisits = Visit::where('status', 'admitted')
+            ->with('patient')
+            ->get();
+
+        foreach ($admittedVisits as $visit) {
+            $classification = match ($visit->payment_class) {
+                'Private' => 'private',
+                default   => 'service',   // Charity & others go to service first
+            };
+
+            // Find available room
+            $room = Room::where('classification', $classification)
+                        ->where('is_active', true)
+                        ->first();
+
+            // Fallback to service if preferred type not available
+            if (!$room) {
+                $room = Room::where('classification', 'service')
+                            ->where('is_active', true)
+                            ->first();
+            }
+
+            if ($room) {
+                $bed = Bed::where('room_id', $room->id)
+                           ->where('status', 'available')
+                           ->first();
+
+                if ($bed) {
+                    $bed->update([
+                        'status'    => 'occupied',
+                        'visit_id'  => $visit->id,
+                    ]);
+
+                    $this->command->info("   Assigned {$visit->patient->full_name} → {$room->room_number} ({$bed->bed_label})");
+                }
+            }
+        }
     }
 }

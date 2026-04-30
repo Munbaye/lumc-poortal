@@ -8,6 +8,7 @@ use App\Models\RadiologyRequest;
 use App\Models\ResultUpload;
 use App\Models\Visit;
 use App\Models\ActivityLog;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Livewire\Attributes\Url;
@@ -34,6 +35,8 @@ class PatientChart extends Page
     public ?int $visitId = null;
 
     public ?Visit $visit = null;
+
+    public ?int $ballardExamId = null;
 
     public string $activeTab             = 'orders';
     public bool   $writingOrders         = false;
@@ -66,12 +69,23 @@ class PatientChart extends Page
         }
     }
 
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('back_to_admitted_patients')
+                ->label('Admitted Patients')
+                ->url(\App\Filament\Doctor\Resources\AdmittedPatientsResource::getUrl('index'))
+                ->color('gray')
+                ->icon('heroicon-o-arrow-left'),
+        ];
+    }
+
     private function loadVisit(): void
     {
         $this->visit = Visit::with([
             'patient',
             'medicalHistory.doctor',
-            'doctorsOrders' => fn ($q) => $q->with('doctor')->orderBy('order_date', 'desc'),
+            'doctorsOrders' => fn($q) => $q->with('doctor')->orderBy('order_date', 'desc'),
         ])->find($this->visitId);
 
         if (!$this->visit) {
@@ -134,9 +148,35 @@ class PatientChart extends Page
         $this->writingOrders       = false;
         $this->viewingLabRequestId = null;
         $this->viewingRadRequestId = null;
+        
+        // Reset history view when leaving history tab
+        if ($tab !== 'history') {
+            $this->viewingHistoryVisitId = null;
+        }
     }
 
-    // Orders Methods (unchanged)
+    // ── Result View Methods ───────────────────────────────────────────────────
+    
+    public function viewLabResult(int $requestId): void
+    {
+        $this->viewingLabRequestId = $requestId;
+        $this->viewingRadRequestId = null;
+    }
+
+    public function viewRadResult(int $requestId): void
+    {
+        $this->viewingRadRequestId = $requestId;
+        $this->viewingLabRequestId = null;
+    }
+
+    public function closeResultView(): void
+    {
+        $this->viewingLabRequestId = null;
+        $this->viewingRadRequestId = null;
+    }
+
+    // ── Orders Methods ────────────────────────────────────────────────────────
+
     public function toggleWriteOrders(): void
     {
         $this->writingOrders = !$this->writingOrders;
@@ -172,8 +212,8 @@ class PatientChart extends Page
 
         // Split by newlines, trim each line, remove blank lines
         $lines = collect(explode("\n", $this->orderText))
-            ->map(fn ($line) => trim($line))
-            ->filter(fn ($line) => $line !== '')
+            ->map(fn($line) => trim($line))
+            ->filter(fn($line) => $line !== '')
             ->values();
 
         if ($lines->isEmpty()) return;
@@ -194,12 +234,12 @@ class PatientChart extends Page
         }
 
         ActivityLog::record(
-            action:       ActivityLog::ACT_ADMITTED_PATIENT,
-            category:     ActivityLog::CAT_CLINICAL,
-            subject:      $this->visit,
+            action: ActivityLog::ACT_ADMITTED_PATIENT,
+            category: ActivityLog::CAT_CLINICAL,
+            subject: $this->visit,
             subjectLabel: $this->visit->patient->full_name . ' (' . $this->visit->patient->case_no . ')',
-            newValues:    ['orders_written' => $saved, 'doctor' => auth()->user()->name],
-            panel:        'doctor',
+            newValues: ['orders_written' => $saved, 'doctor' => auth()->user()->name],
+            panel: 'doctor',
         );
 
         Notification::make()
@@ -214,7 +254,10 @@ class PatientChart extends Page
     public function discontinueOrder(int $orderId): void
     {
         $order = DoctorsOrder::where('visit_id', $this->visitId)->find($orderId);
-        if (!$order) { Notification::make()->title('Order not found.')->danger()->send(); return; }
+        if (!$order) {
+            Notification::make()->title('Order not found.')->danger()->send();
+            return;
+        }
 
         $order->update([
             'status'       => DoctorsOrder::STATUS_DISCONTINUED,
@@ -227,6 +270,8 @@ class PatientChart extends Page
         $this->loadVisit();
         Notification::make()->title('Order discontinued.')->success()->send();
     }
+
+    // ── Form URL Helpers ──────────────────────────────────────────────────────
 
     public function getErRecordUrl(): string
     {
@@ -253,10 +298,95 @@ class PatientChart extends Page
         return route('forms.physical-exam-form', ['visit' => $this->visitId]);
     }
 
-    public function getPatientHistoryUrl(): string
+    public function getPastVisitsCountProperty(): int
     {
-        return \App\Filament\Doctor\Pages\PatientHistory::getUrl([
-            'patientId' => $this->visit?->patient_id,
-        ]);
+        if (!$this->visit) return 0;
+
+        return Visit::where('patient_id', $this->visit->patient_id)
+            ->where('id', '!=', $this->visitId)
+            ->whereNotNull('discharged_at')
+            ->count();
+    }
+
+    public function getPastVisitsProperty()
+    {
+        if (!$this->visit) return collect();
+
+        return Visit::where('patient_id', $this->visit->patient_id)
+            ->where('id', '!=', $this->visitId)
+            ->whereNotNull('discharged_at')
+            ->with(['medicalHistory.doctor', 'vitals', 'doctorsOrders', 'erRecord', 'admissionRecord', 'consentRecord'])
+            ->orderBy('registered_at', 'desc')
+            ->get();
+    }
+
+    public function getHistoryVisitProperty()
+    {
+        if (!$this->viewingHistoryVisitId) return null;
+
+        return Visit::with([
+            'patient',
+            'medicalHistory.doctor',
+            'doctorsOrders.doctor',
+            'vitals',
+            'erRecord',
+            'admissionRecord',
+            'consentRecord',
+        ])->find($this->viewingHistoryVisitId);
+    }
+
+    public function getHistoryLabResults(int $visitId)
+    {
+        $requestIds = LabRequest::where('visit_id', $visitId)
+            ->where('status', 'completed')
+            ->pluck('id');
+
+        return ResultUpload::where('request_type', 'lab')
+            ->whereIn('request_id', $requestIds)
+            ->with('uploadedBy')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    public function getHistoryRadResults(int $visitId)
+    {
+        $requestIds = RadiologyRequest::where('visit_id', $visitId)
+            ->where('status', 'completed')
+            ->pluck('id');
+
+        return ResultUpload::where('request_type', 'radiology')
+            ->whereIn('request_id', $requestIds)
+            ->with('uploadedBy')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($upload) {
+                $upload->radRequest = RadiologyRequest::find($upload->request_id);
+                return $upload;
+            });
+    }
+
+    public function getPastVisitErUrl(int $visitId): string
+    {
+        return route('forms.er-record', ['visit' => $visitId]) . '?readonly=1';
+    }
+
+    public function getPastVisitAdmUrl(int $visitId): string
+    {
+        return route('forms.adm-record', ['visit' => $visitId]) . '?readonly=1';
+    }
+
+    public function getPastVisitConsentUrl(int $visitId): string
+    {
+        return route('forms.consent-to-care', ['visit' => $visitId]) . '?readonly=1';
+    }
+
+    public function viewHistoryVisit(int $visitId): void
+    {
+        $this->viewingHistoryVisitId = $visitId;
+    }
+
+    public function closeHistoryView(): void
+    {
+        $this->viewingHistoryVisitId = null;
     }
 }

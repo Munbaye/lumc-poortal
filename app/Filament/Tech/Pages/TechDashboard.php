@@ -23,6 +23,14 @@ class TechDashboard extends Page
     protected static ?string $navigationIcon  = 'heroicon-o-squares-2x2';
     protected static ?string $navigationLabel = 'Dashboard';
     protected static ?string $title           = 'Tech Dashboard';
+
+    // ── Dynamic Title based on specialty ─────────────────────────────────────
+    public function getTitle(): string
+    {
+        if ($this->isMedtech && !$this->isRadtech) return 'MedTech Dashboard';
+        if ($this->isRadtech && !$this->isMedtech) return 'RadTech Dashboard';
+        return 'Tech Dashboard';
+    }
     protected static string  $view            = 'filament.tech.pages.tech-dashboard';
     protected static ?int    $navigationSort  = 1;
 
@@ -39,7 +47,8 @@ class TechDashboard extends Page
         return str_contains($spec, 'med tech')
             || str_contains($spec, 'medical tech')
             || str_contains($spec, 'laboratory')
-            || str_contains($spec, 'medtech');
+            || str_contains($spec, 'medtech')
+            || str_contains($spec, 'medical technologist');
     }
 
     public function getIsRadtechProperty(): bool

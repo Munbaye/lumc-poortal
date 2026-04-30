@@ -1,15 +1,42 @@
 <x-filament-panels::page>
+
+{{-- ══ Specialty tokens FIRST — before any <style> that uses var() ══ --}}
+@php
+    $spec = strtolower(auth()->user()?->specialty ?? '');
+    if (str_contains($spec, 'med tech') || str_contains($spec, 'medtech') || str_contains($spec, 'laboratory') || str_contains($spec, 'medical technologist')) {
+        $cAccent = '#0d9488'; $cDark = '#0f766e'; $cLight = '#99f6e4';
+        $cBg = '#f0fdfa'; $cRing = 'rgba(13,148,136,.15)';
+    } elseif (str_contains($spec, 'radiolog') || str_contains($spec, 'rad tech') || str_contains($spec, 'radtech')) {
+        $cAccent = '#475569'; $cDark = '#334155'; $cLight = '#cbd5e1';
+        $cBg = '#f8fafc'; $cRing = 'rgba(71,85,105,.15)';
+    } else {
+        $cAccent = '#ea580c'; $cDark = '#c2410c'; $cLight = '#fed7aa';
+        $cBg = '#fff7ed'; $cRing = 'rgba(234,88,12,.15)';
+    }
+@endphp
+
+{{-- ══ CSS variables injected BEFORE the main stylesheet ══ --}}
+<style>
+:root {
+    --c-accent: {{ $cAccent }};
+    --c-dark:   {{ $cDark }};
+    --c-light:  {{ $cLight }};
+    --c-bg:     {{ $cBg }};
+    --c-ring:   {{ $cRing }};
+}
+</style>
+
 <style>
 /* ══ PAGE ════════════════════════════════════════════════════════════ */
-.page-wrap { max-width: 960px; margin: 0 auto; }
+.page-wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
 .back-link { display:inline-flex; align-items:center; gap:6px; font-size:.82rem; color:#6b7280; background:none; border:none; cursor:pointer; margin-bottom:16px; padding:0; }
-.back-link:hover { color:#f97316; }
+.back-link:hover { color:var(--c-accent); }
 
 /* ── Status header bar ──────────────────────────────────────────── */
-.req-header { background:linear-gradient(135deg,#7c2d12 0%,#f97316 100%); border-radius:10px; padding:16px 22px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.req-header { background:linear-gradient(135deg, var(--c-dark) 0%, var(--c-accent) 100%); border-radius:10px; padding:16px 22px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
 .req-no-big { font-family:monospace; font-size:1.2rem; font-weight:900; color:#fff; }
 .req-patient-big { font-size:1rem; font-weight:800; color:#fff; margin-top:3px; }
-.req-case-big { font-family:monospace; font-size:.78rem; color:#fed7aa; margin-top:1px; }
+.req-case-big { font-family:monospace; font-size:.78rem; color:var(--c-light); margin-top:1px; }
 .req-status-pill { padding:5px 16px; border-radius:9999px; font-size:.78rem; font-weight:700; }
 .pill-pending    { background:rgba(255,255,255,.2); color:#fff; }
 .pill-completed  { background:#16a34a; color:#fff; }
@@ -18,7 +45,6 @@
 /* ══ SECTION HEADERS ═════════════════════════════════════════════════ */
 .section-header { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#6b7280; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
 .section-header .sh-line { flex:1; border-top:1px solid #e5e7eb; }
-.dark .section-header .sh-line { border-top-color:#374151; }
 
 /* ══ PAPER DOCUMENT ══════════════════════════════════════════════════ */
 .paper-doc { background:#fff; border:1px solid #d1d5db; border-radius:8px; padding:0.45in 0.55in; margin-bottom:18px; font-family:'Segoe UI', system-ui, sans-serif; font-size:10pt; color:#000; box-shadow:0 2px 8px rgba(0,0,0,.08); }
@@ -38,15 +64,15 @@
 .pd-phys-label { font-size:8pt; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#374151; margin-bottom:5px; }
 .pd-phys-name { font-size:10pt; font-weight:bold; color:#000; border-bottom:1px solid #000; padding-bottom:2px; min-height:22px; }
 .pd-divider { border:none; border-top:1px solid #000; margin:5px 0; }
-.pd-tests-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin:6px 0; }
+.pd-tests-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin:16px 0; }
 .pd-test-section { border:1px solid #ddd; border-radius:4px; overflow:hidden; }
 .pd-test-head { padding:3px 7px; font-size:7.5pt; font-weight:700; text-transform:uppercase; letter-spacing:.05em; display:flex; align-items:center; gap:5px; }
 .pd-test-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
 .pd-test-item { display:flex; align-items:center; gap:6px; padding:2px 7px; margin:1px 4px; border-radius:2px; }
 .pd-test-item.checked { background:#eef2ff; }
-.pd-cb { width:11px; height:11px; border:1.5px solid #bbb; border-radius:2px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:#fff; }
+.pd-cb { width:14px; height:14px; border:2px solid #bbb; border-radius:3px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:#fff; }
 .pd-test-item.checked .pd-cb { background:#4f46e5; border-color:#4f46e5; }
-.pd-test-item.checked .pd-cb::after { content:''; display:block; width:5px; height:3px; border-left:1.5px solid #fff; border-bottom:1.5px solid #fff; transform:rotate(-45deg) translate(1px,-1px); }
+.pd-test-item.checked .pd-cb::after { content:''; display:block; width:6px; height:4px; border-left:2px solid #fff; border-bottom:2px solid #fff; transform:rotate(-45deg) translate(1px,-1px); }
 .pd-test-name { font-size:8pt; color:#374151; line-height:1.3; }
 .pd-test-item.checked .pd-test-name { color:#3730a3; font-weight:600; }
 .pd-micro-extra { padding:4px 7px; border-top:1px solid #e5e7eb; }
@@ -63,61 +89,61 @@
 .result-notes-text { font-size:.875rem; color:#374151; line-height:1.6; }
 
 /* ══ TECH TIMELINE ═══════════════════════════════════════════════════ */
-.tech-section { background:#fff; border:2px solid #f97316; border-radius:10px; padding:24px 26px; }
-.dark .tech-section { background:#1f2937; border-color:#ea580c; }
-.tech-title { font-size:1rem; font-weight:800; color:#f97316; margin-bottom:20px; padding-bottom:10px; border-bottom:2px solid #fff7ed; display:flex; align-items:center; gap:8px; }
-.dark .tech-title { border-bottom-color:rgba(249,115,22,.2); }
-
+.tech-section { background:#fff; border:2px solid var(--c-accent); border-radius:10px; padding:24px 26px; }
+.tech-title { font-size:1rem; font-weight:800; color:var(--c-accent); margin-bottom:20px; padding-bottom:10px; border-bottom:2px solid var(--c-bg); display:flex; align-items:center; gap:8px; }
 .step-row { display:flex; align-items:flex-start; gap:16px; margin-bottom:20px; }
 .step-num { width:32px; height:32px; border-radius:50%; font-size:.8rem; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px; }
 .step-num.s-done    { background:#059669; color:#fff; }
-.step-num.s-active  { background:#f97316; color:#fff; }
+.step-num.s-active  { background:var(--c-accent); color:#fff; }
 .step-num.s-waiting { background:#e5e7eb; color:#9ca3af; }
-.dark .step-num.s-waiting { background:#374151; }
 .step-body { flex:1; }
 .step-title { font-size:.88rem; font-weight:700; color:#111827; margin-bottom:6px; }
-.dark .step-title { color:#f3f4f6; }
 .step-ts { display:inline-block; background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; font-size:.72rem; font-weight:700; padding:2px 10px; border-radius:9999px; margin-left:8px; white-space:nowrap; }
 .step-connector { width:2px; height:16px; background:#e5e7eb; margin-left:15px; margin-bottom:4px; }
-.dark .step-connector { background:#374151; }
 .step-connector.done { background:#059669; }
-
 .btn-step { display:inline-flex; align-items:center; gap:7px; border:none; border-radius:7px; padding:9px 20px; font-size:.85rem; font-weight:700; cursor:pointer; transition:background .15s; }
-.btn-orange { background:#f97316; color:#fff; } .btn-orange:hover { background:#ea580c; }
-.btn-blue   { background:#3b82f6; color:#fff; } .btn-blue:hover   { background:#2563eb; }
+.btn-primary { background:var(--c-accent); color:#fff; }
+.btn-primary:hover { background:var(--c-dark); }
+.btn-blue { background:#3b82f6; color:#fff; }
+.btn-blue:hover { background:#2563eb; }
 .btn-step:disabled { opacity:.45; cursor:not-allowed; }
-
 .tf-label { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#6b7280; display:block; margin-bottom:5px; }
 .tf-input { border:1px solid #e5e7eb; border-radius:6px; padding:8px 12px; font-size:.875rem; background:#fff; color:#111827; outline:none; font-family:inherit; }
-.dark .tf-input { background:#374151; border-color:#4b5563; color:#f3f4f6; }
-.tf-input:focus { border-color:#f97316; box-shadow:0 0 0 3px rgba(249,115,22,.1); }
+.tf-input:focus { border-color:var(--c-accent); box-shadow:0 0 0 3px var(--c-ring); }
 .tf-input:disabled { background:#f9fafb; color:#9ca3af; }
-.dark .tf-input:disabled { background:#1f2937; }
 .tf-area { width:100%; border:1px solid #e5e7eb; border-radius:6px; padding:9px 12px; font-size:.875rem; background:#fff; color:#111827; outline:none; font-family:inherit; resize:vertical; }
-.dark .tf-area { background:#374151; border-color:#4b5563; color:#f3f4f6; }
-.tf-area:focus { border-color:#f97316; box-shadow:0 0 0 3px rgba(249,115,22,.1); }
-
-/* file upload */
+.tf-area:focus { border-color:var(--c-accent); box-shadow:0 0 0 3px var(--c-ring); }
 .file-queue { margin-top:8px; }
 .file-item { display:flex; align-items:center; gap:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:8px 12px; margin-bottom:6px; }
-.dark .file-item { background:#374151; border-color:#4b5563; }
 .file-item-name { flex:1; font-size:.82rem; color:#374151; font-weight:600; }
-.dark .file-item-name { color:#e5e7eb; }
 .file-item-size { font-size:.72rem; color:#9ca3af; }
 .btn-rm { background:none; border:1px solid #fca5a5; color:#dc2626; border-radius:5px; padding:3px 9px; font-size:.75rem; cursor:pointer; flex-shrink:0; }
 .btn-rm:hover { background:#fee2e2; }
 .drop-zone { border:2px dashed #e5e7eb; border-radius:8px; padding:22px 18px; text-align:center; transition:border-color .15s; }
-.drop-zone.enabled { cursor:pointer; } .drop-zone.enabled:hover { border-color:#f97316; background:#fff7ed; }
+.drop-zone.enabled { cursor:pointer; }
+.drop-zone.enabled:hover { border-color:var(--c-accent); background:var(--c-bg); }
 .drop-zone.locked { opacity:.45; background:#f9fafb; cursor:not-allowed; }
-
-/* complete button */
 .btn-complete { background:#059669; color:#fff; border:none; border-radius:7px; padding:12px 32px; font-size:.95rem; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:8px; margin-top:20px; }
 .btn-complete:hover:not(:disabled) { background:#047857; }
 .btn-complete:disabled { opacity:.45; cursor:not-allowed; }
-
-/* lock notice */
 .lock-notice { display:inline-flex; align-items:center; gap:6px; font-size:.78rem; color:#9ca3af; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:6px 12px; margin-top:6px; }
-.dark .lock-notice { background:#374151; border-color:#4b5563; }
+
+/* ══ MOBILE RESPONSIVE ══════════════════════════════════════════════ */
+@media (max-width: 640px) {
+    .page-wrap { padding: 0 12px; }
+    .req-header { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px 16px; }
+    .req-header > div:last-child { align-items: flex-start; }
+    .req-no-big { font-size: 1rem; }
+    .req-patient-big { font-size: .9rem; }
+    .paper-doc { padding: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .pd-g4, .pd-g6, .pd-footer5 { grid-template-columns: 1fr 1fr !important; }
+    .pd-tests-grid { grid-template-columns: 1fr !important; }
+    .tech-section { padding: 16px; }
+    .step-row { gap: 10px; }
+    .tf-input { width: 100% !important; }
+    .btn-complete { width: 100%; justify-content: center; }
+    .section-header { flex-wrap: wrap; }
+}
 </style>
 
 @if($labRequest)
@@ -126,15 +152,11 @@
     $isCompleted = $labRequest->isCompleted();
     $uploads     = $labRequest->results()->with('uploadedBy')->latest()->get();
 
-    // Timeline gate — each step requires previous to be done
-    $s1done = !!$labRequest->request_received_at;   // Received
-    $s3done = !!$labRequest->test_started_at;        // Test Started
-
-    // File upload + complete button gate: must have received first
+    $s1done = !!$labRequest->request_received_at;
+    $s3done = !!$labRequest->test_started_at;
     $canUpload   = $s1done;
     $canComplete = $s1done && !empty($resultFiles);
 
-    // Full test catalog
     $col1 = [
         ['style'=>'background:#dbeafe;color:#1e40af','dot'=>'#3b82f6','label'=>'Hematology',
          'tests'=>['Complete Blood Count (CBC)','Reticulocyte Count','Peripheral Blood Smear','Malarial Smear','Clotting / Bleeding Time','Prothrombin Time (PT-PA)','APTT','ESR']],
@@ -162,8 +184,6 @@
          'tests'=>['Gram Stain','Acid Fast Stain (AFB)','India Ink Stain','KOH Preparation','Culture and Sensitivity']],
     ];
     $selectedTests = $labRequest->tests ?? [];
-
-    // Collect all tech notes (non-null, unique)
     $allNotes = $uploads->pluck('notes')->filter()->unique()->values();
 @endphp
 
@@ -193,7 +213,6 @@
 </div>
 
 <div class="paper-doc">
-
     <div class="pd-header">
         @if(file_exists(public_path('images/lumc-logo.png')))
             <div class="pd-logo"><img src="{{ asset('images/lumc-logo.png') }}" alt="LUMC"></div>
@@ -246,7 +265,6 @@
         </div>
     </div>
 
-    {{-- Test grid --}}
     <div class="pd-tests-grid">
         <div style="display:flex;flex-direction:column;gap:5px;">
             @foreach($col1 as $sec)
@@ -292,7 +310,6 @@
 
     <hr class="pd-divider" style="margin:6px 0;">
 
-    {{-- Footer timestamps (read-only, updated as tech acts) --}}
     <div class="pd-footer5">
         <div class="pd-fg"><span class="pd-fl">Date</span><span class="pd-val">{{ $labRequest->date_requested?->format('Y-m-d') ?? '—' }}</span></div>
         <div class="pd-fg"><span class="pd-fl">Request Received</span><span class="pd-val">{{ $labRequest->request_received_at?->timezone('Asia/Manila')->format('M j, Y g:i A') ?? '' }}</span></div>
@@ -305,38 +322,22 @@
         <div><div style="border-bottom:1px solid #000;height:28px;margin-top:16px;"></div><div style="font-size:8pt;text-align:center;font-style:italic;margin-top:2px;">Requesting Physician — Signature / PRC No.</div></div>
         <div><div style="border-bottom:1px solid #000;height:28px;margin-top:16px;"></div><div style="font-size:8pt;text-align:center;font-style:italic;margin-top:2px;">Verified by (Lab Staff) / Date</div></div>
     </div>
+</div>
 
-</div>{{-- /.paper-doc --}}
-
-{{-- ══ COMPLETED RESULTS VIEW ══════════════════════════════════════════ --}}
+{{-- ══ COMPLETED RESULTS ══════════════════════════════════════════════ --}}
 @if($uploads->isNotEmpty())
 <div class="result-box">
     <p class="result-box-title">✅ {{ $uploads->count() }} Result File(s) — {{ $labRequest->request_no }}</p>
-
-    {{-- Single "Uploaded by" line using the most recent uploader --}}
-    @php
-        $uploader = $uploads->first()?->uploadedBy?->name ?? '—';
-    @endphp
-    <p style="font-size:0.82rem; color:#f97316; font-weight:600; margin: -4px 0 12px 2px;">
-        Uploaded by {{ $uploader }}
-    </p>
-
-    {{-- File list — cleaner, no per-file uploader/date --}}
-    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:{{ $allNotes->isNotEmpty() ? '12px' : '0' }};">
+    @php $uploader = $uploads->first()?->uploadedBy?->name ?? '—'; @endphp
+    <p style="font-size:0.82rem;color:var(--c-accent);font-weight:600;margin:-4px 0 12px 2px;">Uploaded by {{ $uploader }}</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:{{ $allNotes->isNotEmpty() ? '12px' : '0' }};">
         @foreach($uploads as $u)
-        <div>
-            <a href="{{ $u->file_url }}" target="_blank" class="result-file-link">
-                {{ $u->file_type_icon }} {{ $u->file_name }}
-                <span style="font-size:.7rem; font-weight:400; color:#6b7280;">
-                    ({{ $u->file_size_human }})
-                </span>
-            </a>
-            {{-- Removed the <p> with "Uploaded by … · date" --}}
-        </div>
+        <a href="{{ $u->file_url }}" target="_blank" class="result-file-link">
+            {{ $u->file_type_icon }} {{ $u->file_name }}
+            <span style="font-size:.7rem;font-weight:400;color:#6b7280;">({{ $u->file_size_human }})</span>
+        </a>
         @endforeach
     </div>
-
-    {{-- Tech Notes block (unchanged) --}}
     @if($allNotes->isNotEmpty())
     <div class="result-notes-box">
         <p class="result-notes-label">📝 Tech Notes</p>
@@ -348,7 +349,7 @@
 </div>
 @endif
 
-{{-- ══ TECH TIMELINE — only shown when not yet completed ══════════════ --}}
+{{-- ══ TECH TIMELINE ═══════════════════════════════════════════════════ --}}
 @if(!$isCompleted)
 <div class="section-header" style="margin-top:4px;">
     <span>🔧 Tech Timeline / Status</span>
@@ -358,20 +359,16 @@
 <div class="tech-section">
     <p class="tech-title">🔧 Tech Timeline / Status</p>
 
-    {{-- ── STEP 1: Mark as Received ──────────────────────────────── --}}
     <div class="step-row">
         <div class="step-num {{ $s1done ? 's-done' : 's-active' }}">{{ $s1done ? '✓' : '1' }}</div>
         <div class="step-body">
-            <p class="step-title">
-                Mark as Received
+            <p class="step-title">Mark as Received
                 @if($labRequest->request_received_at)
                 <span class="step-ts">{{ $labRequest->request_received_at->timezone('Asia/Manila')->format('M j, Y g:i A') }}</span>
                 @endif
             </p>
             @if(!$labRequest->request_received_at)
-            <button type="button" wire:click="markReceived" wire:loading.attr="disabled" class="btn-step btn-orange">
-                📥 Mark as Received
-            </button>
+            <button type="button" wire:click="markReceived" wire:loading.attr="disabled" class="btn-step btn-primary">📥 Mark as Received</button>
             @else
             <span style="font-size:.78rem;color:#059669;font-weight:600;">✅ Received</span>
             @endif
@@ -380,23 +377,13 @@
 
     <div class="step-connector {{ $s1done ? 'done' : '' }}"></div>
 
-    {{-- ── STEP 2: Specimen Collected ────────────────────────────── --}}
     <div class="step-row">
         <div class="step-num {{ $labRequest->specimen_collected ? 's-done' : ($s1done ? 's-active' : 's-waiting') }}">{{ $labRequest->specimen_collected ? '✓' : '2' }}</div>
         <div class="step-body">
             <p class="step-title">Specimen Collected</p>
             <div style="display:flex;gap:10px;align-items:center;">
-                <input type="text"
-                       wire:model="specimenCollected"
-                       class="tf-input"
-                       style="width:280px;"
-                       placeholder="e.g. venous blood, urine, stool"
-                       {{ !$s1done ? 'disabled' : '' }}>
-                <button type="button" wire:click="saveSpecimen" wire:loading.attr="disabled"
-                        class="btn-step btn-orange" style="padding:8px 16px;"
-                        {{ !$s1done ? 'disabled' : '' }}>
-                    Save
-                </button>
+                <input type="text" wire:model="specimenCollected" class="tf-input" style="width:280px;" placeholder="e.g. venous blood, urine, stool" {{ !$s1done ? 'disabled' : '' }}>
+                <button type="button" wire:click="saveSpecimen" wire:loading.attr="disabled" class="btn-step btn-primary" style="padding:8px 16px;" {{ !$s1done ? 'disabled' : '' }}>Save</button>
             </div>
             @if(!$s1done)
             <p class="lock-notice">🔒 Complete Step 1 first</p>
@@ -408,21 +395,16 @@
 
     <div class="step-connector {{ $s1done ? 'done' : '' }}"></div>
 
-    {{-- ── STEP 3: Test Started ───────────────────────────────────── --}}
     <div class="step-row">
         <div class="step-num {{ $s3done ? 's-done' : ($s1done ? 's-active' : 's-waiting') }}">{{ $s3done ? '✓' : '3' }}</div>
         <div class="step-body">
-            <p class="step-title">
-                Test Started
+            <p class="step-title">Test Started
                 @if($labRequest->test_started_at)
                 <span class="step-ts">{{ $labRequest->test_started_at->timezone('Asia/Manila')->format('M j, Y g:i A') }}</span>
                 @endif
             </p>
             @if(!$labRequest->test_started_at)
-            <button type="button" wire:click="markTestStarted" wire:loading.attr="disabled"
-                    class="btn-step btn-blue" {{ !$s1done ? 'disabled' : '' }}>
-                ▶ Mark Test Started
-            </button>
+            <button type="button" wire:click="markTestStarted" wire:loading.attr="disabled" class="btn-step btn-blue" {{ !$s1done ? 'disabled' : '' }}>▶ Mark Test Started</button>
             @if(!$s1done)<p class="lock-notice">🔒 Complete Step 1 first</p>@endif
             @else
             <span style="font-size:.78rem;color:#059669;font-weight:600;">✅ Test started</span>
@@ -432,16 +414,13 @@
 
     <div class="step-connector {{ $s1done ? 'done' : '' }}"></div>
 
-    {{-- ── STEP 4: Upload Result Files ───────────────────────────── --}}
     <div class="step-row">
         <div class="step-num {{ !empty($resultFiles) && $canUpload ? 's-active' : 's-waiting' }}">4</div>
         <div class="step-body">
             <p class="step-title">Result Files <span style="color:#dc2626;">*</span></p>
-
             @if(!$canUpload)
             <p class="lock-notice">🔒 Complete Step 1 (Mark as Received) before uploading files</p>
             @else
-
             @if(!empty($resultFiles))
             <div class="file-queue">
                 @foreach($resultFiles as $i => $f)
@@ -454,10 +433,8 @@
                 @endforeach
             </div>
             @endif
-
             <div class="drop-zone enabled" style="margin-top:{{ empty($resultFiles) ? '0' : '8px' }};">
-                <input type="file" wire:model="resultFiles" id="labFiles"
-                       accept=".pdf,.jpg,.jpeg,.png,.webp" multiple style="display:none;">
+                <input type="file" wire:model="resultFiles" id="labFiles" accept=".pdf,.jpg,.jpeg,.png,.webp" multiple style="display:none;">
                 <label for="labFiles" style="cursor:pointer;display:block;">
                     <p style="font-size:1.3rem;margin-bottom:4px;">📄</p>
                     <p style="font-size:.85rem;font-weight:700;color:#374151;">{{ empty($resultFiles) ? 'Drop files here or click to browse' : '+ Add more files' }}</p>
@@ -467,41 +444,29 @@
             <div wire:loading wire:target="resultFiles" style="font-size:.78rem;color:#9ca3af;margin-top:5px;">Uploading…</div>
             @error('resultFiles')   <p style="color:#dc2626;font-size:.75rem;margin-top:4px;">{{ $message }}</p> @enderror
             @error('resultFiles.*') <p style="color:#dc2626;font-size:.75rem;margin-top:4px;">{{ $message }}</p> @enderror
-
             <div style="margin-top:12px;">
                 <label class="tf-label">Tech Notes (optional)</label>
                 <textarea wire:model="notes" rows="2" class="tf-area" placeholder="Any notes for the doctor or nurse…"></textarea>
             </div>
-
             @endif
         </div>
     </div>
 
-    {{-- ── COMPLETE BUTTON ────────────────────────────────────────── --}}
-    <button wire:click="saveResult"
-            wire:loading.attr="disabled"
-            wire:loading.class="opacity-50"
-            type="button"
-            class="btn-complete"
-            {{ !$canComplete ? 'disabled' : '' }}>
+    <button wire:click="saveResult" wire:loading.attr="disabled" wire:loading.class="opacity-50" type="button" class="btn-complete" {{ !$canComplete ? 'disabled' : '' }}>
         <span wire:loading.remove wire:target="saveResult">✅ Complete Request &amp; Upload Results</span>
         <span wire:loading wire:target="saveResult">Saving…</span>
     </button>
     @if(!$canComplete)
     <p class="lock-notice" style="margin-top:8px;">
-        🔒
-        @if(!$s1done) Mark as Received first
-        @elseif(empty($resultFiles)) Add at least one result file
-        @endif
+        🔒 @if(!$s1done) Mark as Received first @elseif(empty($resultFiles)) Add at least one result file @endif
     </p>
     @else
     <p style="font-size:.72rem;color:#9ca3af;margin-top:8px;">Test Done time will be recorded automatically when you complete.</p>
     @endif
-
 </div>
 @endif
 
-</div>{{-- /.page-wrap --}}
+</div>
 @endif
 
 </x-filament-panels::page>

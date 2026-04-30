@@ -1,34 +1,49 @@
 <x-filament-panels::page>
 
 {{-- ── Stats Row ─────────────────────────────────────────────────────────── --}}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex flex-col gap-1 shadow-sm">
-        <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Beds</span>
-        <span class="text-3xl font-bold text-gray-800 dark:text-white">{{ $this->totalBeds }}</span>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;">
+
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:.75rem;padding:1rem 1.25rem;display:flex;flex-direction:column;gap:.25rem;box-shadow:0 1px 3px rgba(0,0,0,.06);">
+        <span style="font-size:.7rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;">Total Beds</span>
+        <span style="font-size:1.875rem;font-weight:700;color:#111827;line-height:1.1;">{{ $this->totalBeds }}</span>
     </div>
-    <div class="bg-white dark:bg-gray-800 rounded-xl border border-green-200 dark:border-green-700 p-4 flex flex-col gap-1 shadow-sm">
-        <span class="text-xs font-medium text-green-600 uppercase tracking-wide">Available</span>
-        <span class="text-3xl font-bold text-green-600">{{ $this->availableBeds }}</span>
+
+    <div style="background:#fff;border:1px solid #bbf7d0;border-radius:.75rem;padding:1rem 1.25rem;display:flex;flex-direction:column;gap:.25rem;box-shadow:0 1px 3px rgba(0,0,0,.06);">
+        <span style="font-size:.7rem;font-weight:600;color:#16a34a;text-transform:uppercase;letter-spacing:.05em;">Available</span>
+        <span style="font-size:1.875rem;font-weight:700;color:#16a34a;line-height:1.1;">{{ $this->availableBeds }}</span>
     </div>
-    <div class="bg-white dark:bg-gray-800 rounded-xl border border-red-200 dark:border-red-700 p-4 flex flex-col gap-1 shadow-sm">
-        <span class="text-xs font-medium text-red-500 uppercase tracking-wide">Occupied</span>
-        <span class="text-3xl font-bold text-red-500">{{ $this->occupiedBeds }}</span>
+
+    <div style="background:#fff;border:1px solid #fecaca;border-radius:.75rem;padding:1rem 1.25rem;display:flex;flex-direction:column;gap:.25rem;box-shadow:0 1px 3px rgba(0,0,0,.06);">
+        <span style="font-size:.7rem;font-weight:600;color:#dc2626;text-transform:uppercase;letter-spacing:.05em;">Occupied</span>
+        <span style="font-size:1.875rem;font-weight:700;color:#dc2626;line-height:1.1;">{{ $this->occupiedBeds }}</span>
     </div>
-    <div class="bg-white dark:bg-gray-800 rounded-xl border border-yellow-200 dark:border-yellow-700 p-4 flex flex-col gap-1 shadow-sm">
-        <span class="text-xs font-medium text-yellow-600 uppercase tracking-wide">Rooms Under Maintenance</span>
-        <span class="text-3xl font-bold text-yellow-600">{{ $this->maintenanceRooms }}</span>
+
+    <div style="background:#fff;border:1px solid #fde68a;border-radius:.75rem;padding:1rem 1.25rem;display:flex;flex-direction:column;gap:.25rem;box-shadow:0 1px 3px rgba(0,0,0,.06);">
+        <span style="font-size:.7rem;font-weight:600;color:#d97706;text-transform:uppercase;letter-spacing:.05em;">Rooms Under Maintenance</span>
+        <span style="font-size:1.875rem;font-weight:700;color:#d97706;line-height:1.1;">{{ $this->maintenanceRooms }}</span>
     </div>
+
 </div>
+
+{{-- ── Unassigned Patients Alert ─────────────────────────────────────────── --}}
+@php $unassignedCount = $this->unassignedPatients->count(); @endphp
+@if($unassignedCount > 0)
+<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:.75rem;padding:.875rem 1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem;">
+    <x-heroicon-o-exclamation-triangle class="w-5 h-5 text-yellow-500 shrink-0" />
+    <p style="font-size:.875rem;color:#92400e;margin:0;">
+        <strong>{{ $unassignedCount }}</strong> admitted patient(s) not yet assigned to a bed.
+    </p>
+</div>
+@endif
 
 {{-- ── Filters ───────────────────────────────────────────────────────────── --}}
 <div class="flex flex-wrap gap-3 mb-6">
     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search room or ward..."
         class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white w-56 focus:outline-none focus:ring-2 focus:ring-primary-500" />
 
-    {{-- Ward filter with chevron --}}
     <div style="position:relative;display:inline-flex;align-items:center;">
         <select wire:model.live="wardFilter"
-            style="border:1px solid #d1d5db;border-radius:.5rem;font-size:.875rem;background:#fff;color:#1f2937;outline:none;padding:0.5rem 2.25rem 0.5rem 0.75rem;cursor:pointer;min-width:8rem;-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:none;">
+            style="border:1px solid #d1d5db;border-radius:.5rem;font-size:.875rem;background:#fff;color:#1f2937;outline:none;padding:0.5rem 2.25rem 0.5rem 0.75rem;cursor:pointer;min-width:8rem;-webkit-appearance:none;appearance:none;">
             <option value="">All Wards</option>
             @foreach($this->wards as $ward)
                 <option value="{{ $ward->id }}">{{ $ward->name }}</option>
@@ -41,10 +56,9 @@
         </span>
     </div>
 
-    {{-- Classification filter with chevron --}}
     <div style="position:relative;display:inline-flex;align-items:center;">
         <select wire:model.live="classificationFilter"
-            style="border:1px solid #d1d5db;border-radius:.5rem;font-size:.875rem;background:#fff;color:#1f2937;outline:none;padding:0.5rem 2.25rem 0.5rem 0.75rem;cursor:pointer;min-width:10rem;-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:none;">
+            style="border:1px solid #d1d5db;border-radius:.5rem;font-size:.875rem;background:#fff;color:#1f2937;outline:none;padding:0.5rem 2.25rem 0.5rem 0.75rem;cursor:pointer;min-width:10rem;-webkit-appearance:none;appearance:none;">
             <option value="">All Classifications</option>
             <option value="service">Service</option>
             <option value="pay_ward">Pay Ward</option>
@@ -152,7 +166,7 @@
                         <div class="flex flex-col gap-1.5">
                             @forelse($activeBeds as $bed)
                                 @php
-                                    if ($bed->status === 'available')    { $bedStyle = 'background:#dcfce7;color:#166534;'; }
+                                    if ($bed->status === 'available')       { $bedStyle = 'background:#dcfce7;color:#166534;'; }
                                     elseif ($bed->status === 'occupied')    { $bedStyle = 'background:#fee2e2;color:#991b1b;'; }
                                     elseif ($bed->status === 'maintenance') { $bedStyle = 'background:#fef9c3;color:#854d0e;'; }
                                     else                                    { $bedStyle = 'background:#f3f4f6;color:#374151;'; }
@@ -221,155 +235,66 @@
     </div>
 @empty
     <div class="text-center py-16 text-gray-400">
-        <x-heroicon-o-inbox-stack class="w-12 h-12 mx-auto mb-3 opacity-40" />
+        <x-heroicon-o-inbox-stack class="w-8 h-8 mx-auto mb-3 opacity-40" />
         <p class="text-sm">No rooms found. Try adjusting your filters.</p>
     </div>
 @endforelse
 
 
 {{-- ══════════════════════════════════════════════════════════════════════════ --}}
-{{-- MODALS                                                                     --}}
+{{-- MODALS (identical to original nurse page)                                  --}}
 {{-- ══════════════════════════════════════════════════════════════════════════ --}}
 
-{{-- Shared modal styles injected once --}}
 <style>
-    /* Force-remove native select arrow across all browsers */
-    select.nurse-select {
-        -webkit-appearance: none !important;
-        -moz-appearance: none !important;
-        appearance: none !important;
-        background-image: none !important;
-    }
-    /* IE 10/11 */
-    select.nurse-select::-ms-expand {
-        display: none !important;
-    }
-
     .nurse-modal-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem;
-        background: rgba(0, 0, 0, 0.5);
+        position: fixed; inset: 0; z-index: 9999;
+        display: flex; align-items: center; justify-content: center;
+        padding: 1rem; background: rgba(0,0,0,0.5);
     }
     .nurse-modal {
-        position: relative;
-        width: 100%;
-        max-width: 26rem;
-        background: #fff;
-        border-radius: 0.75rem;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.18);
-        overflow: hidden;
+        position: relative; width: 100%; max-width: 26rem;
+        background: #fff; border-radius: 0.75rem;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.18); overflow: hidden;
     }
-    .dark .nurse-modal {
-        background: #1f2937;
-    }
+    .dark .nurse-modal { background: #1f2937; }
     .nurse-modal-close {
-        position: absolute;
-        top: 0.75rem;
-        right: 0.75rem;
-        padding: 0.25rem;
-        border-radius: 0.375rem;
-        color: #9ca3af;
-        cursor: pointer;
-        background: transparent;
-        border: none;
-        line-height: 1;
+        position: absolute; top: 0.75rem; right: 0.75rem;
+        padding: 0.25rem; border-radius: 0.375rem; color: #9ca3af;
+        cursor: pointer; background: transparent; border: none; line-height: 1;
         transition: background 0.15s, color 0.15s;
     }
-    .nurse-modal-close:hover {
-        background: #f3f4f6;
-        color: #374151;
-    }
+    .nurse-modal-close:hover { background: #f3f4f6; color: #374151; }
     .nurse-modal-icon-wrap {
-        width: 3rem;
-        height: 3rem;
-        border-radius: 9999px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1rem;
+        width: 3rem; height: 3rem; border-radius: 9999px;
+        display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;
     }
-    .nurse-modal-icon-wrap svg {
-        width: 1.5rem;
-        height: 1.5rem;
-    }
+    .nurse-modal-icon-wrap svg { width: 1.5rem; height: 1.5rem; }
     .nurse-modal-header {
-        padding: 2rem 1.5rem 1rem;
-        text-align: center;
+        padding: 2rem 1.5rem 1rem; text-align: center;
         border-bottom: 1px solid #f3f4f6;
     }
-    .dark .nurse-modal-header {
-        border-color: #374151;
-    }
-    .nurse-modal-title {
-        font-size: 1.0625rem;
-        font-weight: 700;
-        color: #111827;
-        margin: 0 0 0.25rem;
-        line-height: 1.3;
-    }
+    .dark .nurse-modal-header { border-color: #374151; }
+    .nurse-modal-title { font-size: 1.0625rem; font-weight: 700; color: #111827; margin: 0 0 0.25rem; line-height: 1.3; }
     .dark .nurse-modal-title { color: #f9fafb; }
-    .nurse-modal-subtitle {
-        font-size: 0.8125rem;
-        color: #6b7280;
-        margin: 0;
-        line-height: 1.5;
-    }
-    .nurse-modal-body {
-        padding: 1.25rem 1.5rem;
-    }
-    .nurse-modal-desc {
-        font-size: 0.875rem;
-        color: #374151;
-        text-align: center;
-        margin: 0;
-        line-height: 1.6;
-    }
+    .nurse-modal-subtitle { font-size: 0.8125rem; color: #6b7280; margin: 0; line-height: 1.5; }
+    .nurse-modal-body { padding: 1.25rem 1.5rem; }
+    .nurse-modal-desc { font-size: 0.875rem; color: #374151; text-align: center; margin: 0; line-height: 1.6; }
     .dark .nurse-modal-desc { color: #d1d5db; }
     .nurse-modal-footer {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.625rem;
-        padding: 1rem 1.5rem;
-        border-top: 1px solid #f3f4f6;
-        background: #f9fafb;
+        display: flex; align-items: center; justify-content: center; gap: 0.625rem;
+        padding: 1rem 1.5rem; border-top: 1px solid #f3f4f6; background: #f9fafb;
     }
-    .dark .nurse-modal-footer {
-        border-color: #374151;
-        background: #111827;
-    }
+    .dark .nurse-modal-footer { border-color: #374151; background: #111827; }
     .nurse-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.375rem;
-        padding: 0.5rem 1.125rem;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        border-radius: 0.5rem;
-        border: none;
-        cursor: pointer;
-        transition: opacity 0.15s, box-shadow 0.15s;
-        line-height: 1;
-        white-space: nowrap;
+        display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem;
+        padding: 0.5rem 1.125rem; font-size: 0.8125rem; font-weight: 600;
+        border-radius: 0.5rem; border: none; cursor: pointer;
+        transition: opacity 0.15s, box-shadow 0.15s; line-height: 1; white-space: nowrap;
     }
     .nurse-btn:hover { opacity: 0.88; }
     .nurse-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-    .nurse-btn-cancel {
-        background: #fff;
-        color: #374151;
-        border: 1px solid #d1d5db;
-    }
-    .dark .nurse-btn-cancel {
-        background: #1f2937;
-        color: #d1d5db;
-        border-color: #4b5563;
-    }
+    .nurse-btn-cancel { background: #fff; color: #374151; border: 1px solid #d1d5db; }
+    .dark .nurse-btn-cancel { background: #1f2937; color: #d1d5db; border-color: #4b5563; }
     .nurse-btn-cancel:hover { background: #f9fafb; opacity: 1; }
     .dark .nurse-btn-cancel:hover { background: #374151; }
     .nurse-btn-danger  { background: #dc2626; color: #fff; }
@@ -378,90 +303,34 @@
     .nurse-btn-warning { background: #d97706; color: #fff; }
     .nurse-btn-indigo  { background: #4338ca; color: #fff; }
     .nurse-input {
-        width: 100%;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        padding: 0.5rem 0.75rem;
-        font-size: 0.875rem;
-        color: #111827;
-        background: #fff;
-        outline: none;
-        transition: border-color 0.15s, box-shadow 0.15s;
-        box-sizing: border-box;
+        width: 100%; border: 1px solid #d1d5db; border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #111827; background: #fff;
+        outline: none; transition: border-color 0.15s, box-shadow 0.15s; box-sizing: border-box;
     }
-    .nurse-input:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
-    }
-    .dark .nurse-input {
-        background: #374151;
-        border-color: #4b5563;
-        color: #f9fafb;
-    }
+    .nurse-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+    .dark .nurse-input { background: #374151; border-color: #4b5563; color: #f9fafb; }
     .nurse-textarea {
-        width: 100%;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        padding: 0.5rem 0.75rem;
-        font-size: 0.875rem;
-        color: #111827;
-        background: #fff;
-        outline: none;
-        resize: none;
-        transition: border-color 0.15s, box-shadow 0.15s;
-        box-sizing: border-box;
+        width: 100%; border: 1px solid #d1d5db; border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #111827; background: #fff;
+        outline: none; resize: none; transition: border-color 0.15s, box-shadow 0.15s; box-sizing: border-box;
     }
-    .nurse-textarea:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
-    }
-    .dark .nurse-textarea {
-        background: #374151;
-        border-color: #4b5563;
-        color: #f9fafb;
-    }
-    .nurse-label {
-        display: block;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        color: #374151;
-        margin-bottom: 0.375rem;
-    }
+    .nurse-textarea:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+    .dark .nurse-textarea { background: #374151; border-color: #4b5563; color: #f9fafb; }
+    .nurse-label { display: block; font-size: 0.8125rem; font-weight: 600; color: #374151; margin-bottom: 0.375rem; }
     .dark .nurse-label { color: #d1d5db; }
     .nurse-field { margin-bottom: 0.875rem; }
     .nurse-field:last-child { margin-bottom: 0; }
-    .nurse-error {
-        font-size: 0.75rem;
-        color: #dc2626;
-        margin-top: 0.25rem;
-    }
-    .nurse-hint {
-        font-size: 0.75rem;
-        color: #9ca3af;
-        margin-top: 0.25rem;
-    }
+    .nurse-error { font-size: 0.75rem; color: #dc2626; margin-top: 0.25rem; }
+    .nurse-hint { font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem; }
     .nurse-search-results {
-        border: 1px solid #e5e7eb;
-        border-radius: 0.5rem;
-        overflow: hidden;
-        max-height: 11rem;
-        overflow-y: auto;
-        margin-top: 0.375rem;
+        border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden;
+        max-height: 11rem; overflow-y: auto; margin-top: 0.375rem;
     }
     .dark .nurse-search-results { border-color: #4b5563; }
     .nurse-result-item {
-        width: 100%;
-        text-align: left;
-        padding: 0.625rem 0.875rem;
-        font-size: 0.8125rem;
-        border: none;
-        border-bottom: 1px solid #f3f4f6;
-        background: #fff;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
+        width: 100%; text-align: left; padding: 0.625rem 0.875rem; font-size: 0.8125rem;
+        border: none; border-bottom: 1px solid #f3f4f6; background: #fff; cursor: pointer;
+        display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
         transition: background 0.12s;
     }
     .nurse-result-item:last-child { border-bottom: none; }
@@ -471,154 +340,65 @@
     .nurse-result-item.selected { background: #eff6ff; border-left: 3px solid #3b82f6; }
     .dark .nurse-result-item.selected { background: #1e3a5f; }
     .nurse-selected-pill {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 0.75rem;
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        border-radius: 0.5rem;
-        margin-top: 0.625rem;
-        font-size: 0.8125rem;
-        color: #1d4ed8;
-        font-weight: 500;
+        display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem;
+        background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 0.5rem;
+        margin-top: 0.625rem; font-size: 0.8125rem; color: #1d4ed8; font-weight: 500;
     }
-    .nurse-info-box {
-        padding: 0.625rem 0.875rem;
-        border-radius: 0.5rem;
-        font-size: 0.8125rem;
-        font-style: italic;
+    .nurse-info-box { padding: 0.625rem 0.875rem; border-radius: 0.5rem; font-size: 0.8125rem; font-style: italic; }
+    .nurse-ward-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 0.5rem; max-height: 12.5rem; overflow-y: auto; }
+    .nurse-ward-btn {
+        padding: 0.625rem 0.75rem; border-radius: 0.5rem; border: 1.5px solid #e5e7eb;
+        background: #fff; font-size: 0.8rem; font-weight: 500; color: #374151;
+        text-align: left; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+        line-height: 1.3; width: 100%;
     }
-    /* Two-step ward→room picker */
-    .nurse-step-tabs {
-        display: flex;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.5rem;
-        overflow: hidden;
-        margin-bottom: 0.875rem;
+    .dark .nurse-ward-btn { background: #1f2937; border-color: #4b5563; color: #d1d5db; }
+    .nurse-ward-btn:hover { border-color: #4338ca; background: #eef2ff; color: #4338ca; }
+    .nurse-ward-btn.selected { border-color: #4338ca; background: #eef2ff; color: #4338ca; font-weight: 700; }
+    .nurse-room-list { display: flex; flex-direction: column; gap: 0.375rem; max-height: 12.5rem; overflow-y: auto; }
+    .nurse-room-btn {
+        padding: 0.5rem 0.875rem; border-radius: 0.5rem; border: 1.5px solid #e5e7eb;
+        background: #fff; font-size: 0.8125rem; font-weight: 500; color: #374151;
+        text-align: left; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+        display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+        width: 100%; border-left: 3px solid transparent;
     }
+    .dark .nurse-room-btn { background: #1f2937; border-color: #4b5563; color: #d1d5db; }
+    .nurse-room-btn:hover { border-color: #4338ca; background: #eef2ff; }
+    .nurse-room-btn.selected { border-left-color: #4338ca; background: #eef2ff; color: #4338ca; font-weight: 700; }
+    .nurse-room-cap { font-size: 0.7rem; color: #9ca3af; white-space: nowrap; }
+    .nurse-room-btn.selected .nurse-room-cap { color: #818cf8; }
+    .nurse-step-back {
+        display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.75rem;
+        font-weight: 600; color: #6b7280; background: none; border: none; cursor: pointer;
+        padding: 0; margin-bottom: 0.625rem; transition: color 0.15s;
+    }
+    .nurse-step-back:hover { color: #4338ca; }
+    .nurse-selected-room-pill {
+        display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem;
+        background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 0.5rem;
+        margin-top: 0.625rem; font-size: 0.8125rem; color: #4338ca; font-weight: 500;
+    }
+    .nurse-step-tabs { display: flex; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden; margin-bottom: 0.875rem; }
     .dark .nurse-step-tabs { border-color: #4b5563; }
     .nurse-step-tab {
-        flex: 1;
-        padding: 0.5rem 0.5rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-align: center;
-        color: #9ca3af;
-        background: #f9fafb;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.375rem;
-        pointer-events: none;
+        flex: 1; padding: 0.5rem 0.5rem; font-size: 0.75rem; font-weight: 600; text-align: center;
+        color: #9ca3af; background: #f9fafb; border: none; display: flex; align-items: center;
+        justify-content: center; gap: 0.375rem; pointer-events: none;
     }
     .dark .nurse-step-tab { background: #1f2937; color: #6b7280; }
     .nurse-step-tab.active { background: #fff; color: #4338ca; }
     .dark .nurse-step-tab.active { background: #374151; color: #818cf8; }
     .nurse-step-tab.done { background: #f0fdf4; color: #16a34a; }
-    .dark .nurse-step-tab.done { background: #052e16; color: #4ade80; }
     .nurse-step-tab:not(:last-child) { border-right: 1px solid #e5e7eb; }
     .dark .nurse-step-tab:not(:last-child) { border-color: #4b5563; }
     .nurse-step-num {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 1.125rem;
-        height: 1.125rem;
-        border-radius: 9999px;
-        font-size: 0.625rem;
-        font-weight: 800;
-        background: #e5e7eb;
-        color: #9ca3af;
-        flex-shrink: 0;
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 1.125rem; height: 1.125rem; border-radius: 9999px; font-size: 0.625rem;
+        font-weight: 800; background: #e5e7eb; color: #9ca3af; flex-shrink: 0;
     }
     .nurse-step-tab.active .nurse-step-num { background: #4338ca; color: #fff; }
     .nurse-step-tab.done .nurse-step-num { background: #16a34a; color: #fff; }
-    .nurse-ward-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem;
-        max-height: 12.5rem;
-        overflow-y: auto;
-    }
-    .nurse-ward-btn {
-        padding: 0.625rem 0.75rem;
-        border-radius: 0.5rem;
-        border: 1.5px solid #e5e7eb;
-        background: #fff;
-        font-size: 0.8rem;
-        font-weight: 500;
-        color: #374151;
-        text-align: left;
-        cursor: pointer;
-        transition: border-color 0.15s, background 0.15s;
-        line-height: 1.3;
-        width: 100%;
-    }
-    .dark .nurse-ward-btn { background: #1f2937; border-color: #4b5563; color: #d1d5db; }
-    .nurse-ward-btn:hover { border-color: #4338ca; background: #eef2ff; color: #4338ca; }
-    .dark .nurse-ward-btn:hover { background: #312e81; border-color: #818cf8; color: #c7d2fe; }
-    .nurse-ward-btn.selected { border-color: #4338ca; background: #eef2ff; color: #4338ca; font-weight: 700; }
-    .nurse-room-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.375rem;
-        max-height: 12.5rem;
-        overflow-y: auto;
-    }
-    .nurse-room-btn {
-        padding: 0.5rem 0.875rem;
-        border-radius: 0.5rem;
-        border: 1.5px solid #e5e7eb;
-        background: #fff;
-        font-size: 0.8125rem;
-        font-weight: 500;
-        color: #374151;
-        text-align: left;
-        cursor: pointer;
-        transition: border-color 0.15s, background 0.15s;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-        width: 100%;
-        border-left: 3px solid transparent;
-    }
-    .dark .nurse-room-btn { background: #1f2937; border-color: #4b5563; color: #d1d5db; }
-    .nurse-room-btn:hover { border-color: #4338ca; background: #eef2ff; }
-    .dark .nurse-room-btn:hover { background: #312e81; border-color: #818cf8; }
-    .nurse-room-btn.selected { border-left-color: #4338ca; background: #eef2ff; color: #4338ca; font-weight: 700; }
-    .nurse-room-cap { font-size: 0.7rem; color: #9ca3af; white-space: nowrap; }
-    .nurse-room-btn.selected .nurse-room-cap { color: #818cf8; }
-    .nurse-step-back {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #6b7280;
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0;
-        margin-bottom: 0.625rem;
-        transition: color 0.15s;
-    }
-    .nurse-step-back:hover { color: #4338ca; }
-    .nurse-selected-room-pill {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 0.75rem;
-        background: #eef2ff;
-        border: 1px solid #c7d2fe;
-        border-radius: 0.5rem;
-        margin-top: 0.625rem;
-        font-size: 0.8125rem;
-        color: #4338ca;
-        font-weight: 500;
-    }
 </style>
 
 
@@ -628,13 +408,11 @@
 @teleport('body')
 <div class="nurse-modal-overlay">
     <div class="nurse-modal">
-
         <button wire:click="$set('showAddBedModal', false)" class="nurse-modal-close" title="Close">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width:1.1rem;height:1.1rem;">
                 <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
             </svg>
         </button>
-
         <div class="nurse-modal-header">
             <div class="nurse-modal-icon-wrap" style="background:#ede9fe;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="#7c3aed">
@@ -644,24 +422,14 @@
             <h2 class="nurse-modal-title">Add Bed</h2>
             <p class="nurse-modal-subtitle">Room <strong>{{ $addRoom?->room_number }}</strong></p>
         </div>
-
         <div class="nurse-modal-body">
             <div class="nurse-field">
-                <label class="nurse-label">
-                    Bed Label <span style="color:#ef4444;">*</span>
-                </label>
-                <input type="text" wire:model="newBedLabel"
-                    placeholder="e.g. Bed A, Bed 1, Aisle Bed 3"
-                    class="nurse-input" />
-                @error('newBedLabel')
-                    <p class="nurse-error">{{ $message }}</p>
-                @enderror
-                <p class="nurse-hint">
-                    Current: {{ $addRoom?->beds()->where('is_active', true)->count() }} / {{ $addRoom?->bed_capacity }}
-                </p>
+                <label class="nurse-label">Bed Label <span style="color:#ef4444;">*</span></label>
+                <input type="text" wire:model="newBedLabel" placeholder="e.g. Bed A, Bed 1, Aisle Bed 3" class="nurse-input" />
+                @error('newBedLabel') <p class="nurse-error">{{ $message }}</p> @enderror
+                <p class="nurse-hint">Current: {{ $addRoom?->beds()->where('is_active', true)->count() }} / {{ $addRoom?->bed_capacity }}</p>
             </div>
         </div>
-
         <div class="nurse-modal-footer">
             <button wire:click="$set('showAddBedModal', false)" class="nurse-btn nurse-btn-cancel">Cancel</button>
             <button wire:click="addBed" class="nurse-btn nurse-btn-danger">
@@ -671,7 +439,6 @@
                 Add Bed
             </button>
         </div>
-
     </div>
 </div>
 @endteleport
@@ -684,13 +451,11 @@
 @teleport('body')
 <div class="nurse-modal-overlay">
     <div class="nurse-modal">
-
         <button wire:click="$set('showAssignModal', false)" class="nurse-modal-close" title="Close">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width:1.1rem;height:1.1rem;">
                 <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
             </svg>
         </button>
-
         <div class="nurse-modal-header">
             <div class="nurse-modal-icon-wrap" style="background:#dbeafe;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="#1d4ed8">
@@ -698,16 +463,11 @@
                 </svg>
             </div>
             <h2 class="nurse-modal-title">Assign Patient</h2>
-            <p class="nurse-modal-subtitle">
-                Bed <strong>{{ $assignBed?->bed_label }}</strong> &bull; Room <strong>{{ $assignBed?->room?->room_number }}</strong>
-            </p>
+            <p class="nurse-modal-subtitle">Bed <strong>{{ $assignBed?->bed_label }}</strong> &bull; Room <strong>{{ $assignBed?->room?->room_number }}</strong></p>
         </div>
-
         <div class="nurse-modal-body">
             <div class="nurse-field">
-                <label class="nurse-label">
-                    Search Admitted Patient <span style="color:#ef4444;">*</span>
-                </label>
+                <label class="nurse-label">Search Admitted Patient <span style="color:#ef4444;">*</span></label>
                 <div style="position:relative;">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                         style="position:absolute;left:.625rem;top:50%;transform:translateY(-50%);width:1rem;height:1rem;color:#9ca3af;pointer-events:none;">
@@ -717,9 +477,7 @@
                         placeholder="Type name or case number..."
                         class="nurse-input" style="padding-left:2.25rem;" />
                 </div>
-                @error('assignVisitId')
-                    <p class="nurse-error">{{ $message }}</p>
-                @enderror
+                @error('assignVisitId') <p class="nurse-error">{{ $message }}</p> @enderror
             </div>
 
             @if(trim($patientSearch) !== '')
@@ -764,20 +522,16 @@
                 @php $selectedVisit = \App\Models\Visit::with('patient')->find($assignVisitId); @endphp
                 <div class="nurse-selected-pill">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width:1rem;height:1rem;flex-shrink:0;">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-5.5-2.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0ZM10 12a5.99 5.99 0 0 0-4.793 2.39A6.483 6.483 0 0 0 10 16.5a6.483 6.483 0 0 0 4.793-2.11A5.99 5.99 0 0 0 10 12Z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-5.5-2.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0ZM10 12a5.99 5.99 0 0 0-4.793 2.39A6.483 6.483 0 0 0 10 16.5a6.483 6.483 0 0 0 4.793-2.11A5.99 5.99 0 0 0 10 12Z" clip-rule="evenodd" />
                     </svg>
                     <span class="truncate">{{ $selectedVisit?->patient?->full_name }} &bull; {{ $selectedVisit?->patient?->case_no }}</span>
                 </div>
             @endif
         </div>
-
         <div class="nurse-modal-footer">
             <button wire:click="$set('showAssignModal', false)" class="nurse-btn nurse-btn-cancel">Cancel</button>
-            <button wire:click="assignPatient" {{ ! $assignVisitId ? 'disabled' : '' }} class="nurse-btn nurse-btn-primary">
-                Assign Patient
-            </button>
+            <button wire:click="assignPatient" {{ ! $assignVisitId ? 'disabled' : '' }} class="nurse-btn nurse-btn-primary">Assign Patient</button>
         </div>
-
     </div>
 </div>
 @endteleport
@@ -790,13 +544,11 @@
 @teleport('body')
 <div class="nurse-modal-overlay">
     <div class="nurse-modal">
-
         <button wire:click="$set('showUnassignModal', false)" class="nurse-modal-close" title="Close">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width:1.1rem;height:1.1rem;">
                 <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
             </svg>
         </button>
-
         <div class="nurse-modal-header">
             <div class="nurse-modal-icon-wrap" style="background:#ffedd5;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="#c2410c">
@@ -806,7 +558,6 @@
             <h2 class="nurse-modal-title">Unassign Patient</h2>
             <p class="nurse-modal-subtitle">This will free up the bed.</p>
         </div>
-
         <div class="nurse-modal-body">
             <p class="nurse-modal-desc">
                 @if($unassignBed?->visit?->patient)
@@ -815,16 +566,12 @@
                     Unassign the patient from bed <strong>{{ $unassignBed?->bed_label }}</strong>?
                 @endif
             </p>
-            <p style="font-size:.8125rem;color:#9ca3af;text-align:center;margin:.5rem 0 0;">
-                The bed will become available for new assignments.
-            </p>
+            <p style="font-size:.8125rem;color:#9ca3af;text-align:center;margin:.5rem 0 0;">The bed will become available for new assignments.</p>
         </div>
-
         <div class="nurse-modal-footer">
             <button wire:click="$set('showUnassignModal', false)" class="nurse-btn nurse-btn-cancel">Cancel</button>
             <button wire:click="unassignPatient" class="nurse-btn nurse-btn-danger">Yes, Unassign</button>
         </div>
-
     </div>
 </div>
 @endteleport
@@ -837,13 +584,11 @@
 @teleport('body')
 <div class="nurse-modal-overlay">
     <div class="nurse-modal">
-
         <button wire:click="$set('showMaintenanceModal', false)" class="nurse-modal-close" title="Close">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width:1.1rem;height:1.1rem;">
                 <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
             </svg>
         </button>
-
         <div class="nurse-modal-header">
             @if($maintBed?->status === 'maintenance')
                 <div class="nurse-modal-icon-wrap" style="background:#dcfce7;">
@@ -862,19 +607,13 @@
             @endif
             <p class="nurse-modal-subtitle">Bed <strong>{{ $maintBed?->bed_label }}</strong></p>
         </div>
-
         <div class="nurse-modal-body">
             @if($maintBed?->status === 'maintenance')
-                <p class="nurse-modal-desc">
-                    Bed <strong>{{ $maintBed?->bed_label }}</strong> will be marked <strong style="color:#16a34a;">available</strong> and open for patient assignments.
-                </p>
+                <p class="nurse-modal-desc">Bed <strong>{{ $maintBed?->bed_label }}</strong> will be marked <strong style="color:#16a34a;">available</strong> and open for patient assignments.</p>
             @else
-                <p class="nurse-modal-desc">
-                    Bed <strong>{{ $maintBed?->bed_label }}</strong> will be flagged <strong style="color:#ca8a04;">under maintenance</strong> and unavailable for patient assignments.
-                </p>
+                <p class="nurse-modal-desc">Bed <strong>{{ $maintBed?->bed_label }}</strong> will be flagged <strong style="color:#ca8a04;">under maintenance</strong> and unavailable for patient assignments.</p>
             @endif
         </div>
-
         <div class="nurse-modal-footer">
             <button wire:click="$set('showMaintenanceModal', false)" class="nurse-btn nurse-btn-cancel">Cancel</button>
             @if($maintBed?->status === 'maintenance')
@@ -883,7 +622,6 @@
                 <button wire:click="toggleBedMaintenance({{ $maintBed?->id }})" class="nurse-btn nurse-btn-warning">Set Maintenance</button>
             @endif
         </div>
-
     </div>
 </div>
 @endteleport
@@ -896,13 +634,11 @@
 @teleport('body')
 <div class="nurse-modal-overlay">
     <div class="nurse-modal">
-
         <button wire:click="$set('showRoomMaintenanceModal', false)" class="nurse-modal-close" title="Close">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width:1.1rem;height:1.1rem;">
                 <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
             </svg>
         </button>
-
         <div class="nurse-modal-header">
             @if($maintRoom?->is_under_maintenance)
                 <div class="nurse-modal-icon-wrap" style="background:#dcfce7;">
@@ -921,22 +657,16 @@
             @endif
             <p class="nurse-modal-subtitle">Room <strong>{{ $maintRoom?->room_number }}</strong></p>
         </div>
-
         <div class="nurse-modal-body">
             @if($maintRoom?->is_under_maintenance)
-                <p class="nurse-modal-desc">
-                    Room <strong>{{ $maintRoom?->room_number }}</strong> will be marked <strong style="color:#16a34a;">operational</strong>.
-                    Nurses will be able to assign beds in this room again.
-                </p>
+                <p class="nurse-modal-desc">Room <strong>{{ $maintRoom?->room_number }}</strong> will be marked <strong style="color:#16a34a;">operational</strong>.</p>
                 @if($maintRoom?->maintenance_notes)
                     <div class="nurse-info-box" style="background:#fee2e2;border:1px solid #fca5a5;color:#b91c1c;margin-top:.75rem;">
                         Current note: {{ $maintRoom->maintenance_notes }}
                     </div>
                 @endif
             @else
-                <p class="nurse-modal-desc">
-                    Nurses will see this room as unavailable. Existing beds will be flagged.
-                </p>
+                <p class="nurse-modal-desc">Nurses will see this room as unavailable. Existing beds will be flagged.</p>
                 <div class="nurse-field" style="margin-top:.875rem;">
                     <label class="nurse-label">Reason for Maintenance</label>
                     <textarea wire:model="maintenanceRoomNotes" rows="2"
@@ -945,7 +675,6 @@
                 </div>
             @endif
         </div>
-
         <div class="nurse-modal-footer">
             <button wire:click="$set('showRoomMaintenanceModal', false)" class="nurse-btn nurse-btn-cancel">Cancel</button>
             @if($maintRoom?->is_under_maintenance)
@@ -954,7 +683,6 @@
                 <button wire:click="toggleRoomMaintenance" class="nurse-btn nurse-btn-danger">Confirm</button>
             @endif
         </div>
-
     </div>
 </div>
 @endteleport
@@ -967,13 +695,11 @@
 @teleport('body')
 <div class="nurse-modal-overlay">
     <div class="nurse-modal">
-
         <button wire:click="$set('showRemoveModal', false)" class="nurse-modal-close" title="Close">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width:1.1rem;height:1.1rem;">
                 <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
             </svg>
         </button>
-
         <div class="nurse-modal-header">
             <div class="nurse-modal-icon-wrap" style="background:#fee2e2;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="#dc2626">
@@ -983,20 +709,13 @@
             <h2 class="nurse-modal-title">Remove Bed</h2>
             <p class="nurse-modal-subtitle">This action cannot be undone.</p>
         </div>
-
         <div class="nurse-modal-body">
-            <p class="nurse-modal-desc">
-                Are you sure you want to permanently remove bed
-                <strong>{{ $removeBed?->bed_label }}</strong>
-                from Room <strong>{{ $removeBed?->room?->room_number }}</strong>?
-            </p>
+            <p class="nurse-modal-desc">Are you sure you want to permanently remove bed <strong>{{ $removeBed?->bed_label }}</strong> from Room <strong>{{ $removeBed?->room?->room_number }}</strong>?</p>
         </div>
-
         <div class="nurse-modal-footer">
             <button wire:click="$set('showRemoveModal', false)" class="nurse-btn nurse-btn-cancel">Cancel</button>
             <button wire:click="removeBed({{ $removeBed?->id }})" class="nurse-btn nurse-btn-danger">Yes, Remove</button>
         </div>
-
     </div>
 </div>
 @endteleport
@@ -1007,7 +726,6 @@
 @if($showTransferModal)
 @php
     $transferBedObj = \App\Models\Bed::with('room')->find($transferBedId);
-    // Group allRooms by ward for two-step picker
     $roomsByWard = $this->allRooms
         ->where('id', '!=', $transferBedObj?->room_id)
         ->groupBy(fn($r) => $r->ward->name);
@@ -1024,13 +742,11 @@
         selectRoom(id, label) { this.selectedRoomId = id; this.selectedRoomLabel = label; },
         goBack() { this.step = 1; this.selectedWard = ''; this.selectedRoomId = ''; this.selectedRoomLabel = ''; }
     }">
-
         <button wire:click="$set('showTransferModal', false)" class="nurse-modal-close" title="Close">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width:1.1rem;height:1.1rem;">
                 <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
             </svg>
         </button>
-
         <div class="nurse-modal-header">
             <div class="nurse-modal-icon-wrap" style="background:#e0e7ff;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="#4338ca">
@@ -1038,14 +754,9 @@
                 </svg>
             </div>
             <h2 class="nurse-modal-title">Transfer Bed</h2>
-            <p class="nurse-modal-subtitle">
-                Moving <strong>{{ $transferBedObj?->bed_label }}</strong> from Room <strong>{{ $transferBedObj?->room?->room_number }}</strong>
-            </p>
+            <p class="nurse-modal-subtitle">Moving <strong>{{ $transferBedObj?->bed_label }}</strong> from Room <strong>{{ $transferBedObj?->room?->room_number }}</strong></p>
         </div>
-
         <div class="nurse-modal-body">
-
-            {{-- Step indicator --}}
             <div class="nurse-step-tabs">
                 <div class="nurse-step-tab" :class="step === 1 ? 'active' : 'done'">
                     <span class="nurse-step-num">
@@ -1064,7 +775,6 @@
                 </div>
             </div>
 
-            {{-- Step 1: Ward picker --}}
             <div x-show="step === 1">
                 <p class="nurse-label" style="margin-bottom:.5rem;">Choose a ward</p>
                 <div class="nurse-ward-grid">
@@ -1082,7 +792,6 @@
                 </div>
             </div>
 
-            {{-- Step 2: Room picker --}}
             <div x-show="step === 2" x-cloak>
                 <button type="button" class="nurse-step-back" @click="goBack()">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" style="width:.875rem;height:.875rem;">
@@ -1090,9 +799,7 @@
                     </svg>
                     Back to wards
                 </button>
-                <p class="nurse-label" style="margin-bottom:.5rem;">
-                    Rooms in <span x-text="selectedWard" style="color:#4338ca;"></span>
-                </p>
+                <p class="nurse-label" style="margin-bottom:.5rem;">Rooms in <span x-text="selectedWard" style="color:#4338ca;"></span></p>
                 <div class="nurse-room-list">
                     @foreach($wardNames as $wName)
                         <template x-if="selectedWard === '{{ $wName }}'">
@@ -1112,7 +819,6 @@
                         </template>
                     @endforeach
                 </div>
-
                 <div x-show="selectedRoomId !== ''" class="nurse-selected-room-pill">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width:1rem;height:1rem;flex-shrink:0;">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
@@ -1124,18 +830,15 @@
             @error('transferRoomId')
                 <p class="nurse-error" style="margin-top:.5rem;">{{ $message }}</p>
             @enderror
-
         </div>
-
         <div class="nurse-modal-footer">
             <button wire:click="$set('showTransferModal', false)" class="nurse-btn nurse-btn-cancel">Cancel</button>
             <button wire:click="transferBed" class="nurse-btn nurse-btn-indigo"
                 x-bind:disabled="selectedRoomId === ''"
-                style="opacity:1;" :style="selectedRoomId === '' ? 'opacity:.45;cursor:not-allowed;' : ''">
+                :style="selectedRoomId === '' ? 'opacity:.45;cursor:not-allowed;' : ''">
                 Transfer Bed
             </button>
         </div>
-
     </div>
 </div>
 @endteleport

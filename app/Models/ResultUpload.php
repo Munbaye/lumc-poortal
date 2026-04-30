@@ -54,9 +54,9 @@ class ResultUpload extends Model
     public function getFileTypeIconAttribute(): string
     {
         return match (true) {
-            str_contains($this->file_mime ?? '', 'pdf')   => '📄',
-            str_contains($this->file_mime ?? '', 'image') => '🖼️',
-            default => '📎',
+            str_contains($this->file_mime ?? '', 'pdf')   => 'heroicon-o-document-text',
+            str_contains($this->file_mime ?? '', 'image') => 'heroicon-o-photo',
+            default                                      => 'heroicon-o-paper-clip',
         };
     }
 

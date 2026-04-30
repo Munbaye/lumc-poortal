@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Nurse\Pages;
+namespace App\Filament\Clerk\Pages;
 
 use App\Models\Bed;
 use App\Models\Room;
@@ -10,18 +10,6 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Livewire\WithPagination;
 
-/**
- * BedManagement — Nurse panel page.
- *
- * Nurses see all wards and rooms, can:
- *  - Add / remove beds per room
- *  - Toggle bed maintenance status
- *  - Toggle ROOM maintenance status (nurse can also set/clear room maintenance)
- *  - Assign an admitted patient to a bed
- *  - Unassign a patient from a bed
- *  - Transfer a bed from one room to another
- *  - Search patients live with highlight
- */
 class BedManagement extends Page
 {
     use WithPagination;
@@ -29,7 +17,7 @@ class BedManagement extends Page
     protected static ?string $navigationIcon  = 'heroicon-o-inbox-stack';
     protected static ?string $navigationLabel = 'Bed Management';
     protected static ?string $title           = 'Bed Management';
-    protected static string  $view            = 'filament.nurse.pages.bed-management';
+    protected static string  $view            = 'filament.clerk.pages.bed-management';
     protected static ?int    $navigationSort  = 5;
 
     // ── Filter state ──────────────────────────────────────────────────────────
@@ -66,8 +54,8 @@ class BedManagement extends Page
     public bool   $showTransferModal = false;
 
     // ── Room Maintenance toggle modal ─────────────────────────────────────────
-    public ?int   $maintenanceRoomId       = null;
-    public string $maintenanceRoomNotes    = '';
+    public ?int   $maintenanceRoomId        = null;
+    public string $maintenanceRoomNotes     = '';
     public bool   $showRoomMaintenanceModal = false;
 
     // ── Listeners ─────────────────────────────────────────────────────────────
@@ -137,7 +125,7 @@ class BedManagement extends Page
             ->get();
     }
 
-    // ── Computed: all admitted+unassigned patients (for unassigned count) ─────
+    // ── Computed: all admitted+unassigned patients ────────────────────────────
     public function getUnassignedPatientsProperty()
     {
         $assignedVisitIds = Bed::whereNotNull('visit_id')
@@ -313,7 +301,7 @@ class BedManagement extends Page
     }
 
     // =========================================================================
-    // TOGGLE ROOM MAINTENANCE (nurse can also set/clear)
+    // TOGGLE ROOM MAINTENANCE
     // =========================================================================
 
     public function openRoomMaintenanceModal(int $roomId): void
@@ -332,7 +320,6 @@ class BedManagement extends Page
         if (! $room) return;
 
         if ($room->is_under_maintenance) {
-            // Clear maintenance
             $room->update([
                 'is_under_maintenance' => false,
                 'maintenance_notes'    => null,
@@ -342,7 +329,6 @@ class BedManagement extends Page
                 ->title("Room {$room->room_number} marked as Operational.")
                 ->send();
         } else {
-            // Set maintenance
             $room->update([
                 'is_under_maintenance' => true,
                 'maintenance_notes'    => trim($this->maintenanceRoomNotes) ?: null,

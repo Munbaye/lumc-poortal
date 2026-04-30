@@ -87,18 +87,30 @@ class RegisterPatient extends Page
     }
 
     // ── Search wiring ────────────────────────────────────────────────────────
-    public function updatedSearchFamilyName(): void { $this->runSearch(); }
-    public function updatedSearchFirstName(): void  { if (strlen($this->searchFamilyName) >= 2) $this->runSearch(); }
-    public function updatedSearchSex(): void        { if (strlen($this->searchFamilyName) >= 2) $this->runSearch(); }
-    public function updatedSearchAge(): void        { if (strlen($this->searchFamilyName) >= 2) $this->runSearch(); }
+    public function updatedSearchFamilyName(): void
+    {
+        $this->runSearch();
+    }
+    public function updatedSearchFirstName(): void
+    {
+        if (strlen($this->searchFamilyName) >= 2) $this->runSearch();
+    }
+    public function updatedSearchSex(): void
+    {
+        if (strlen($this->searchFamilyName) >= 2) $this->runSearch();
+    }
+    public function updatedSearchAge(): void
+    {
+        if (strlen($this->searchFamilyName) >= 2) $this->runSearch();
+    }
     public function updatedSearchBirthday(): void
     {
-    if ($this->searchBirthday) {
-        $this->searchAge = \Carbon\Carbon::parse($this->searchBirthday)->age;
-    } else {
-        $this->searchAge = null;
-    }
-    if (strlen($this->searchFamilyName) >= 2) $this->runSearch();
+        if ($this->searchBirthday) {
+            $this->searchAge = \Carbon\Carbon::parse($this->searchBirthday)->age;
+        } else {
+            $this->searchAge = null;
+        }
+        if (strlen($this->searchFamilyName) >= 2) $this->runSearch();
     }
 
     // FIX: Auto-calculate age when birthday is entered
@@ -125,7 +137,7 @@ class RegisterPatient extends Page
             $this->searchBirthday,
             $this->searchAge,
         );
-        $this->searchResults = $results->map(fn ($p) => [
+        $this->searchResults = $results->map(fn($p) => [
             'id'             => $p->id,
             'case_no'        => $p->case_no,
             'full_name'      => $p->full_name,
@@ -146,9 +158,17 @@ class RegisterPatient extends Page
         $patient = Patient::findOrFail($patientId);
         $this->selectedPatientId = $patientId;
         $this->formData = array_merge($this->formData, $patient->only([
-            'family_name', 'first_name', 'middle_name',
-            'sex', 'address', 'contact_number', 'occupation',
-            'civil_status', 'spouse_name', 'father_name', 'mother_name',
+            'family_name',
+            'first_name',
+            'middle_name',
+            'sex',
+            'address',
+            'contact_number',
+            'occupation',
+            'civil_status',
+            'spouse_name',
+            'father_name',
+            'mother_name',
         ]));
         if ($patient->birthday) {
             $this->formData['birthday'] = $patient->birthday->format('Y-m-d');
@@ -230,9 +250,9 @@ class RegisterPatient extends Page
 
         if (class_exists(ActivityLog::class)) {
             ActivityLog::record(
-                action:       ActivityLog::ACT_CREATED_PATIENT,
-                category:     ActivityLog::CAT_PATIENT,
-                subject:      $patient,
+                action: ActivityLog::ACT_CREATED_PATIENT,
+                category: ActivityLog::CAT_PATIENT,
+                subject: $patient,
                 subjectLabel: 'Doe, ' . $firstName . ' (' . $patient->case_no . ')',
                 newValues: [
                     'type'            => 'UNKNOWN',
@@ -336,12 +356,12 @@ class RegisterPatient extends Page
 
         if (class_exists(ActivityLog::class)) {
             ActivityLog::record(
-                action:       $action,
-                category:     ActivityLog::CAT_PATIENT,
-                subject:      $patient,
+                action: $action,
+                category: ActivityLog::CAT_PATIENT,
+                subject: $patient,
                 subjectLabel: $patient->full_name . ' (' . $patient->case_no . ')',
-                oldValues:    $oldValues,
-                newValues:    array_filter([
+                oldValues: $oldValues,
+                newValues: array_filter([
                     'family_name'     => $patient->family_name,
                     'first_name'      => $patient->first_name,
                     'sex'             => $patient->sex,
@@ -373,7 +393,7 @@ class RegisterPatient extends Page
     private function properName(string $name): string
     {
         return implode(' ', array_map(
-            fn ($w) => ucfirst(strtolower($w)),
+            fn($w) => ucfirst(strtolower($w)),
             explode(' ', trim($name))
         ));
     }

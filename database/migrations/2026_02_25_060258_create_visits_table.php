@@ -13,22 +13,34 @@ return new class extends Migration
             $table->foreignId('clerk_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('assigned_doctor_id')->nullable()->constrained('users')->nullOnDelete();
 
-            $table->enum('visit_type', ['OPD', 'ER'])->default('OPD');
+            // ── Updated visit_type to include NICU ────────────────────────────
+            $table->enum('visit_type', ['OPD', 'ER', 'NICU'])->default('OPD');
             $table->text('chief_complaint');
 
-            // ── Workflow status ───────────────────────────────────────────────
+            // ── Workflow status (updated for NICU provisional) ────────────────
             $table->enum('status', [
-                'registered',  // Clerk registered patient
-                'vitals_done', // Vitals recorded
-                'assessed',    // Doctor assessed — not admitted
-                'discharged',  // Discharged / HAMA / Expired
-                'admitted',    // Admitted to ward
-                'referred',    // Referred out
+                'registered',           // Clerk registered patient
+                'provisional_registration', // NICU: created by nurse, needs clerk
+                'vitals_done',          // Vitals recorded
+                'assessed',             // Doctor assessed — not admitted
+                'discharged',           // Discharged / HAMA / Expired
+                'admitted',             // Admitted to ward
+                'referred',             // Referred out
             ])->default('registered');
+
+            // ── Flag for provisional records ─────────────────────────────
+            $table->boolean('is_provisionally_registered')->default(false);
+
+            // ── For transferred babies ───────────────────────────────────
+            $table->string('referring_facility')->nullable();
+            $table->enum('admission_type', [
+                'born_at_lumc',
+                'transferred',
+            ])->nullable();
 
             // ── Doctor sets on assessment ─────────────────────────────────────
             $table->text('admitting_diagnosis')->nullable();   // shown to clerk
-            $table->string('admitted_service')->nullable();    // e.g. "Internal Medicine"
+            $table->string('admitted_service')->nullable();    // e.g. "NICU", "Internal Medicine"
             $table->enum('disposition', ['Discharged','Admitted','Referred','HAMA','Expired'])->nullable();
             $table->text('referral_notes')->nullable();
 
@@ -53,6 +65,7 @@ return new class extends Migration
             $table->index(['visit_type', 'status']);
             $table->index('registered_at');
             $table->index('doctor_admitted_at');
+            $table->index('is_provisionally_registered');
         });
     }
 

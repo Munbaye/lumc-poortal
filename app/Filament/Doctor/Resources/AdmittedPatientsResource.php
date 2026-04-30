@@ -27,7 +27,7 @@ class AdmittedPatientsResource extends Resource
         $doctorId = auth()->id();
 
         return Visit::query()
-            ->with(['patient', 'medicalHistory.doctor'])
+            ->with(['patient', 'medicalHistory.doctor', 'nicuAdmission'])
             ->whereNotNull('doctor_admitted_at')
             ->where('status', 'admitted')
             ->where(function (Builder $q) use ($doctorId) {
@@ -109,7 +109,14 @@ class AdmittedPatientsResource extends Resource
                             ? 'Clerk admitted ' . $record->clerk_admitted_at->timezone('Asia/Manila')->diffForHumans()
                             : '⏳ Pending clerk admission'
                     ),
+                Tables\Columns\TextColumn::make('nicuAdmission.birth_weight_grams')
+                    ->label('Birth Weight')
+                    ->formatStateUsing(fn ($state) => $state ? $state . ' g' : '—')
+                    ->visible(fn ($record) => $record && $record->visit_type === 'NICU'),
 
+                Tables\Columns\TextColumn::make('nicuAdmission.apgar_display')
+                    ->label('APGAR')
+                    ->visible(fn ($record) => $record && $record->visit_type === 'NICU'),
             ])
 
             ->emptyStateHeading(fn (\Livewire\Component $livewire) =>
