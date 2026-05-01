@@ -7,6 +7,7 @@ use App\Http\Controllers\ChartController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\ClerkFormController;
 use App\Http\Controllers\NurseFormController;
+use App\Http\Controllers\SignatureController;
 
 // ── PUBLIC LANDING PAGE ────────────────────────────────────────────────────────
 Route::get('/', function () {
@@ -105,6 +106,11 @@ Route::get('/forgot-password', function () {
 
 Route::middleware(['auth'])->group(function () {
 
+    // ── SIGNATURE SAVE ────────────────────────────────────────────────────────
+    // Accepts the panel name so the redirect goes back to the right panel's page.
+    Route::post('/signature/save/{panel}', [SignatureController::class, 'save'])
+        ->name('signature.save');
+
     // ── ER Record ─────────────────────────────────────────────────────────────
     Route::get('/forms/er-record/{visit}', [ClerkFormController::class, 'erRecord'])
         ->name('forms.er-record');
@@ -161,5 +167,10 @@ Route::middleware(['auth'])->group(function () {
     // ── Breastfeeding Observation Job Aid (NUR-044-0) ─────────────────────────
     Route::get('/forms/breastfeeding-observation/{visit}', [NurseFormController::class, 'breastfeedingObservation'])
         ->name('forms.breastfeeding-observation');
+
+    // Doctor Discharge Summary — printable standalone page
+    Route::get('/forms/discharge-summary/{visit}', [ChartController::class, 'dischargeSummaryPrint'])
+        ->name('forms.discharge-summary')
+        ->middleware('auth');
 
 });
