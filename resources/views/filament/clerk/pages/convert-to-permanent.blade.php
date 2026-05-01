@@ -238,30 +238,31 @@
     $momTel  = $first($admRecord?->mother_phone,   $baby?->mother_contact ?? '');
 
     // ── Admission date/time ───────────────────────────────────────────────────
-    // Priority: saved admRecord → doctor_admitted_at → nicu date_time_of_birth → visit.created_at
-    // ALL raw datetimes from DB are UTC → convert explicitly to Asia/Manila
+    // Priority:
+    //   1. admRecord (clerk already saved the form) — use as-is
+    //   2. clerk_admitted_at (clerk completed admission)
+    //   3. doctor_admitted_at (doctor admitted the patient)
+    //   4. blank — never fall back to birth time or created_at
+    // All DB timestamps are UTC → convert to Asia/Manila before display.
     $admDateInput = '';
     $admTimeVal   = '';
 
     if ($admRecord?->admission_date) {
-        // Already saved by clerk — use as-is (stored as plain date/time strings)
+        // Clerk already saved the ADM-001 form — use stored values as-is
         $admDateInput = \Carbon\Carbon::parse($admRecord->admission_date)->format('Y-m-d');
         $admTimeVal   = $admRecord->admission_time ?? '';
+    } elseif ($visit->clerk_admitted_at) {
+        // Clerk completed admission
+        $dt           = \Carbon\Carbon::parse($visit->clerk_admitted_at)->setTimezone($tz);
+        $admDateInput = $dt->format('Y-m-d');
+        $admTimeVal   = $dt->format('H:i');
     } elseif ($visit->doctor_admitted_at) {
+        // Doctor admitted the patient
         $dt           = \Carbon\Carbon::parse($visit->doctor_admitted_at)->setTimezone($tz);
         $admDateInput = $dt->format('Y-m-d');
         $admTimeVal   = $dt->format('H:i');
-    } elseif ($nicuAdm?->date_time_of_birth) {
-        // Nurse entered birth/admission time — stored UTC, convert to Manila
-        $dt           = \Carbon\Carbon::parse($nicuAdm->date_time_of_birth)->setTimezone($tz);
-        $admDateInput = $dt->format('Y-m-d');
-        $admTimeVal   = $dt->format('H:i');
-    } else {
-        // Last resort: visit created_at (UTC → Manila)
-        $dt           = \Carbon\Carbon::parse($visit->created_at)->setTimezone($tz);
-        $admDateInput = $dt->format('Y-m-d');
-        $admTimeVal   = $dt->format('H:i');
     }
+    // else: both are null → fields stay blank, clerk fills them in manually
 
     // ── Discharge date/time ───────────────────────────────────────────────────
     $dischDateInput = '';

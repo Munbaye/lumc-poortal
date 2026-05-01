@@ -4,7 +4,7 @@
     .dark .form-section { background: #1f2937; border-color: #374151; }
     .section-header { background: #f8fafc; border-bottom: 1px solid #e5e7eb; padding: 12px 20px; display: flex; align-items: center; gap: 10px; }
     .dark .section-header { background: #1e2937; border-color: #334155; }
-    .section-title { font-size: 0.9rem; font-weight: 700; color: #1e3a5f; }
+    .section-title { font-size: 0.8rem; font-weight: 700; color: #1e3a5f; }
     .dark .section-title { color: #93c5fd; }
     .section-body { padding: 20px; }
     .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
@@ -12,30 +12,41 @@
     .form-field-full { grid-column: span 4; }
     .form-field-half { grid-column: span 2; }
     .form-label { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 5px; }
-    .form-input { width: 100%; border-radius: 8px; padding: 10px 12px; font-size: 0.875rem; border: 1px solid #d1d5db; background: #fff; outline: none; }
+    .form-input { width: 100%; border-radius: 8px; padding: 10px 12px; font-size: 0.8rem; border: 1px solid #d1d5db; background: #fff; outline: none; }
     .dark .form-input { background: #374151; border-color: #4b5563; color: #f3f4f6; }
     .form-input:focus { border-color: #1d4ed8; box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1); }
     textarea.form-input { resize: vertical; min-height: 60px; }
+
+    .select-wrapper { position: relative; display: block; }
+    .select-wrapper::after { content: ''; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #6b7280; pointer-events: none; z-index: 1; }
+    .select-wrapper select { width: 100%; border-radius: 8px; padding: 10px 32px 10px 12px; font-size: 0.8rem; border: 1px solid #d1d5db; background: #fff; background-image: none; outline: none; appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer; }
+    .dark .select-wrapper select { background: #374151; background-image: none; border-color: #4b5563; color: #f3f4f6; }
+    .select-wrapper select:focus { border-color: #1d4ed8; box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1); }
+
     .admission-section { background: #fffbeb; border: 2px solid #fde68a; border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
     .admission-header { background: #fef3c7; padding: 12px 20px; }
+    .admission-header span { font-size: 0.8rem; font-weight: 700; color: #92400e; }
     .admission-body { padding: 20px; }
     .status-badge { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
     .status-pending { background: #fee2e2; color: #991b1b; }
     .status-admitted { background: #d1fae5; color: #065f46; }
-    .btn-primary { background: #1d4ed8; color: #fff; border: none; padding: 12px 28px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; }
+    .btn-primary { background: #1d4ed8; color: #fff; border: none; padding: 12px 28px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
     .btn-primary:hover { background: #1e40af; }
-    .btn-secondary { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 10px 24px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; }
+    .btn-secondary { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 10px 24px; border-radius: 8px; font-size: 0.8rem; font-weight: 500; cursor: pointer; }
     .checkbox-label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .sub-section-title { font-size: 0.7rem; font-weight: 700; margin: 16px 0 8px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+    .hint-text { font-size: 0.7rem; color: #6b7280; margin-top: 6px; }
 </style>
 
 <div style="max-width: 1400px; margin: 0 auto;">
+
     {{-- Patient Header --}}
     <div style="background: linear-gradient(135deg, #1e3a5f, #1d4ed8); border-radius: 12px; padding: 16px 24px; margin-bottom: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
             <div>
-                <p style="color: #fff; font-size: 1rem; font-weight: 700; margin: 0;">{{ $visit->patient->display_name ?? 'Baby' }}</p>
+                <p style="color: #fff; font-size: 0.9rem; font-weight: 700; margin: 0;">{{ $visit->patient->display_name ?? 'Baby' }}</p>
                 <p style="color: #93c5fd; font-size: 0.75rem; margin: 2px 0 0;">
-                    {{ $visit->patient->case_no ?? $visit->patient->temporary_case_no }} 
+                    {{ $visit->patient->case_no ?? $visit->patient->temporary_case_no }}
                     | Born: {{ $nicuAdmission?->date_time_of_birth ? \Carbon\Carbon::parse($nicuAdmission->date_time_of_birth)->format('M d, Y h:i A') : ($visit->patient->birth_datetime ? \Carbon\Carbon::parse($visit->patient->birth_datetime)->format('M d, Y h:i A') : '—') }}
                     | {{ $visit->patient->sex ?? '—' }}
                 </p>
@@ -80,15 +91,15 @@
                 <div class="form-grid">
                     <div>
                         <label class="form-label">1 Minute</label>
-                        <input type="number" wire:model="apgarBirth" class="form-input" min="0" max="10" placeholder="0-10">
+                        <input type="number" wire:model="apgarBirth" class="form-input" min="0" max="10" placeholder="0–10">
                     </div>
                     <div>
                         <label class="form-label">5 Minutes</label>
-                        <input type="number" wire:model="apgar5Min" class="form-input" min="0" max="10" placeholder="0-10">
+                        <input type="number" wire:model="apgar5Min" class="form-input" min="0" max="10" placeholder="0–10">
                     </div>
                     <div>
                         <label class="form-label">10 Minutes</label>
-                        <input type="number" wire:model="apgar10Min" class="form-input" min="0" max="10" placeholder="0-10">
+                        <input type="number" wire:model="apgar10Min" class="form-input" min="0" max="10" placeholder="0–10">
                     </div>
                 </div>
             </div>
@@ -131,7 +142,7 @@
                 <span class="section-title">🩺 Physical Examination</span>
             </div>
             <div class="section-body">
-                
+
                 {{-- General --}}
                 <div class="form-grid-2">
                     <div class="form-field-full">
@@ -140,17 +151,19 @@
                     </div>
                     <div>
                         <label class="form-label">Muscular Tonus</label>
-                        <select wire:model="generalMuscularTonus" class="form-input">
-                            <option value="">Select</option>
-                            <option>Normal</option>
-                            <option>Hypotonia</option>
-                            <option>Hypertonia</option>
-                        </select>
+                        <div class="select-wrapper">
+                            <select wire:model="generalMuscularTonus">
+                                <option value="">Select</option>
+                                <option>Normal</option>
+                                <option>Hypotonia</option>
+                                <option>Hypertonia</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Skin --}}
-                <h5 style="font-size: 0.7rem; font-weight: 700; margin: 16px 0 8px; color: #6b7280;">SKIN</h5>
+                <p class="sub-section-title">Skin</p>
                 <div class="form-grid">
                     <div><label class="form-label">Color</label><input type="text" wire:model="skinColor" class="form-input"></div>
                     <div><label class="form-label">Turgor</label><input type="text" wire:model="skinTurgor" class="form-input"></div>
@@ -159,7 +172,7 @@
                 </div>
 
                 {{-- Head --}}
-                <h5 style="font-size: 0.7rem; font-weight: 700; margin: 16px 0 8px; color: #6b7280;">HEAD</h5>
+                <p class="sub-section-title">Head</p>
                 <div class="form-grid">
                     <div><label class="form-label">Molding</label><input type="text" wire:model="headMolding" class="form-input"></div>
                     <div><label class="form-label">Scalp</label><input type="text" wire:model="headScalp" class="form-input"></div>
@@ -169,7 +182,7 @@
                 </div>
 
                 {{-- Eyes --}}
-                <h5 style="font-size: 0.7rem; font-weight: 700; margin: 16px 0 8px; color: #6b7280;">EYES</h5>
+                <p class="sub-section-title">Eyes</p>
                 <div class="form-grid">
                     <div><label class="form-label">Conjunctiva</label><input type="text" wire:model="eyesConjunctiva" class="form-input"></div>
                     <div><label class="form-label">Sclera</label><input type="text" wire:model="eyesSclera" class="form-input"></div>
@@ -178,7 +191,7 @@
                 </div>
 
                 {{-- Ears / Nose / Mouth --}}
-                <h5 style="font-size: 0.7rem; font-weight: 700; margin: 16px 0 8px; color: #6b7280;">EARS / NOSE / MOUTH</h5>
+                <p class="sub-section-title">Ears / Nose / Mouth</p>
                 <div class="form-grid">
                     <div><label class="form-label">Ears</label><input type="text" wire:model="ears" class="form-input"></div>
                     <div><label class="form-label">Nose</label><input type="text" wire:model="nose" class="form-input"></div>
@@ -188,14 +201,14 @@
                 </div>
 
                 {{-- Neck --}}
-                <h5 style="font-size: 0.7rem; font-weight: 700; margin: 16px 0 8px; color: #6b7280;">NECK</h5>
+                <p class="sub-section-title">Neck</p>
                 <div class="form-grid-2">
                     <div><label class="form-label">Sternocleidomastoid</label><input type="text" wire:model="neckSternocleidomastoid" class="form-input"></div>
                     <div><label class="form-label">Fistula / Other</label><input type="text" wire:model="neckFistula" class="form-input"></div>
                 </div>
 
                 {{-- Chest --}}
-                <h5 style="font-size: 0.7rem; font-weight: 700; margin: 16px 0 8px; color: #6b7280;">CHEST</h5>
+                <p class="sub-section-title">Chest</p>
                 <div class="form-grid">
                     <div><label class="form-label">Shape</label><input type="text" wire:model="chestShape" class="form-input"></div>
                     <div><label class="form-label">Respiration</label><input type="text" wire:model="chestRespiration" class="form-input"></div>
@@ -206,7 +219,7 @@
                 </div>
 
                 {{-- Abdomen --}}
-                <h5 style="font-size: 0.7rem; font-weight: 700; margin: 16px 0 8px; color: #6b7280;">ABDOMEN</h5>
+                <p class="sub-section-title">Abdomen</p>
                 <div class="form-grid">
                     <div class="form-field-full"><label class="form-label">Abdomen</label><textarea wire:model="abdomen" rows="2" class="form-input"></textarea></div>
                     <div><label class="form-label">Spleen</label><input type="text" wire:model="spleen" class="form-input"></div>
@@ -216,21 +229,21 @@
                 </div>
 
                 {{-- Genitals --}}
-                <h5 style="font-size: 0.7rem; font-weight: 700; margin: 16px 0 8px; color: #6b7280;">GENITALS</h5>
+                <p class="sub-section-title">Genitals</p>
                 <div class="form-grid-2">
                     <div><label class="form-label">Male (Testes)</label><input type="text" wire:model="genitalsMale" class="form-input"></div>
                     <div><label class="form-label">Female (Vaginal Bleeding)</label><input type="text" wire:model="genitalsFemale" class="form-input"></div>
                 </div>
 
                 {{-- Hernia --}}
-                <h5 style="font-size: 0.7rem; font-weight: 700; margin: 16px 0 8px; color: #6b7280;">HERNIA</h5>
+                <p class="sub-section-title">Hernia</p>
                 <div class="form-grid-2">
                     <div><label class="form-label">Inguinal Hernia</label><input type="text" wire:model="inguinalHernia" class="form-input"></div>
                     <div><label class="form-label">Diastasis Recti</label><input type="text" wire:model="diastasisRecti" class="form-input"></div>
                 </div>
 
                 {{-- Extremities & Orthopaedic --}}
-                <h5 style="font-size: 0.7rem; font-weight: 700; margin: 16px 0 8px; color: #6b7280;">EXTREMITIES & ORTHOPAEDIC</h5>
+                <p class="sub-section-title">Extremities & Orthopaedic</p>
                 <div class="form-grid">
                     <div class="form-field-full"><label class="form-label">Extremities</label><textarea wire:model="extremities" rows="2" class="form-input"></textarea></div>
                     <div><label class="form-label">Clubfoot</label><input type="text" wire:model="clubfoot" class="form-input"></div>
@@ -241,10 +254,11 @@
                 </div>
 
                 {{-- Impression --}}
-                <h5 style="font-size: 0.7rem; font-weight: 700; margin: 16px 0 8px; color: #6b7280;">IMPRESSION / DIAGNOSIS</h5>
+                <p class="sub-section-title">Impression / Diagnosis</p>
                 <div class="form-field-full">
                     <textarea wire:model="impression" rows="3" class="form-input"></textarea>
                 </div>
+
             </div>
         </div>
 
@@ -255,35 +269,35 @@
             </div>
             <div class="section-body">
                 <textarea wire:model="orderText" rows="5" class="form-input" placeholder="Type one order per line..."></textarea>
-                <p style="font-size: 0.7rem; color: #6b7280; margin-top: 8px;">Each line becomes a separate order for the nurse to carry out.</p>
+                <p class="hint-text">Each line becomes a separate order for the nurse to carry out.</p>
             </div>
         </div>
 
-        {{-- SECTION 6: ADMISSION DECISION (AT THE BOTTOM) --}}
+        {{-- SECTION 6: Admission Decision --}}
         <div class="admission-section">
             <div class="admission-header">
-                <span style="font-weight: 700;">🏥 Admission Decision</span>
+                <span>🏥 Admission Decision</span>
             </div>
             <div class="admission-body">
                 @if($isAdmitted)
                     <div style="background: #d1fae5; padding: 16px; border-radius: 8px; text-align: center;">
-                        <p style="margin: 0; color: #065f46; font-weight: 600;">✓ This baby has already been admitted to NICU</p>
-                        <p style="margin: 5px 0 0 0; font-size: 0.8rem; color: #065f46;">Admitted on: {{ $visit->doctor_admitted_at ? \Carbon\Carbon::parse($visit->doctor_admitted_at)->format('M d, Y h:i A') : '—' }}</p>
+                        <p style="margin: 0; color: #065f46; font-weight: 600; font-size: 0.8rem;">✓ This baby has already been admitted to NICU</p>
+                        <p style="margin: 5px 0 0 0; font-size: 0.75rem; color: #065f46;">Admitted on: {{ $visit->doctor_admitted_at ? \Carbon\Carbon::parse($visit->doctor_admitted_at)->format('M d, Y h:i A') : '—' }}</p>
                     </div>
                 @else
                     <div style="background: #fef3c7; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
-                        <p style="margin: 0; font-size: 0.85rem;">Complete the assessment above, then decide if this baby requires NICU admission.</p>
+                        <p style="margin: 0; font-size: 0.8rem; color: #92400e;">Complete the assessment above, then decide if this baby requires NICU admission.</p>
                     </div>
-                    
+
                     <div style="background: #f0fdf4; border: 2px solid #86efac; border-radius: 10px; padding: 16px;">
                         <label class="checkbox-label">
-                            <input type="checkbox" wire:model.live="admitToNICU" style="width: 20px; height: 20px; accent-color: #059669;">
-                            <span style="font-weight: 700; font-size: 1rem; color: #065f46;">✅ ADMIT THIS BABY TO NICU</span>
+                            <input type="checkbox" wire:model.live="admitToNICU" style="width: 18px; height: 18px; accent-color: #059669;">
+                            <span style="font-weight: 700; font-size: 0.85rem; color: #065f46;">✅ ADMIT THIS BABY TO NICU</span>
                         </label>
                         @if($admitToNICU)
                         <div style="margin-top: 12px; padding: 8px 12px; background: #d1fae5; border-radius: 8px;">
-                            <p style="margin: 0; font-size: 0.8rem; color: #065f46;">
-                                ⚕️ When saved, this baby will be officially admitted to NICU. 
+                            <p style="margin: 0; font-size: 0.75rem; color: #065f46;">
+                                ⚕️ When saved, this baby will be officially admitted to NICU.
                                 The status will change to "Admitted" and the baby will appear in the Admitted Patients list.
                             </p>
                         </div>
@@ -306,6 +320,7 @@
                 <span wire:loading>Saving...</span>
             </button>
         </div>
+
     </form>
 </div>
 </x-filament-panels::page>
