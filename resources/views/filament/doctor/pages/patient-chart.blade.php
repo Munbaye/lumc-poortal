@@ -39,6 +39,16 @@
             text-transform: uppercase;
         }
 
+        .chart-header-left .patient-name-meta {
+            font-size: .78rem;
+            font-weight: 700;
+            color: #dbeafe;
+            letter-spacing: .02em;
+            text-transform: uppercase;
+            margin-top: 6px;
+            line-height: 1.15;
+        }
+
         .chart-header-left .case-no {
             font-family: monospace;
             font-size: .75rem;
@@ -2029,7 +2039,23 @@
         {{-- ════ HEADER ════════════════════════════════════════════════ --}}
         <div class="chart-header">
             <div class="chart-header-left">
-                <p class="patient-name">{{ $patient->full_name }}</p>
+                @php
+                    $isTemporary = (bool) ($patient->is_provisional ?? false) || (bool) ($visit?->isProvisionalNicu() ?? false);
+
+                    if ($isTemporary) {
+                        [$patientNameMain, $patientNameMeta] = array_pad(explode(' - ', $patient->full_name ?? '', 2), 2, null);
+                        $patientNameMain = trim((string) $patientNameMain);
+                        $patientNameMeta = $patientNameMeta !== null ? trim((string) $patientNameMeta) : null;
+                    } else {
+                        $patientNameMain = $patient->full_name ?? '';
+                        $patientNameMeta = null;
+                    }
+                @endphp
+
+                <p class="patient-name">{{ $patientNameMain }}</p>
+                @if($isTemporary && $patientNameMeta)
+                    <p class="patient-name-meta">{{ $patientNameMeta }}</p>
+                @endif
                 <p class="case-no">{{ $patient->case_no }}</p>
             </div>
 
