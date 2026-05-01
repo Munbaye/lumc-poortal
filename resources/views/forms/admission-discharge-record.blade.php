@@ -126,9 +126,8 @@
     <span class="tag" style="background:rgba(16,185,129,.25);">{{ $patient->case_no }}</span>
     <span class="tag">{{ $patient->full_name }}</span>
     <span class="spacer"></span>
-    <button class="btn-print" onclick="window.print()">
-    <x-heroicon-o-printer style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:5px;" />Print</button>
-    <button id="btnSave" class="btn-save" onclick="saveAndContinue()"><x-heroicon-o-arrow-down-tray style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:5px;" />Save &amp; Continue</button>
+    <button class="btn-print" onclick="window.print()">🖨️ Print</button>
+    <button id="btnSave" class="btn-save" onclick="saveAndContinue()">💾 Save &amp; Continue →</button>
 </div>
 @endunless
 

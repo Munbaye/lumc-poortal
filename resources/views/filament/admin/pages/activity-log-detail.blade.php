@@ -66,18 +66,17 @@
     </div>
 
     @if($log->subject_label)
-        <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:#eff6ff;
-                    border-radius:6px;border:1px solid #bfdbfe;margin-bottom:14px;
-                    font-weight:600;color:#1d4ed8;" class="dark:bg-blue-900/20 dark:border-blue-700 dark:text-blue-300">
-            <x-heroicon-o-document-text class="w-4 h-4 shrink-0" />
-            <span>{{ $log->subject_label }}</span>
+        <div style="padding:8px 14px;background:#eff6ff;border-radius:6px;border:1px solid #bfdbfe;
+                    margin-bottom:14px;font-weight:600;color:#1d4ed8;"
+            class="dark:bg-blue-900/20 dark:border-blue-700 dark:text-blue-300">
+            📋 {{ $log->subject_label }}
         </div>
     @endif
 
     {{-- ── New only (create / login / vitals / etc.) ────────────────────────── --}}
     @if(!empty($new) && empty($old))
         <p style="font-size:.71rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
-                      color:#374151;margin-bottom:8px;" class="dark:text-gray-300">Data</p>
+                  color:#374151;margin-bottom:8px;" class="dark:text-gray-300">Data</p>
         <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
             @foreach($new as $key => $val)
                 <tr style="border-bottom:1px solid #f3f4f6;" class="dark:border-gray-700">
@@ -102,7 +101,7 @@
         {{-- ── Both old + new (updates / re-assessments) ────────────────────────── --}}
     @elseif(!empty($old) && !empty($new))
         <p style="font-size:.71rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
-                      color:#374151;margin-bottom:8px;" class="dark:text-gray-300">
+                  color:#374151;margin-bottom:8px;" class="dark:text-gray-300">
             Changes (Before → After)
         </p>
         <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
@@ -110,11 +109,11 @@
                 <tr style="background:#f9fafb;border-bottom:1px solid #e5e7eb;"
                     class="dark:bg-gray-800 dark:border-gray-700">
                     <th style="padding:6px 10px;text-align:left;font-size:.7rem;text-transform:uppercase;
-                                   letter-spacing:.04em;color:#9ca3af;width:30%;">Field</th>
+                               letter-spacing:.04em;color:#9ca3af;width:30%;">Field</th>
                     <th style="padding:6px 10px;text-align:left;font-size:.7rem;text-transform:uppercase;
-                                   letter-spacing:.04em;color:#dc2626;width:35%;">Before</th>
+                               letter-spacing:.04em;color:#dc2626;width:35%;">Before</th>
                     <th style="padding:6px 10px;text-align:left;font-size:.7rem;text-transform:uppercase;
-                                   letter-spacing:.04em;color:#16a34a;width:35%;">After</th>
+                               letter-spacing:.04em;color:#16a34a;width:35%;">After</th>
                 </tr>
             </thead>
             <tbody>
@@ -127,12 +126,12 @@
                     <tr style="border-bottom:1px solid #f3f4f6;{{ $changed ? 'background:#fffbeb;' : '' }}"
                         class="{{ $changed ? 'dark:bg-yellow-900/10' : '' }} dark:border-gray-700">
                         <td style="padding:5px 10px;font-weight:{{ $changed ? '700' : '400' }};
-                                       color:#6b7280;vertical-align:top;" class="dark:text-gray-400">
+                               color:#6b7280;vertical-align:top;" class="dark:text-gray-400">
                             {{ ucwords(str_replace('_', ' ', $key)) }}
                             @if($changed)<span style="color:#d97706;margin-left:3px;">●</span>@endif
                         </td>
                         <td style="padding:5px 10px;color:{{ $before ? '#374151' : '#d1d5db' }};
-                                       vertical-align:top;" class="dark:text-gray-300">
+                               vertical-align:top;" class="dark:text-gray-300">
                             @if(is_array($before))
                                 <code style="font-size:.76rem;">{{ json_encode($before) }}</code>
                             @else
@@ -140,9 +139,9 @@
                             @endif
                         </td>
                         <td style="padding:5px 10px;
-                                       font-weight:{{ $changed ? '600' : '400' }};
-                                       color:{{ ($after && $changed) ? '#065f46' : ($after ? '#374151' : '#d1d5db') }};
-                                       vertical-align:top;"
+                               font-weight:{{ $changed ? '600' : '400' }};
+                               color:{{ ($after && $changed) ? '#065f46' : ($after ? '#374151' : '#d1d5db') }};
+                               vertical-align:top;"
                             class="{{ ($after && $changed) ? 'dark:text-green-400' : 'dark:text-gray-300' }}">
                             @if(is_array($after))
                                 <code style="font-size:.76rem;">{{ json_encode($after) }}</code>
@@ -166,7 +165,7 @@
                 Browser / User Agent
             </summary>
             <p style="font-size:.72rem;color:#6b7280;margin-top:4px;word-break:break-all;
-                          padding:6px;background:#f9fafb;border-radius:4px;" class="dark:bg-gray-800 dark:text-gray-400">
+                      padding:6px;background:#f9fafb;border-radius:4px;" class="dark:bg-gray-800 dark:text-gray-400">
                 {{ $log->user_agent }}
             </p>
         </details>
