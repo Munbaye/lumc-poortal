@@ -42,10 +42,9 @@ class HospitalStatsOverviewWidget extends BaseWidget
             ->distinct('patient_id')
             ->count('patient_id');
 
-        $totalBeds = HospitalMetricsService::getTotalBedCapacity(); // operational beds (excludes maintenance)
-        $occupiedBeds = HospitalMetricsService::getOccupiedBedsCount();
+        $totalBeds = HospitalMetricsService::getTotalBedCapacity();
         $occupancyRate = $totalBeds > 0
-            ? round(($occupiedBeds / $totalBeds) * 100, 2)
+            ? round(($currentAdmitted / $totalBeds) * 100, 2)
             : 0;
 
         $occupancyColor = match (true) {
@@ -98,7 +97,7 @@ class HospitalStatsOverviewWidget extends BaseWidget
                 ->icon('heroicon-o-home-modern'),
 
             Stat::make('Bed Occupancy Rate', $occupancyRate . '%')
-                ->description($occupiedBeds . ' of ' . $totalBeds . ' beds occupied')
+                ->description($currentAdmitted . ' of ' . $totalBeds . ' beds occupied')
                 ->descriptionIcon('heroicon-m-chart-bar')
                 ->color($occupancyColor)
                 ->icon('heroicon-o-rectangle-stack'),

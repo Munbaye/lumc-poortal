@@ -100,4 +100,9 @@ class Visit extends Model
     {
         return $this->hasMany(NicuBreastfeedingObservation::class)->orderBy('observation_date', 'desc');
     }
+
+    public function dischargeSummary()
+    {
+        return $this->hasOne(\App\Models\DischargeSummary::class);
+    }
 }

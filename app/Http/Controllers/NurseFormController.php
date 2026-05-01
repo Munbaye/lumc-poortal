@@ -58,4 +58,18 @@ class NurseFormController extends Controller
         $visit->loadMissing(['patient', 'medicalHistory']);
         return view('forms.medication-records', compact('visit'));
     }
+
+    /**
+     * GET /forms/breastfeeding-observation/{visit}
+     * Printable Breastfeeding Observation Job Aid (NUR-044-0).
+     */
+    public function breastfeedingObservation(Visit $visit)
+    {
+        $visit->loadMissing([
+            'patient',
+            'nicuAdmission',
+        ]);
+
+        return view('forms.breastfeeding-observation', compact('visit'));
+    }
 }

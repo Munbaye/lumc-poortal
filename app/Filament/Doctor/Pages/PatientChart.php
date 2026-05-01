@@ -4,6 +4,7 @@ namespace App\Filament\Doctor\Pages;
 
 use App\Models\DoctorsOrder;
 use App\Models\LabRequest;
+use App\Models\NicuBallardExam;
 use App\Models\RadiologyRequest;
 use App\Models\ResultUpload;
 use App\Models\Visit;
@@ -86,11 +87,6 @@ class PatientChart extends Page
             'patient',
             'medicalHistory.doctor',
             'doctorsOrders' => fn($q) => $q->with('doctor')->orderBy('order_date', 'desc'),
-            'ballardExams',
-            'erRecord',
-            'admissionRecord',
-            'consentRecord',
-            'vitals',
         ])->find($this->visitId);
 
         if (!$this->visit) {
@@ -99,7 +95,8 @@ class PatientChart extends Page
         }
     }
 
-    // Computed Properties
+    // ── Computed Properties ───────────────────────────────────────────────────
+
     public function getLabResultsProperty()
     {
         $requestIds = LabRequest::where('visit_id', $this->visitId)
@@ -146,14 +143,69 @@ class PatientChart extends Page
             && $this->visit->discharged_at === null);
     }
 
-    // Tab Navigation
+    public function getIsNicuProperty(): bool
+    {
+        if (!$this->visit) return false;
+        return $this->visit->visit_type === 'NICU';
+    }
+
+    public function getHasBallardScoreProperty(): bool
+    {
+        if (!$this->visitId) return false;
+        return NicuBallardExam::where('visit_id', $this->visitId)->exists();
+    }
+
+    public function getBallardExamsProperty()
+    {
+        if (!$this->visitId) return collect();
+        return NicuBallardExam::where('visit_id', $this->visitId)
+            ->orderBy('exam_number')
+            ->get();
+    }
+
+    public function getPastVisitsCountProperty(): int
+    {
+        if (!$this->visit) return 0;
+        return Visit::where('patient_id', $this->visit->patient_id)
+            ->where('id', '!=', $this->visitId)
+            ->whereNotNull('discharged_at')
+            ->count();
+    }
+
+    public function getPastVisitsProperty()
+    {
+        if (!$this->visit) return collect();
+        return Visit::where('patient_id', $this->visit->patient_id)
+            ->where('id', '!=', $this->visitId)
+            ->whereNotNull('discharged_at')
+            ->with(['medicalHistory.doctor', 'vitals', 'doctorsOrders', 'erRecord', 'admissionRecord', 'consentRecord'])
+            ->orderBy('registered_at', 'desc')
+            ->get();
+    }
+
+    public function getHistoryVisitProperty()
+    {
+        if (!$this->viewingHistoryVisitId) return null;
+        return Visit::with([
+            'patient',
+            'medicalHistory.doctor',
+            'doctorsOrders.doctor',
+            'vitals',
+            'erRecord',
+            'admissionRecord',
+            'consentRecord',
+        ])->find($this->viewingHistoryVisitId);
+    }
+
+    // ── Tab Navigation ────────────────────────────────────────────────────────
+
     public function setTab(string $tab): void
     {
         $this->activeTab           = $tab;
         $this->writingOrders       = false;
         $this->viewingLabRequestId = null;
         $this->viewingRadRequestId = null;
-        
+
         // Reset history view when leaving history tab
         if ($tab !== 'history') {
             $this->viewingHistoryVisitId = null;
@@ -161,7 +213,7 @@ class PatientChart extends Page
     }
 
     // ── Result View Methods ───────────────────────────────────────────────────
-    
+
     public function viewLabResult(int $requestId): void
     {
         $this->viewingLabRequestId = $requestId;
@@ -223,7 +275,7 @@ class PatientChart extends Page
 
         if ($lines->isEmpty()) return;
 
-        $saved = 0;
+        $saved     = 0;
         $orderDate = now();
 
         foreach ($lines as $line) {
@@ -303,68 +355,11 @@ class PatientChart extends Page
         return route('forms.physical-exam-form', ['visit' => $this->visitId]);
     }
 
-    public function getPatientHistoryUrl(): string
-    {
-        return \App\Filament\Doctor\Pages\PatientHistory::getUrl([
-            'patientId' => $this->visit?->patient_id,
-        ]);
-    }
-
-    // ── Past Visits / History Tab Methods ─────────────────────────────────────
-
-    public function getPastVisitsCountProperty(): int
-    {
-        if (!$this->visit) return 0;
-
-        return Visit::where('patient_id', $this->visit->patient_id)
-            ->where('id', '!=', $this->visitId)
-            ->whereNotNull('discharged_at')
-            ->count();
-    }
-
-    public function getPastVisitsProperty()
-    {
-        if (!$this->visit) return collect();
-
-        return Visit::where('patient_id', $this->visit->patient_id)
-            ->where('id', '!=', $this->visitId)
-            ->whereNotNull('discharged_at')
-            ->with(['medicalHistory.doctor', 'vitals', 'doctorsOrders', 'erRecord', 'admissionRecord', 'consentRecord'])
-            ->orderBy('registered_at', 'desc')
-            ->get();
-    }
-
-    public function getHistoryVisitProperty()
-    {
-        if (!$this->viewingHistoryVisitId) return null;
-
-        return Visit::with([
-            'patient',
-            'medicalHistory.doctor',
-            'doctorsOrders.doctor',
-            'vitals',
-            'erRecord',
-            'admissionRecord',
-            'consentRecord',
-        ])->find($this->viewingHistoryVisitId);
-    }
-
-    public function viewHistoryVisit(int $visitId): void
-    {
-        $this->viewingHistoryVisitId = $visitId;
-    }
-
-    public function closeHistoryView(): void
-    {
-        $this->viewingHistoryVisitId = null;
-    }
-
     public function getHistoryLabResults(int $visitId)
     {
         $requestIds = LabRequest::where('visit_id', $visitId)
             ->where('status', 'completed')
             ->pluck('id');
-
         return ResultUpload::where('request_type', 'lab')
             ->whereIn('request_id', $requestIds)
             ->with('uploadedBy')
@@ -377,7 +372,6 @@ class PatientChart extends Page
         $requestIds = RadiologyRequest::where('visit_id', $visitId)
             ->where('status', 'completed')
             ->pluck('id');
-
         return ResultUpload::where('request_type', 'radiology')
             ->whereIn('request_id', $requestIds)
             ->with('uploadedBy')
@@ -404,15 +398,13 @@ class PatientChart extends Page
         return route('forms.consent-to-care', ['visit' => $visitId]) . '?readonly=1';
     }
 
-    // ── Ballard Score Methods ─────────────────────────────────────────────────
-
-    public function getHasBallardScoreProperty(): bool
+    public function viewHistoryVisit(int $visitId): void
     {
-        return $this->visit && $this->visit->ballardExams->count() > 0;
+        $this->viewingHistoryVisitId = $visitId;
     }
 
-    public function getBallardExamsProperty()
+    public function closeHistoryView(): void
     {
-        return $this->visit ? $this->visit->ballardExams : collect();
+        $this->viewingHistoryVisitId = null;
     }
 }

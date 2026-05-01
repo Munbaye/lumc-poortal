@@ -209,6 +209,15 @@ $staticSlides = [
             display: inline-block;
         }
 
+        .login-wrap::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 9px;
+            border: 2px solid rgba(220, 38, 38, .45);
+            pointer-events: none;
+        }
+
         .reveal {
             opacity: 0;
             transform: translateY(28px);
@@ -828,7 +837,7 @@ $staticSlides = [
                     <h4 class="font-black text-xs mb-5 border-l-4 border-red-600 pl-3 uppercase tracking-widest">Governing Body</h4>
                     <p class="text-sm text-white/35 mb-4 leading-relaxed">{{ $g('footer_about') }}</p>
                     <div class="bg-white/5 p-4 rounded-xl border border-white/10 text-center">
-                        <p class="text-[9px] text-yellow-400 uppercase font-black tracking-widest italic mb-1">Agkaysa!</p>
+                        <p class="text-[16px] text-yellow-400 uppercase font-black tracking-widest italic mb-1">Agkaysa!</p>
                         <p class="text-xs text-white/40">{{ $g('footer_gov_body') }}</p>
                     </div>
                 </div>
@@ -903,17 +912,17 @@ $staticSlides = [
         </div>
     </div>
 
-    <div id="loginFlags"
-        data-force-change="{{ request('change_password') ? 'true' : 'false' }}"
-        data-change-open="{{ session('change_password_open') ? 'true' : 'false' }}"
-        data-has-errors="{{ ($errors->any() || session()->has('error')) ? 'true' : 'false' }}"
-        style="display:none"></div>
-
     <script>
-        const flagsEl = document.getElementById('loginFlags');
-        const forceChange = flagsEl?.dataset?.forceChange === 'true';
-        const changeOpen = flagsEl?.dataset?.changeOpen === 'true';
-        const hasErrors = flagsEl?.dataset?.hasErrors === 'true';
+        const forceChange = {
+            {
+                request('change_password') ? 'true' : 'false'
+            }
+        };
+        const changeOpen = {
+            {
+                session('change_password_open') ? 'true' : 'false'
+            }
+        };
 
         function openLoginModal(c) {
             document.getElementById('loginModal').classList.add('open');
@@ -942,7 +951,11 @@ $staticSlides = [
         document.addEventListener('DOMContentLoaded', () => {
             if (forceChange || changeOpen) {
                 openLoginModal(true);
-            } else if (hasErrors) {
+            } else if ({
+                    {
+                        $errors - > any() || session('error') ? 'true' : 'false'
+                    }
+                }) {
                 openLoginModal(false);
             }
         });
