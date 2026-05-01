@@ -74,14 +74,34 @@
             outline: none;
             appearance: none;
             -webkit-appearance: none;
+<<<<<<< HEAD
+            -moz-appearance: none;
+        }
+
+        select.form-input {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+            cursor: pointer;
+=======
+>>>>>>> origin/main
         }
 
         .dark .form-input {
-            background: #374151;
+            background-color: #374151;
             border-color: #4b5563;
             color: #f3f4f6;
         }
 
+<<<<<<< HEAD
+        .dark select.form-input {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-color: #374151;
+        }
+        
+=======
+>>>>>>> origin/main
         .form-input:focus {
             border-color: #1d4ed8;
             box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);

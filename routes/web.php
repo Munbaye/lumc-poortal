@@ -138,7 +138,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/results/rad/{radRequest}/upload', [ResultController::class, 'uploadRadResult'])->name('results.rad.upload');
 
     // ── Nursing / Clinical Printable Forms — visit-scoped ─────────────────────
-    // These accept a {visit} route parameter so the form can display real data.
     Route::get('/forms/vital-sign-monitoring-sheet/{visit}', [NurseFormController::class, 'vitalSignSheet'])
         ->name('forms.vital-sign-monitoring-sheet');
 
@@ -147,17 +146,20 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/forms/nurses-notes/{visit}', [NurseFormController::class, 'nursesNotes'])
         ->name('forms.nurses-notes');
- 
+
     Route::get('/forms/medication-records/{visit}', [NurseFormController::class, 'medicationRecords'])
         ->name('forms.medication-records');
+
+    // ── Ballard Score Printable (NUR-018-B) ───────────────────────────────────
+    Route::get('/forms/ballard-score/{visit}', [ChartController::class, 'ballardScore'])
+        ->name('forms.ballard-score');
+
+    // ── Growth Chart Printable (WHO 0–24 months) ──────────────────────────────
+    Route::get('/forms/growth-chart/{visit}', [ChartController::class, 'growthChart'])
+        ->name('forms.growth-chart');
 
     // ── Breastfeeding Observation Job Aid (NUR-044-0) ─────────────────────────
     Route::get('/forms/breastfeeding-observation/{visit}', [NurseFormController::class, 'breastfeedingObservation'])
         ->name('forms.breastfeeding-observation');
-
-    // Doctor Discharge Summary — printable standalone page
-    Route::get('/forms/discharge-summary/{visit}', [ChartController::class, 'dischargeSummaryPrint'])
-        ->name('forms.discharge-summary')
-        ->middleware('auth');
 
 });

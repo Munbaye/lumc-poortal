@@ -2032,7 +2032,7 @@
 
                     <div class="chart-page">
 
-        {{-- ════ HEADER ════════════════════════════════════════════════ --}}
+            {{-- ════ HEADER ════════════════════════════════════════════════ --}}
         <div class="chart-header">
             <div class="chart-header-left">
                 @php
@@ -2062,16 +2062,16 @@
                 </div>
                 <div class="pill-cell wide">
                     <p class="pill-label">Admitting Diagnosis</p>
-                <p class="pill-value">{{ $visit->admitting_diagnosis ?? $history?->diagnosis ?? '—' }}</p>
+                    <p class="pill-value">{{ $visit->admitting_diagnosis ?? $history?->diagnosis ?? '—' }}</p>
                 </div>
                 <div class="pill-cell">
                     <p class="pill-label">Admitted</p>
                     <p class="pill-value">
-                    @if($visit->clerk_admitted_at)
+                        @if($visit->clerk_admitted_at)
                             {{ $visit->clerk_admitted_at->timezone('Asia/Manila')->format('M j, Y H:i') }}
                         @elseif($visit->doctor_admitted_at)
                             {{ $visit->doctor_admitted_at->timezone('Asia/Manila')->format('M j, Y H:i') }}
-                        <span class="pending-badge"><x-heroicon-o-clock class="w-3 h-3 inline mr-1" />Pending Clerk</span>
+                            <span class="pending-badge"><x-heroicon-o-clock class="w-3 h-3 inline mr-1" />Pending Clerk</span>
                         @else
                             —
                         @endif
@@ -2080,64 +2080,21 @@
             </div>
 
             <span class="h-service-badge">{{ $service }}</span>
-
-            {{-- ── Discharge / View Summary button in header ── --}}
-            @if ($visit->status === 'admitted' && !$this->isReadonly)
-                <a href="{{ \App\Filament\Doctor\Pages\DischargeSummaryPage::getUrl(['visitId' => $visit->id]) }}"
-                    style="
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 6px;
-                        background: linear-gradient(135deg, #059669, #047857);
-                        color: #fff;
-                        font-size: 0.75rem;
-                        font-weight: 700;
-                        padding: 8px 16px;
-                        border-radius: 8px;
-                        text-decoration: none;
-                        box-shadow: 0 2px 8px rgba(5,150,105,.35);
-                        white-space: nowrap;
-                        flex-shrink: 0;
-                    ">
-                    📋 Discharge Patient
-                </a>
-            @elseif($visit->status === 'discharged' && $visit->dischargeSummary)
-                <a href="{{ \App\Filament\Doctor\Pages\DischargeSummaryPage::getUrl(['visitId' => $visit->id]) }}"
-                    style="
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 6px;
-                        background: rgba(255,255,255,.15);
-                        border: 1px solid rgba(255,255,255,.3);
-                        color: #fff;
-                        font-size: 0.74rem;
-                        font-weight: 600;
-                        padding: 7px 14px;
-                        border-radius: 7px;
-                        text-decoration: none;
-                        white-space: nowrap;
-                        flex-shrink: 0;
-                    ">
-                    📋 View Discharge Summary
-                </a>
-            @endif
         </div>
 
         {{-- ════ TABS ═══════════════════════════════════════════════════ --}}
         <div class="chart-tabs">
-            <button wire:click="setTab('profile')" class="chart-tab {{ $activeTab==='profile'   ? 'active':'' }}"><span class="tab-icon"><x-heroicon-o-document-text class="w-4 h-4" /></span> Patient Forms</button>
-            <button wire:click="setTab('history')" class="chart-tab {{ $activeTab==='history'   ? 'active':'' }}"><span class="tab-icon"><x-heroicon-o-clock class="w-4 h-4" /></span> Visit History @if($pastCount > 0)<span class="tab-badge tab-badge-blue">{{ $pastCount }}</span>@endif</button>
-            <button wire:click="setTab('orders')" class="chart-tab {{ $activeTab==='orders'    ? 'active':'' }}"><span class="tab-icon"><x-heroicon-o-clipboard-document-list class="w-4 h-4" /></span> Doctor's Orders @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif</button>
-            <button wire:click="setTab('results')" class="chart-tab {{ $activeTab==='results'   ? 'active':'' }}"><span class="tab-icon"><x-heroicon-o-beaker class="w-4 h-4" /></span> Lab / Radiology @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif</button>
-            
-            @if($this->isNicu)
+            <button wire:click="setTab('profile')" class="chart-tab {{ $activeTab==='profile'   ? 'active':'' }}"><span class="tab-icon">📄</span> Patient Forms</button>
+            <button wire:click="setTab('history')" class="chart-tab {{ $activeTab==='history'   ? 'active':'' }}"><span class="tab-icon">🗂️</span> Visit History @if($pastCount > 0)<span class="tab-badge tab-badge-blue">{{ $pastCount }}</span>@endif</button>
+            <button wire:click="setTab('vitals')" class="chart-tab {{ $activeTab==='vitals'    ? 'active':'' }}"><span class="tab-icon">📊</span> Vital Signs @if($allVitals->count() > 0)<span class="tab-badge tab-badge-warn">{{ $allVitals->count() }}</span>@endif</button>
+            <button wire:click="setTab('orders')" class="chart-tab {{ $activeTab==='orders'    ? 'active':'' }}"><span class="tab-icon">📝</span> Doctor's Orders @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif</button>
+            <button wire:click="setTab('results')" class="chart-tab {{ $activeTab==='results'   ? 'active':'' }}"><span class="tab-icon">🔬</span> Lab / Radiology @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif</button>
             <button wire:click="setTab('ballard')" class="chart-tab {{ $activeTab==='ballard' ? 'active':'' }}">
-                <span class="tab-icon"><x-heroicon-o-document-chart-bar class="w-4 h-4" /></span> Ballard Score
+                <span class="tab-icon">📊</span> Ballard Score
                 @if($this->hasBallardScore)
                     <span class="tab-badge tab-badge-green">✓</span>
                 @endif
             </button>
-            @endif
         </div>
 
                         <div class="chart-content">
@@ -2337,6 +2294,40 @@
                                         </div>
                                     @endif
                                 </div>
+
+                                {{-- ── Ballard Score Printable (NUR-018-B) — NICU only ──────────── --}}
+                                @if($visit->visit_type === 'NICU')
+                                @php $ballardExams = $this->ballardExams; @endphp
+                                <div class="form-section">
+                                    <div class="form-section-header">
+                                        <span class="form-section-label">📊 Ballard Maturity Score (NUR-018-B)</span>
+                                        <div class="form-section-line"></div>
+                                        <span class="form-section-badge {{ $ballardExams->isNotEmpty() ? 'form-section-badge-saved' : 'form-section-badge-missing' }}">
+                                            {{ $ballardExams->isNotEmpty() ? $ballardExams->count() . ' exam' . ($ballardExams->count() === 1 ? '' : 's') . ' recorded' : 'Not yet assessed' }}
+                                        </span>
+                                        @if($ballardExams->isNotEmpty())
+                                        <a href="{{ route('forms.ballard-score', ['visit' => $visit->id]) }}"
+                                           target="_blank"
+                                           style="font-size:.72rem;font-weight:700;color:#065f46;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#d1fae5;border:1px solid #6ee7b7;padding:3px 10px;border-radius:5px;white-space:nowrap;margin-left:4px;">
+                                            🖨️ Open / Print
+                                        </a>
+                                        @endif
+                                    </div>
+                                    @if($ballardExams->isNotEmpty())
+                                    <div class="form-iframe-wrap">
+                                        <iframe src="{{ route('forms.ballard-score', ['visit' => $visit->id]) }}"
+                                            title="Ballard Maturity Score"
+                                            style="width:100%;min-height:900px;border:none;display:block;"
+                                            loading="lazy"></iframe>
+                                    </div>
+                                    @else
+                                    <div class="form-missing-card">
+                                        <div class="form-missing-icon">📊</div>
+                                        <p class="form-missing-text">Ballard Score has not been assessed yet. Go to the 📊 Ballard Score tab to record the exam.</p>
+                                    </div>
+                                    @endif
+                                </div>
+                                @endif
 
                                 {{-- ══ VISIT HISTORY ════════════════════════════════════════════ --}}
                             @elseif($activeTab === 'history')
@@ -2564,6 +2555,51 @@
                                     @endif
                                 @endif {{-- viewingHistoryVisitId --}}
 
+                                {{-- ══ VITALS ═══════════════════════════════════════════════════ --}}
+                            @elseif($activeTab === 'vitals')
+                                <div class="sec-head">
+                                    <h2 class="sec-title"><x-heroicon-o-chart-bar class="w-5 h-5 inline mr-2" />Vital Signs</h2><span style="font-size:.78rem;color:#6b7280;">{{ $allVitals->count() }} recording(s)</span>
+                                </div>
+                                @if($allVitals->isEmpty())
+                                    <div class="placeholder-card">
+                                        <div class="ph-icon"><x-heroicon-o-chart-bar class="w-12 h-12" /></div>
+                                        <p class="ph-title">No vital signs recorded yet</p>
+                                        <p class="ph-sub">Vitals are recorded by the nurse from the Nurse panel.</p>
+                                    </div>
+                                @else
+                                    <div class="vitals-wrap">
+                                        <table class="vitals-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date / Time</th>
+                                                    <th>Nurse</th>
+                                                    <th>BP</th>
+                                                    <th>PR (bpm)</th>
+                                                    <th>RR (/min)</th>
+                                                    <th>Temp (°C)</th>
+                                                    <th>O₂ Sat (%)</th>
+                                                    <th>Pain /10</th>
+                                                    <th>Wt (kg)</th>
+                                                    <th>Ht (cm)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($allVitals as $v)<tr>
+                                                    <td style="white-space:nowrap;font-family:monospace;font-size:.76rem;">{{ $v->taken_at->timezone('Asia/Manila')->format('M j, Y H:i') }}</td>
+                                                    <td style="font-size:.78rem;">{{ $v->nurse_name }}</td>
+                                                    <td>{{ $v->blood_pressure ?? '—' }}</td>
+                                                    <td class="{{ ($v->pulse_rate && ($v->pulse_rate < 60 || $v->pulse_rate > 100)) ? 'abnormal' : '' }}">{{ $v->pulse_rate ?? '—' }}</td>
+                                                    <td class="{{ ($v->respiratory_rate && ($v->respiratory_rate < 12 || $v->respiratory_rate > 20)) ? 'abnormal' : '' }}">{{ $v->respiratory_rate ?? '—' }}</td>
+                                                    <td class="{{ ($v->temperature && ($v->temperature < 36.0 || $v->temperature > 37.5)) ? 'abnormal' : '' }}">{{ $v->temperature ?? '—' }}</td>
+                                                    <td class="{{ ($v->o2_saturation && $v->o2_saturation < 95) ? 'abnormal' : '' }}">{{ $v->o2_saturation ?? '—' }}</td>
+                                                    <td class="{{ ($v->pain_scale !== null && (int) $v->pain_scale >= 7) ? 'abnormal' : '' }}">{{ $v->pain_scale ?? '—' }}</td>
+                                                    <td>{{ $v->weight_kg ?? '—' }}</td>
+                                                    <td>{{ $v->height_cm ?? '—' }}</td>
+                                                </tr>@endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @endif
 
                                 {{-- ══ DOCTOR'S ORDERS ══════════════════════════════════════════ --}}
                             @elseif($activeTab === 'orders')
@@ -2978,7 +3014,7 @@
             @php $ballardExams = $this->ballardExams; @endphp
 
             <div class="sec-head">
-                <h2 class="sec-title"><x-heroicon-o-document-chart-bar class="w-5 h-5 inline mr-2" />Ballard Maturity Score (Gestational Age Assessment)</h2>
+                <h2 class="sec-title">📊 Ballard Maturity Score (Gestational Age Assessment)</h2>
                 @if($ballardExams->where('exam_number', 1)->isEmpty())
                 <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id]) }}" 
                 target="_blank" 
@@ -2991,7 +3027,7 @@
 
             @if($ballardExams->isEmpty())
             <div class="placeholder-card">
-                <div class="ph-icon"><x-heroicon-o-document-chart-bar class="w-8 h-8" /></div>
+                <div class="ph-icon">📊</div>
                 <p class="ph-title">No Ballard Score recorded yet</p>
                 <p class="ph-sub">Gestational age assessment not yet performed.</p>
                 <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id]) }}" 
