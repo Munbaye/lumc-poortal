@@ -680,26 +680,37 @@ class NurseChart extends Page
         Notification::make()->title('Date column removed.')->success()->send();
     }
 
-    /** Save a single cell (date + shift) for a given entry. Called on blur. */
-    public function marSaveCell(int $entryId, string $date, string $shift, string $time): void
+    /** Add a time to a date/shift cell. Called when nurse confirms a new time. */
+    public function marAddTime(int $entryId, string $date, string $shift, string $time): void
     {
         $entry = MarEntry::where('visit_id', $this->visitId)->find($entryId);
         if (!$entry) return;
 
-        // Validate time format — allow empty or HH:MM
         $time = trim($time);
-        if (filled($time) && !preg_match('/^\d{1,2}:\d{2}$/', $time)) {
+        if (!filled($time)) {
+            Notification::make()->title('Please enter a time.')->warning()->send();
+            return;
+        }
+        if (!preg_match('/^\d{1,2}:\d{2}$/', $time)) {
             Notification::make()->title('Invalid time format. Use HH:MM (e.g. 08:30).')->warning()->send();
             return;
         }
+        $entry->addTime($date, $shift, $time);
+    }
 
-        $data = $entry->administration_data ?? [];
-        if (!isset($data[$date])) {
-            $data[$date] = ['7-3' => '', '3-11' => '', '11-7' => ''];
-        }
-        $data[$date][$shift] = $time;
-        $entry->administration_data = $data;
-        $entry->save();
+    /** Remove a specific time from a date/shift cell. */
+    public function marRemoveTime(int $entryId, string $date, string $shift, string $time): void
+    {
+        $entry = MarEntry::where('visit_id', $this->visitId)->find($entryId);
+        if (!$entry) return;
+
+        $entry->removeTime($date, $shift, $time);
+    }
+
+    /** @deprecated kept so any lingering blade calls don't 500. */
+    public function marSaveCell(int $entryId, string $date, string $shift, string $time): void
+    {
+        $this->marAddTime($entryId, $date, $shift, $time);
     }
 
     /** Add a new medication row. */
