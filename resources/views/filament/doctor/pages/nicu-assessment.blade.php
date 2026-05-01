@@ -12,8 +12,10 @@
     .form-field-full { grid-column: span 4; }
     .form-field-half { grid-column: span 2; }
     .form-label { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 5px; }
-    .form-input { width: 100%; border-radius: 8px; padding: 10px 12px; font-size: 0.875rem; border: 1px solid #d1d5db; background: #fff; outline: none; }
-    .dark .form-input { background: #374151; border-color: #4b5563; color: #f3f4f6; }
+    .form-input { width: 100%; border-radius: 8px; padding: 10px 12px; font-size: 0.875rem; border: 1px solid #d1d5db; background: #fff; outline: none; appearance: none; -webkit-appearance: none; -moz-appearance: none; }
+    select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; cursor: pointer; }
+    .dark .form-input { background-color: #374151; border-color: #4b5563; color: #f3f4f6; }
+    .dark select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-color: #374151; }
     .form-input:focus { border-color: #1d4ed8; box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1); }
     textarea.form-input { resize: vertical; min-height: 60px; }
     .admission-section { background: #fffbeb; border: 2px solid #fde68a; border-radius: 12px; margin-bottom: 20px; overflow: hidden; }

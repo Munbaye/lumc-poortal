@@ -31,7 +31,6 @@ class NursePanelProvider extends PanelProvider
                 </div>'
             ))
             ->brandLogoHeight('auto')
-            ->renderHook('panels::head.end', fn () => new \Illuminate\Support\HtmlString(self::css()))
             ->renderHook(
                 'panels::sidebar.nav.start',
                 fn () => new \Illuminate\Support\HtmlString(
