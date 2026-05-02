@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Providers\Filament;
-
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -14,9 +12,9 @@ use App\Filament\Doctor\Pages\PatientHistory;
 use App\Filament\Doctor\Pages\NicuAssessment;
 use App\Filament\Doctor\Pages\BallardScore;
 use App\Filament\Doctor\Pages\DischargeSummaryPage;
+use App\Filament\Doctor\Pages\MySignature;
 use App\Http\Middleware\Filament\StaffAuthenticate;
 use Illuminate\Support\HtmlString;
-
 class DoctorPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -45,6 +43,7 @@ class DoctorPanelProvider extends PanelProvider
                 NicuAssessment::class,
                 BallardScore::class,
                 DischargeSummaryPage::class,
+                MySignature::class,
             ])
             ->widgets([])
             ->middleware([

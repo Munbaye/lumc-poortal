@@ -33,12 +33,10 @@
                 break-inside: avoid;
                 overflow: hidden;
             }
-            /* The very first .paper should not add a blank page before it */
             .paper:first-of-type {
                 page-break-before: auto;
                 break-before: auto;
             }
-            /* Prevent anything from breaking across pages */
             .obs-columns, .header, .title-band, .pt-info-row,
             .section-intro, .sig-section {
                 page-break-inside: avoid;
@@ -85,7 +83,7 @@
         .section-intro-left { flex: 1; font-size: 9pt; }
         .section-intro-right { flex: 1; font-size: 9pt; padding-left: 10px; }
 
-        /* ── Two-column checklist layout (no cards — matches hardcopy) ── */
+        /* ── Two-column checklist layout ── */
         .obs-block { margin-bottom: 18px; page-break-inside: avoid; }
         .obs-block-header { background: #f0f0f0; border: 1px solid #bbb; border-bottom: none; padding: 4px 8px; font-size: 8pt; display: flex; gap: 16px; flex-wrap: wrap; }
         .obs-block-header strong { font-size: 8.5pt; }
@@ -93,11 +91,11 @@
         .obs-col-left  { display: table-cell; width: 50%; border-right: 1px solid #bbb; padding: 6px 8px; vertical-align: top; }
         .obs-col-right { display: table-cell; width: 50%; padding: 6px 8px; vertical-align: top; }
 
-        /* ── Section label (GENERAL, BREAST, etc.) ── */
+        /* ── Section label ── */
         .section-label { font-size: 8.5pt; font-weight: bold; margin: 6px 0 1px; display: block; }
         .section-label:first-child { margin-top: 0; }
 
-        /* ── Sub-section label (Mother, Baby) ── */
+        /* ── Sub-section label ── */
         .sub-label { font-size: 8pt; font-style: italic; margin: 2px 0 1px 2px; display: block; }
 
         /* ── Checkbox items ── */
@@ -105,18 +103,34 @@
         .cb-box { width: 9px; height: 9px; border: 1.2px solid #000; flex-shrink: 0; margin-top: 2px; display: inline-block; position: relative; }
         .cb-box.checked::after { content: '\2713'; position: absolute; top: -3px; left: 0px; font-size: 9pt; font-weight: bold; line-height: 1; }
 
-        /* ── Section divider between sections ── */
+        /* ── Section divider ── */
         .sec-divider { border: none; border-top: 0.8px dashed #ccc; margin: 5px 0; }
 
         /* ── Empty state ── */
         .empty-box { border: 1.5px dashed #bbb; padding: 24px; text-align: center; color: #999; font-style: italic; font-size: 9pt; border-radius: 3px; }
 
-        /* ── Signature line at bottom ── */
+        /* ── Signature block ── */
         .sig-section { margin-top: 20px; display: flex; justify-content: flex-end; }
         .sig-line { text-align: center; min-width: 260px; }
-        .sig-name { font-size: 8.5pt; min-height: 20px; line-height: 1.4; padding-bottom: 4px; }
+        .sig-img-wrap {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            min-height: 60px;
+            margin-bottom: 4px;
+        }
+        .sig-img-wrap img {
+            max-height: 55px;
+            max-width: 180px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+        .sig-img-placeholder { height: 55px; }
+        .sig-name { font-size: 8.5pt; min-height: 16px; line-height: 1.4; margin-bottom: 3px; display: block; }
         .sig-rule { border-bottom: 0.5px solid #000; width: 100%; display: block; margin-bottom: 3px; }
-        .sig-label { font-size: 7.5pt; color: #444; margin-top: 3px; }
+        .sig-label { font-size: 7.5pt; color: #444; display: block; }
     </style>
 </head>
 <body>
@@ -128,7 +142,6 @@
     $patient       = $visit->patient;
     $nicuAdmission = $visit->nicuAdmission ?? null;
 
-    // Mother's name
     $motherName = trim(
         ($patient->mother_first_name ?? '') . ' ' .
         ($patient->mother_middle_name ? $patient->mother_middle_name . ' ' : '') .
@@ -138,20 +151,16 @@
         $motherName = $patient->mother_name ?? '—';
     }
 
-    // Baby's name
     $babyName = $patient->display_name ?? $patient->full_name ?? ('Baby of ' . ($patient->mother_last_name_at_birth ?? '—'));
 
-    // Birth datetime for age calculation
     $birthDt = $nicuAdmission?->date_time_of_birth ?? $patient->birth_datetime ?? null;
 
-    // Fetch all observations, oldest first
     $observations = NicuBreastfeedingObservation::where('visit_id', $visit->id)
         ->with('observer')
         ->orderBy('observation_date', 'asc')
         ->orderBy('observation_time', 'asc')
         ->get();
 
-    // Field map: section => subsections => well/diff fields
     $sections = [
         'GENERAL' => [
             'Mother' => [
@@ -252,8 +261,6 @@
     <button class="btn-print" onclick="window.print()">&#128438;&nbsp;&nbsp;Print / Save as PDF</button>
 </div>
 
-{{-- ── One .paper div per observation — each is its own visible page on screen ── --}}
-
 @if($observations->isEmpty())
 <div class="paper">
     <div class="form-code">NUR-044-&#216;</div>
@@ -285,8 +292,14 @@
     @php
         $totalObs = $observations->count();
 
-        // Resolve observer's printed name and designation
         $obsUser = $obs->observer ?? null;
+
+        // Ensure the signature column is loaded
+        if ($obsUser && !array_key_exists('signature', $obsUser->getAttributes())) {
+            $obsUser = \App\Models\User::find($obsUser->id,
+                ['id', 'name', 'first_name', 'last_name', 'middle_name', 'signature', 'designation', 'position']);
+        }
+
         if ($obsUser) {
             $obsFullName = trim(
                 ($obsUser->first_name ?? '') . ' ' .
@@ -296,16 +309,19 @@
             if (!$obsFullName) {
                 $obsFullName = $obsUser->name ?? '';
             }
-            $obsDesignation = $obsUser->designation ?? $obsUser->position ?? '';
+            $obsDesignation   = $obsUser->designation ?? $obsUser->position ?? '';
+            $obsSignature     = $obsUser->signature ?? null;
+            $obsPrintedName   = strtoupper($obsFullName);
         } else {
-            $obsFullName    = '';
-            $obsDesignation = '';
+            $obsFullName      = '';
+            $obsDesignation   = '';
+            $obsSignature     = null;
+            $obsPrintedName   = '';
         }
     @endphp
 
     <div class="paper">
 
-        {{-- ── Page indicator (screen only) ── --}}
         <div class="no-print" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:2px dashed #d1d5db;">
             <span style="font-family:'Segoe UI',sans-serif;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">
                 Page {{ $obsIndex + 1 }} of {{ $totalObs }}
@@ -315,10 +331,8 @@
             </span>
         </div>
 
-        {{-- ── Form Code ── --}}
         <div class="form-code">NUR-044-&#216;</div>
 
-        {{-- ── Institutional Header ── --}}
         <div class="header">
             @if(file_exists(public_path('images/province-logo.png')))
                 <div class="logo-box"><img src="{{ asset('images/province-logo.png') }}" alt="Province of La Union"></div>
@@ -340,10 +354,8 @@
             @endif
         </div>
 
-        {{-- ── Form Title ── --}}
         <div class="title-band"><h1>Breastfeeding Observation Job Aid</h1></div>
 
-        {{-- ── Patient Info ── --}}
         <div class="pt-info-row" style="margin-bottom:8px;">
             <div class="pt-info-left">
                 <div class="pt-field">
@@ -440,18 +452,28 @@
         {{-- ── Signature Line ── --}}
         <div class="sig-section">
             <div class="sig-line">
-                <div class="sig-name">
-                    @if($obsFullName)
-                        <strong>{{ strtoupper($obsFullName) }}</strong>
+                {{-- Signature image --}}
+                <div class="sig-img-wrap">
+                    @if($obsSignature)
+                        <img src="{{ $obsSignature }}" alt="Observer Signature">
+                    @else
+                        <div class="sig-img-placeholder"></div>
+                    @endif
+                </div>
+                {{-- Printed name sits ABOVE the line --}}
+                <span class="sig-name">
+                    @if($obsPrintedName)
+                        <strong>{{ $obsPrintedName }}</strong>
                         @if($obsDesignation)
                             <br><span style="font-size:7.5pt;font-weight:normal;">{{ $obsDesignation }}</span>
                         @endif
                     @else
                         &nbsp;
                     @endif
-                </div>
-                <div class="sig-rule"></div>
-                <div class="sig-label">Signature over Printed Name / Designation</div>
+                </span>
+                {{-- Line is BELOW the name --}}
+                <span class="sig-rule"></span>
+                <span class="sig-label">Signature over Printed Name / Designation</span>
             </div>
         </div>
 

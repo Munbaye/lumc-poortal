@@ -68,6 +68,13 @@
     $doctorAdmTimeStr  = $doctorAdmittedAt?->timezone('Asia/Manila')->format('H:i') ?? '';
 
     $docUser = $history?->doctor;
+
+    // Direct fetch to guarantee signature column is loaded
+    $docFresh     = $docUser?->id
+        ? \App\Models\User::find($docUser->id, ['id','name','first_name','last_name','middle_name','signature'])
+        : null;
+    $docSignature = $docFresh?->signature ?? null;
+
     $doctorNameFormatted = '';
     if ($docUser) {
         $parts = explode(' ', trim($docUser->name));
@@ -358,15 +365,23 @@ const DOCTOR_ADM_TIME = '{{ $doctorAdmTimeStr }}';
     <tr><td colspan="6" style="height:18px;border-top:1.5px solid #000;"></td></tr>
 </table>
 
-<div style="display:flex;justify-content:space-between;margin-top:18px;padding:0 8px;">
+<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:18px;padding:0 8px;">
+    {{-- Nurse — blank line only; manual signing on printed copy --}}
     <div style="text-align:center;width:42%;">
-        <div style="border-top:1.5px solid #000;padding-top:4px;margin-top:32px;">
+        <div style="border-top:1.5px solid #000;padding-top:4px;">
             <div class="L">Nurse's Name (Printed) and <u>Signature</u></div>
         </div>
     </div>
+    {{-- Doctor — digital signature if available --}}
     <div style="text-align:center;width:42%;">
-        <div style="padding-top:4px;margin-top:8px;min-height:28px;font-size:9.5pt;font-weight:bold;letter-spacing:.04em;">
-            {{ $doctorNameFormatted }}
+        <div style="min-height:55px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:4px;">
+            @if($docSignature)
+                <img src="{{ $docSignature }}"
+                     style="max-height:55px;max-width:180px;object-fit:contain;display:block;">
+            @endif
+        </div>
+        <div style="font-size:9.5pt;font-weight:bold;letter-spacing:.04em;margin-bottom:3px;">
+            {{ $doctorNameFormatted ?: '___________________________' }}
         </div>
         <div style="border-top:1.5px solid #000;padding-top:4px;">
             <div class="L">Doctor's Name (Printed) and <u>Signature</u></div>

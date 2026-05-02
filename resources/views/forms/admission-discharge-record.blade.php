@@ -18,7 +18,6 @@
         .btn-print{background:#fff;color:#1e3a5f;border:none;padding:6px 18px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;}.btn-print:hover{background:#dbeafe;}
         .btn-save{background:#059669;color:#fff;border:none;padding:6px 22px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;}.btn-save:hover{background:#047857;}.btn-save:disabled{opacity:.6;cursor:not-allowed;}
 
-        /* Readonly: lock all interactivity */
         body.readonly-mode [contenteditable]{ pointer-events:none; cursor:default; }
         body.readonly-mode input,body.readonly-mode select,body.readonly-mode textarea{ pointer-events:none; cursor:default; }
         body.readonly-mode .sq{ pointer-events:none; cursor:default; }
@@ -46,6 +45,45 @@
         .icd-box{width:22px;height:22px;border:1.2px solid #000;display:inline-block;}
         #toast{position:fixed;bottom:22px;right:22px;background:#059669;color:#fff;padding:12px 22px;border-radius:8px;font-family:'Segoe UI',sans-serif;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.25);display:none;z-index:99999;}
         #toast.error{background:#dc2626;}
+
+/* ── Physician signature block ── */
+        .physician-sig-block {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .physician-sig-block .sig-img-area {
+            min-height: 55px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            margin-bottom: 3px;
+        }
+        .physician-sig-block .sig-img-area img {
+            max-height: 55px;
+            max-width: 180px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+        .physician-sig-block .sig-name {
+            font-size: 8pt;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .physician-sig-block .sig-rule {
+            border-bottom: 1px solid #000;
+            margin-bottom: 3px;
+        }
+        .physician-sig-block .sig-label {
+            font-size: 7pt;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: #555;
+            display: block;
+        }
+
     </style>
 </head>
 <body class="{{ request()->boolean('readonly') ? 'readonly-mode' : '' }}">
@@ -114,12 +152,36 @@
     $principalOp = $adm?->principal_operation ?? '';
     $disp      = $first($adm?->disposition, $visit->disposition ?? '');
     $results   = $adm?->results ?? '';
-    $physician = $history?->doctor ? 'Dr. ' . $history->doctor->name : '';
+
+    // ── Physician (printed name + signature) ──────────────────────────────
+    $physicianUser = $history?->doctor ?? null;
+
+    // Fallback: match by name if relationship null
+    if (!$physicianUser) {
+        $rawDoc = $history?->doctor_id
+            ? \App\Models\User::find($history->doctor_id,
+                ['id','name','first_name','last_name','middle_name','signature'])
+            : null;
+        $physicianUser = $rawDoc;
+    }
+
+    $physician = '';
+    if ($physicianUser) {
+        $pName     = $physicianUser->full_name ?: $physicianUser->name;
+        $physician = 'Dr. ' . $pName;
+        if ($physicianUser->specialty ?? null) {
+            // keep specialty out of printed name line
+        }
+    }
+
+    $physicianSignature   = $physicianUser?->signature ?? null;
+    $physicianPrintedName = $physicianUser
+        ? strtoupper($physicianUser->full_name ?: $physicianUser->name)
+        : '';
 @endphp
 
 <div id="toast"></div>
 
-{{-- Toolbar: completely absent in readonly mode --}}
 @unless($readonly)
 <div class="toolbar no-print">
     <span class="lbl">Admission and Discharge Record (ADM-001)</span>
@@ -345,10 +407,25 @@
         </td>
         <td colspan="3" style="vertical-align:top;">
             <div class="L">Attending Physician</div>
-            <div id="f_physician2" class="fb fb3" contenteditable="{{ $ce }}" spellcheck="false">{{ $physician }}</div>
-            <div style="border-top:1px solid #000;margin-top:20px;padding-top:3px;text-align:center;">
-                <span style="font-size:8.5pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ,M.D.</span><br>
-                <span class="Ls">Signature</span>
+            <div id="f_physician2" class="fb" contenteditable="{{ $ce }}" spellcheck="false">{{ $physician }}</div>
+
+            {{-- ── Physician Signature Block ──
+                 Physician does not fill this form via the system.
+                 Signature area is left blank for manual signing on print.
+            --}}
+                <div class="physician-sig-block">
+                <div class="sig-img-area">
+                    @if($physicianSignature)
+                        <img src="{{ $physicianSignature }}"
+                             style="max-height:55px;max-width:180px;object-fit:contain;display:block;">
+                    @endif
+                </div>
+                <span class="sig-name">
+                    {{ $physicianPrintedName ? $physicianPrintedName . ', M.D.' : '_________________________________, M.D.' }}
+                </span>
+                <div class="sig-rule"></div>
+                <span class="sig-label">Signature over Printed Name</span>
+            </div>
             </div>
         </td>
     </tr>
@@ -356,7 +433,6 @@
 </table>
 </div>{{-- /.paper --}}
 
-{{-- JS only loaded in editable mode --}}
 @unless($readonly)
 <script>
 function toggleSq(el, idA, idB) {

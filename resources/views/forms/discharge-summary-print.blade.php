@@ -76,6 +76,50 @@
         .text-line { border-bottom: 1px solid #888; min-height: 22px; width: 100%; margin-bottom: 2px; font-size: 10.5pt; padding: 2px 4px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
         .text-line:last-child { margin-bottom: 0; }
 
+        /* ── Physician signature block ── */
+        .physician-sig-wrap {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 32px;
+        }
+        .physician-sig-inner {
+            text-align: center;
+            min-width: 260px;
+        }
+        .physician-sig-inner .sig-img-area {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            min-height: 60px;
+            margin-bottom: 4px;
+        }
+        .physician-sig-inner .sig-img-area img {
+            max-height: 55px;
+            max-width: 180px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+        .physician-sig-inner .sig-img-placeholder {
+            height: 55px;
+        }
+        .physician-sig-inner .sig-name {
+            font-size: 9pt;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 3px;
+        }
+        .physician-sig-inner .sig-rule {
+            border-bottom: 1px solid #000;
+            margin-bottom: 3px;
+        }
+        .physician-sig-inner .sig-caption {
+            font-size: 8pt;
+            color: #555;
+            display: block;
+        }
+
         /* ── Print date ── */
         .print-footer { font-size: 7.5pt; color: #888; text-align: right; margin-top: 18px; border-top: 0.5px solid #ccc; padding-top: 4px; }
     </style>
@@ -93,6 +137,29 @@
         while (count($parts) < $lines) { $parts[] = ''; }
         return $parts;
     };
+
+    // ── Attending Physician Signature ──────────────────────────────────────
+    // Try via visit relationship first
+    $attendingDoctor = null;
+
+    if (isset($visit)) {
+        $attendingDoctor = $visit->medicalHistory?->doctor ?? null;
+    }
+
+    // Fallback: match by name stored in discharge summary
+    if (!$attendingDoctor && !empty($ds->attending_physician)) {
+        $searchName = trim(str_replace(['Dr. ', 'DR. ', 'dr. '], '', $ds->attending_physician));
+        $attendingDoctor = \App\Models\User::where('name', $searchName)
+            ->orWhere('name', $ds->attending_physician)
+            ->orWhereRaw("CONCAT(COALESCE(first_name,''), ' ', COALESCE(last_name,'')) = ?", [$searchName])
+            ->orWhereRaw("CONCAT(COALESCE(first_name,''), ' ', COALESCE(last_name,'')) = ?", [$ds->attending_physician])
+            ->first(['id', 'name', 'first_name', 'last_name', 'middle_name', 'signature']);
+    }
+
+    $attendingSignature   = $attendingDoctor?->signature ?? null;
+    $attendingPrintedName = $attendingDoctor
+        ? strtoupper($attendingDoctor->full_name ?: $attendingDoctor->name)
+        : strtoupper($ds->attending_physician ?? '');
 @endphp
 
 <div class="toolbar no-print">
@@ -243,7 +310,30 @@
         </div>
     </div>
 
-    <div class="print-footer no-print">Printed: {{ now()->timezone('Asia/Manila')->format('F j, Y g:i A') }} &nbsp;·&nbsp; LUMC — La Union Medical Center</div>
+    {{-- ── Attending Physician Signature Block ── --}}
+    <div class="physician-sig-wrap">
+        <div class="physician-sig-inner">
+            {{-- Signature image --}}
+            <div class="sig-img-area">
+                @if($attendingSignature)
+                    <img src="{{ $attendingSignature }}" alt="Physician Signature">
+                @else
+                    <div class="sig-img-placeholder"></div>
+                @endif
+            </div>
+            {{-- Printed name ABOVE the line --}}
+            <span class="sig-name">
+                {{ $attendingPrintedName
+                    ? $attendingPrintedName . ', M.D.'
+                    : '___________________________________, M.D.' }}
+            </span>
+            {{-- Line BELOW the name --}}
+            <div class="sig-rule"></div>
+            <span class="sig-caption">Signature over Printed Name</span>
+        </div>
+    </div>
+
+    <div class="print-footer no-print">
 
 </div>
 </body>

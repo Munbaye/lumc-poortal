@@ -208,39 +208,44 @@
         .sig-line  { border-bottom: 1px solid #000; height: 62px; width: 100%; }
         .sig-cap   { font-size: 9pt; text-align: center; font-style: italic; margin-top: 3px; }
 
-        /* ── SIGNATURE IMAGE inside sig-line ────────────────────────── */
+        /* ── SIGNATURE IMAGE block ── */
         .sig-img-wrap {
-            position: relative;
             width: 100%;
-            height: 62px;
-            border-bottom: 1px solid #000;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-end;
         }
-        .sig-img-wrap img.sig-img {
-            position: absolute;
-            bottom: 4px;
-            left: 50%;
-            transform: translateX(-50%);
-            max-height: 50px;
+        .sig-img-area {
+            min-height: 55px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 4px;
+        }
+        .sig-img-area img.sig-img {
+            max-height: 55px;
             max-width: 88%;
             object-fit: contain;
-            pointer-events: none;
+            display: block;
         }
         .sig-img-wrap .sig-name {
-            position: relative;
-            z-index: 1;
             font-family: 'Times New Roman', Times, serif;
             font-size: 10.5pt;
             text-align: center;
             width: 100%;
-            padding-bottom: 2px;
+            margin-bottom: 3px;
             border: none;
             outline: none;
             cursor: text;
             white-space: pre-wrap;
+            display: block;
+        }
+        .sig-img-wrap .sig-rule {
+            border-bottom: 1px solid #000;
+            width: 100%;
+            display: block;
+            margin-bottom: 3px;
         }
 
         /* ── SCREEN TIP ─────────────────────────────────────────────── */
@@ -316,7 +321,13 @@
         $admDate = $visit->clerk_admitted_at
             ? $visit->clerk_admitted_at->timezone('Asia/Manila')->format('M j, Y')
             : '';
-        $doctorSig = $doctor?->signature ?? null;
+        // Direct fetch guarantees the signature column is included
+        $doctorSig = null;
+        if ($doctor?->id) {
+            $docFresh  = \App\Models\User::find($doctor->id,
+                ['id','name','first_name','last_name','middle_name','signature']);
+            $doctorSig = $docFresh?->signature;
+        }
     @endphp
 
     <div class="patient-bar">
@@ -444,23 +455,21 @@
             <div class="sig-cap">Signature of Patient / Authorized Representative</div>
         </div>
 
-        {{-- Attending Physician signature --}}
+    {{-- Attending Physician signature --}}
         <div class="sig-block">
             <div class="sig-img-wrap">
-                @if($doctorSig)
-                    <img
-                        class="sig-img"
-                        src="{{ $doctorSig }}"
-                        alt="Physician Signature"
-                    >
-                @endif
-                <span
-                    class="sig-name field"
-                    contenteditable="true"
-                    spellcheck="false"
-                >{{ $docName }}</span>
+                {{-- Signature image --}}
+                <div class="sig-img-area">
+                    @if($doctorSig)
+                        <img class="sig-img" src="{{ $doctorSig }}" alt="Physician Signature">
+                    @endif
+                </div>
+                {{-- Printed name ABOVE the line --}}
+                <span class="sig-name field" contenteditable="true" spellcheck="false">{{ $docName }}</span>
+                {{-- Line BELOW the name --}}
+                <span class="sig-rule"></span>
             </div>
-            <div class="sig-cap">Attending Physician</div>
+            <div class="sig-cap">Signature over Printed Name / Attending Physician</div>
         </div>
 
     </div>
