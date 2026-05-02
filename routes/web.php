@@ -106,9 +106,9 @@ Route::get('/forgot-password', function () {
 Route::middleware(['auth'])->group(function () {
 
     // ── SIGNATURE SAVE ────────────────────────────────────────────────────────
-    // Accepts the panel name so the redirect goes back to the right panel's page.
-    Route::post('/signature/save/{panel}', [SignatureController::class, 'save'])
-        ->name('signature.save');
+    // // Accepts the panel name so the redirect goes back to the right panel's page.
+    // Route::post('/signature/save/{panel}', [SignatureController::class, 'save'])
+    //     ->name('signature.save');
 
     // ── ER Record ─────────────────────────────────────────────────────────────
     Route::get('/forms/er-record/{visit}', [ClerkFormController::class, 'erRecord'])
