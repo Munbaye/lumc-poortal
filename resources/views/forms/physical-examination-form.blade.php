@@ -300,6 +300,15 @@
         $pName   = $patient->full_name ?? '';
         $pAge    = ($patient->age_display ?? '') . ' / ' . ($patient->sex ?? '');
         $docName = $doctor ? 'Dr. ' . $doctor->name : '';
+
+        // Direct fetch to guarantee signature column is loaded
+        $doctorSig = null;
+        if ($doctor?->id) {
+            $docFresh  = \App\Models\User::find($doctor->id,
+                ['id','name','first_name','last_name','middle_name','signature']);
+            $doctorSig = $docFresh?->signature;
+        }
+
         $admDate = $visit->clerk_admitted_at
             ? $visit->clerk_admitted_at->timezone('Asia/Manila')->format('M j, Y')
             : '';
@@ -426,21 +435,24 @@
     <hr class="divider">
 
     {{-- SIGNATURE --}}
-    <div class="sig-row">
-        <div class="sig-block">
-            <div class="sig-line"></div>
-            <div class="sig-cap">Signature of Examining Physician</div>
-        </div>
-        <div class="sig-block">
-            <div class="sig-line" style="display:flex;align-items:flex-end;padding-bottom:3px;">
-                <span
-                    class="field"
-                    style="width:100%;border:none;text-align:center;"
-                    contenteditable="true"
-                    spellcheck="false"
-                >{{ $docName }}</span>
+    <div style="display:flex;justify-content:flex-end;margin-top:14px;">
+        <div style="text-align:center;min-width:280px;">
+            {{-- Signature image --}}
+            <div style="min-height:55px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:4px;">
+                @if($doctorSig)
+                    <img src="{{ $doctorSig }}"
+                         style="max-height:55px;max-width:180px;object-fit:contain;display:block;">
+                @endif
             </div>
-            <div class="sig-cap">Printed Name</div>
+            {{-- Printed name ABOVE the line --}}
+            <div style="font-size:10.5pt;font-weight:bold;margin-bottom:3px;text-align:center;">
+                {{ $docName ?: '______________________________' }}
+            </div>
+            {{-- Line BELOW the name --}}
+            <div style="border-bottom:1px solid #000;margin-bottom:3px;"></div>
+            <div style="font-size:9pt;font-style:italic;text-align:center;">
+                Signature over Printed Name / Examining Physician
+            </div>
         </div>
     </div>
 

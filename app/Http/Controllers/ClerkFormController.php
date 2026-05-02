@@ -143,12 +143,14 @@ class ClerkFormController extends Controller
     // ── Admission & Discharge Record ──────────────────────────────────────────
 
     public function admRecord(Visit $visit)
-    {
-        $visit->load(['patient', 'medicalHistory.doctor', 'erRecord', 'admissionRecord']);
-        $erRecord  = $visit->erRecord;
-        $admRecord = $visit->admissionRecord;
-        return view('forms.admission-discharge-record', compact('visit', 'erRecord', 'admRecord'));
-    }
+{
+    $visit->load(['patient', 'medicalHistory.doctor', 'erRecord', 'admissionRecord']);
+    $erRecord   = $visit->erRecord;
+    $admRecord  = $visit->admissionRecord;
+    $isNicu     = $visit->visit_type === 'NICU';
+    $consentUrl = route('forms.consent-to-care', ['visit' => $visit->id]);
+    return view('forms.admission-discharge-record', compact('visit', 'erRecord', 'admRecord', 'isNicu', 'consentUrl'));
+}
 
     public function admRecordSave(Request $request, Visit $visit): \Illuminate\Http\JsonResponse
     {

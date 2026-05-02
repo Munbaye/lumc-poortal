@@ -442,6 +442,22 @@ Non-editable fields:
 
     <div id="toast"></div>
 
+    @php
+        // Fetch requesting physician's digital signature via visit
+        $reqPhysicianSig  = null;
+        $reqPhysicianName = $requestingPhysician ?? '';
+        if (isset($visit) && $visit->medicalHistory?->doctor_id) {
+            $reqDoc = \App\Models\User::find(
+                $visit->medicalHistory->doctor_id,
+                ['id','name','first_name','last_name','middle_name','signature']
+            );
+            $reqPhysicianSig = $reqDoc?->signature;
+            if ($reqDoc) {
+                $reqPhysicianName = $reqDoc->full_name ?: $reqDoc->name;
+            }
+        }
+    @endphp
+
     <div class="toolbar no-print">
         <span class="lbl">LUMC · Radiology Request</span>
         <span class="tag">RAD</span>
@@ -560,8 +576,15 @@ Non-editable fields:
                     {{-- NON-EDITABLE: shown as bold text with same underline visual --}}
                     <div class="fi-ro" style="font-size:11pt;font-weight:bold;">{{ $requestingPhysician ?? '—' }}</div>
                 </div>
-                <div>
-                    <div class="sig-line"></div>
+                <div style="text-align:center;">
+                    <div style="min-height:55px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:4px;">
+                        @if($reqPhysicianSig)
+                            <img src="{{ $reqPhysicianSig }}"
+                                 style="max-height:55px;max-width:180px;object-fit:contain;display:block;">
+                        @endif
+                    </div>
+                    <div style="font-size:10.5pt;font-weight:bold;margin-bottom:3px;">{{ $reqPhysicianName }}</div>
+                    <div style="border-bottom:1px solid #000;margin-bottom:3px;"></div>
                     <div class="sig-cap">Signature over Printed Name / PRC No.</div>
                 </div>
             </div>

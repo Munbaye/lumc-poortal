@@ -329,9 +329,60 @@ html.dark .sig-alert-error   { background:#450a0a; border-color:#7f1d1d; color:#
    STAFF OVERVIEW STYLES (admin-only tab)
 ══════════════════════════════════════════════════════════ */
 
-/* Force staff tab content to always be the same width/min-height as the my-sig tab */
+/* Make staff tab visually match My Signature tab height */
 .sig-staff-content {
-    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    min-height: 980px;
+}
+
+/* Force the main staff panel to stretch */
+.sig-staff-content .sig-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Make table section fill remaining space */
+.sig-staff-content .sig-panel > div:last-child {
+    flex: 1;
+}
+
+/* Optional cleaner empty lower spacing */
+.sig-staff-table {
+    height: 100%;
+}
+
+.sig-page {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 4rem;
+}
+
+/* Force BOTH tabs to use identical width */
+.sig-page > div[x-show] {
+    width: 100%;
+}
+
+/* Staff tab should fully stretch like My Signature */
+.sig-staff-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* Force cards/panels inside staff tab to full width */
+.sig-staff-content .sig-panel,
+.sig-staff-content .sig-overview-stats {
+    width: 100%;
+}
+
+/* Prevent table wrapper from shrinking layout */
+.sig-staff-content .sig-panel > div[style*="overflow-x:auto"] {
+    width: 100%;
 }
 
 .sig-overview-stats {

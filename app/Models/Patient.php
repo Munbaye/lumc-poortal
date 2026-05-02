@@ -273,20 +273,19 @@ class Patient extends Model
                 $this->mother_phone = $this->mother_contact;
             }
             
-            // Generate permanent case number manually (since boot() won't run on update)
+            // Generate permanent case number — find true max sequence to avoid duplicates
             $year = now()->year;
-            $last = static::withTrashed()
-                ->whereYear('created_at', $year)
+            $maxSeq = static::withTrashed()
                 ->where('is_provisional', false)
+                ->where('case_no', 'like', "LUMC-{$year}-%")
                 ->lockForUpdate()
-                ->orderByDesc('id')
-                ->first();
-            $seq = 1;
-            if ($last && $last->case_no && !str_starts_with($last->case_no, 'TEMP')) {
-                $parts = explode('-', $last->case_no);
-                $seq = ((int) end($parts)) + 1;
-            }
-            $permanentCaseNo = 'LUMC-' . $year . '-' . str_pad($seq, 6, '0', STR_PAD_LEFT);
+                ->get(['case_no'])
+                ->map(function ($p) {
+                    $parts = explode('-', $p->case_no);
+                    return (int) end($parts);
+                })
+                ->max() ?? 0;
+            $permanentCaseNo = 'LUMC-' . $year . '-' . str_pad($maxSeq + 1, 6, '0', STR_PAD_LEFT);
             
             // Update the patient
             $this->is_provisional = false;

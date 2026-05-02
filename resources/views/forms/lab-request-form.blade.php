@@ -469,6 +469,22 @@ Specimen Collected, Test Started, Test Done) — these are filled by the system 
 
     <div id="toast"></div>
 
+    @php
+        // Fetch requesting physician's digital signature via visit
+        $reqPhysicianSig  = null;
+        $reqPhysicianName = $requestingPhysician ?? '';
+        if (isset($visit) && $visit->medicalHistory?->doctor_id) {
+            $reqDoc = \App\Models\User::find(
+                $visit->medicalHistory->doctor_id,
+                ['id','name','first_name','last_name','middle_name','signature']
+            );
+            $reqPhysicianSig = $reqDoc?->signature;
+            if ($reqDoc) {
+                $reqPhysicianName = $reqDoc->full_name ?: $reqDoc->name;
+            }
+        }
+    @endphp
+
     <div class="toolbar no-print">
         <span class="lbl">LUMC · Laboratory Request</span>
         <span class="tag">LAB-001-1</span>
@@ -584,9 +600,16 @@ Specimen Collected, Test Started, Test Done) — these are filled by the system 
                     {{-- NON-EDITABLE: shown as bold text with the same underline visual --}}
                     <div class="fi-ro" style="font-size:10pt;font-weight:bold;">{{ $requestingPhysician ?? '—' }}</div>
                 </div>
-                <div>
-                    <div class="sig-line"></div>
-                    <div class="sig-cap">Signature / PRC No. &amp; Date</div>
+                <div style="text-align:center;">
+                    <div style="min-height:55px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:4px;">
+                        @if($reqPhysicianSig)
+                            <img src="{{ $reqPhysicianSig }}"
+                                 style="max-height:55px;max-width:180px;object-fit:contain;display:block;">
+                        @endif
+                    </div>
+                    <div style="font-size:9pt;font-weight:bold;margin-bottom:3px;">{{ $reqPhysicianName }}</div>
+                    <div style="border-bottom:1px solid #000;margin-bottom:3px;"></div>
+                    <div class="sig-cap">Signature over Printed Name / PRC No.</div>
                 </div>
             </div>
         </div>
@@ -700,8 +723,15 @@ Specimen Collected, Test Started, Test Done) — these are filled by the system 
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:6px;">
-            <div>
-                <div class="sig-line" style="margin-top:20px;"></div>
+            <div style="text-align:center;">
+                <div style="min-height:55px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:4px;">
+                    @if($reqPhysicianSig)
+                        <img src="{{ $reqPhysicianSig }}"
+                             style="max-height:55px;max-width:180px;object-fit:contain;display:block;">
+                    @endif
+                </div>
+                <div style="font-size:9pt;font-weight:bold;margin-bottom:3px;">{{ $reqPhysicianName }}</div>
+                <div style="border-bottom:1px solid #000;margin-bottom:3px;"></div>
                 <div class="sig-cap">Requesting Physician — Signature / PRC No.</div>
             </div>
             <div style="display:flex;flex-direction:column;justify-content:flex-end;">
