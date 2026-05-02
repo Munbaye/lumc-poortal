@@ -52,7 +52,9 @@ class NicuAdmission extends Model
         'maternal_history',
         'maternal_signs_symptoms',
         'took_multivitamins',
+        'multivitamins_details',
         'had_ultrasound',
+        'ultrasound_details',
         'had_preterm_labor',
         'steroids_given',
     ];
@@ -81,12 +83,9 @@ class NicuAdmission extends Model
         return $this->belongsTo(User::class, 'filled_by');
     }
     
-    /**
-     * Get APGAR display string
-     */
     public function getApgarDisplayAttribute(): string
     {
-        $one = $this->apgar_1min ?? '—';
+        $one  = $this->apgar_1min ?? '—';
         $five = $this->apgar_5min ?? '—';
         return "{$one} / {$five}";
     }

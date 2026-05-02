@@ -1,5 +1,5 @@
 <x-filament-panels::page>
-    
+
     <style>
         .nicu-form-card {
             background: #fff;
@@ -8,52 +8,52 @@
             overflow: hidden;
             margin-bottom: 24px;
         }
-        
+
         .dark .nicu-form-card {
             background: #1f2937;
             border-color: #374151;
         }
-        
+
         .nicu-card-header {
             background: #f0fdf4;
             border-bottom: 1px solid #bbf7d0;
             padding: 14px 20px;
         }
-        
+
         .dark .nicu-card-header {
             background: #064e3b;
             border-color: #065f46;
         }
-        
+
         .nicu-card-header h3 {
             font-size: 1rem;
             font-weight: 700;
             margin: 0;
             color: #166534;
         }
-        
+
         .dark .nicu-card-header h3 {
             color: #86efac;
         }
-        
+
         .nicu-card-body {
             padding: 20px;
         }
-        
+
         .form-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 16px;
         }
-        
+
         .form-field-full {
             grid-column: span 4;
         }
-        
+
         .form-field-half {
             grid-column: span 2;
         }
-        
+
         .form-label {
             display: block;
             font-size: 0.7rem;
@@ -63,7 +63,7 @@
             color: #6b7280;
             margin-bottom: 5px;
         }
-        
+
         .form-input {
             width: 100%;
             border-radius: 8px;
@@ -72,19 +72,89 @@
             border: 1px solid #d1d5db;
             background: #fff;
             outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+<<<<<<< HEAD
+            -moz-appearance: none;
         }
-        
+
+        select.form-input {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+            cursor: pointer;
+=======
+>>>>>>> origin/main
+        }
+
         .dark .form-input {
-            background: #374151;
+            background-color: #374151;
             border-color: #4b5563;
             color: #f3f4f6;
         }
+
+<<<<<<< HEAD
+        .dark select.form-input {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-color: #374151;
+        }
         
+=======
+>>>>>>> origin/main
         .form-input:focus {
             border-color: #1d4ed8;
             box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
         }
-        
+
+        /* ── Select wrapper: single custom arrow only ── */
+        .select-wrapper {
+            position: relative;
+            display: block;
+        }
+
+        .select-wrapper::after {
+            content: '';
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 6px solid #6b7280;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .select-wrapper select {
+            width: 100%;
+            border-radius: 8px;
+            padding: 10px 32px 10px 12px;
+            font-size: 0.875rem;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            background-image: none;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+        }
+
+        .dark .select-wrapper select {
+            background: #374151;
+            background-image: none;
+            border-color: #4b5563;
+            color: #f3f4f6;
+        }
+
+        .select-wrapper select:focus {
+            border-color: #1d4ed8;
+            box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+        }
+
         .btn-primary {
             background: linear-gradient(135deg, #1e3a5f, #1d4ed8);
             color: #fff;
@@ -95,29 +165,35 @@
             font-weight: 700;
             cursor: pointer;
         }
-        
+
         .btn-primary:hover {
             opacity: 0.9;
         }
-        
-        .observation-checkbox {
-            display: inline-flex;
-            align-items: center;
-            margin-right: 20px;
-            margin-bottom: 10px;
-        }
-        
-        .observation-checkbox input {
-            margin-right: 6px;
-            width: 16px;
-            height: 16px;
-        }
-        
-        .observation-checkbox label {
-            font-size: 0.8rem;
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
             cursor: pointer;
         }
-        
+
+        .section-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #1e3a5f;
+        }
+
+        .section-divider {
+            border: none;
+            border-top: 1px solid #e5e7eb;
+            margin: 20px 0;
+        }
+
         .warning-box {
             background: #fffbeb;
             border-left: 4px solid #f59e0b;
@@ -125,7 +201,7 @@
             margin-bottom: 20px;
             border-radius: 8px;
         }
-        
+
         .info-box {
             background: #eff6ff;
             border-left: 4px solid #3b82f6;
@@ -133,188 +209,351 @@
             margin-bottom: 20px;
             border-radius: 8px;
         }
+
+        .info-box p,
+        .warning-box p {
+            margin: 0;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .checkbox-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .checkbox-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+            accent-color: #1d4ed8;
+            flex-shrink: 0;
+        }
+
+        .checkbox-detail-input {
+            margin-top: 2px;
+            width: 220px;
+            border-radius: 6px;
+            padding: 7px 10px;
+            font-size: 0.8rem;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            outline: none;
+        }
+
+        .dark .checkbox-detail-input {
+            background: #374151;
+            border-color: #4b5563;
+            color: #f3f4f6;
+        }
+
+        .checkbox-detail-input:focus {
+            border-color: #1d4ed8;
+            box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.1);
+        }
+
+        .observation-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 20px;
+        }
+
+        .observation-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.8rem;
+            color: #374151;
+            cursor: pointer;
+        }
+
+        .observation-item input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+            accent-color: #1d4ed8;
+        }
+
+        .transfer-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .transfer-label input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+            accent-color: #1d4ed8;
+        }
+
+        .hint-text {
+            font-size: 0.7rem;
+            color: #6b7280;
+            margin-top: 3px;
+        }
+
+        .error-text {
+            color: #dc2626;
+            font-size: 0.7rem;
+            margin-top: 3px;
+        }
     </style>
-    
+
     <div class="nicu-form-card">
         <div class="nicu-card-header">
             <h3>🩺 New Baby Arrival - Create Provisional Record</h3>
         </div>
         <div class="nicu-card-body">
-            
+
             <div class="info-box">
-                <p style="margin:0; font-size:0.85rem;">
+                <p>
                     <strong>📋 About this form:</strong> This creates a <strong>temporary record</strong> so you can start documenting care immediately.
                     The baby will receive a temporary ID (TEMP-YYYYMMDD-XXX). Complete the full registration after talking to the mother.
                 </p>
             </div>
-            
+
             <form wire:submit="save">
-                
-                <!-- Section 1: Required Information -->
-                <div style="margin-bottom: 24px;">
-                    <h4 style="font-size:0.85rem; font-weight:700; margin-bottom:12px; color:#1e3a5f;">Required Information</h4>
-                    
-                    <div class="form-grid">
-                        <div class="form-field-full">
-                            <label class="form-label">Mother's Last Name <span style="color:#dc2626;">*</span></label>
-                            <input type="text" 
-                                   wire:model="formData.mother_last_name" 
-                                   class="form-input"
-                                   placeholder="e.g., Dela Cruz"
-                                   autofocus>
-                            @error('formData.mother_last_name') 
-                                <p class="text-danger text-xs mt-1" style="color:#dc2626; font-size:0.7rem;">{{ $message }}</p> 
-                            @enderror
-                            <p style="font-size:0.7rem; color:#6b7280; margin-top:4px;">This will be used as the baby's temporary identifier.</p>
-                        </div>
-                        
-                        <div class="form-field">
-                            <label class="form-label">Baby's Sex <span style="color:#dc2626;">*</span></label>
-                            <select wire:model="formData.baby_sex" class="form-input">
+
+                {{-- ── Section 1: Required Information ─────────────────────────── --}}
+                <p class="section-title">Required Information</p>
+
+                <div class="form-grid">
+                    <div class="form-field-full">
+                        <label class="form-label">Mother's Last Name <span style="color:#dc2626;">*</span></label>
+                        <input type="text"
+                               wire:model="formData.mother_last_name"
+                               class="form-input"
+                               placeholder="e.g., Dela Cruz"
+                               autofocus>
+                        @error('formData.mother_last_name')
+                            <p class="error-text">{{ $message }}</p>
+                        @enderror
+                        <p class="hint-text">This will be used as the baby's temporary identifier.</p>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Baby's Sex <span style="color:#dc2626;">*</span></label>
+                        <div class="select-wrapper">
+                            <select wire:model="formData.baby_sex">
                                 <option value="">Select...</option>
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
                             </select>
-                            @error('formData.baby_sex') 
-                                <p class="text-danger text-xs mt-1" style="color:#dc2626; font-size:0.7rem;">{{ $message }}</p> 
-                            @enderror
                         </div>
-                        
-                        <div class="form-field">
-                            <label class="form-label">Birth Date & Time <span style="color:#dc2626;">*</span></label>
-                            <input type="datetime-local" 
-                                   wire:model="formData.birth_datetime" 
-                                   class="form-input"
-                                   min="{{ $birthDateTimeMin }}"
-                                   max="{{ $birthDateTimeMax }}">
-                            @error('formData.birth_datetime') 
-                                <p class="text-danger text-xs mt-1" style="color:#dc2626; font-size:0.7rem;">{{ $message }}</p> 
-                            @enderror
-                        </div>
+                        @error('formData.baby_sex')
+                            <p class="error-text">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Birth Date & Time <span style="color:#dc2626;">*</span></label>
+                        <input type="datetime-local"
+                               wire:model="formData.birth_datetime"
+                               class="form-input">
+                        @error('formData.birth_datetime')
+                            <p class="error-text">{{ $message }}</p>
+                        @enderror
+                        <p class="hint-text">Must not be a future date or time.</p>
                     </div>
                 </div>
-                
-                <!-- Section 2: APGAR Scores -->
-                <div style="margin-bottom: 24px;">
-                    <h4 style="font-size:0.85rem; font-weight:700; margin-bottom:12px; color:#1e3a5f;">APGAR Scores</h4>
-                    
-                    <div class="form-grid">
-                        <div class="form-field">
-                            <label class="form-label">1 Minute</label>
-                            <input type="number" 
-                                   wire:model="formData.apgar_1min" 
-                                   min="0" max="10" 
-                                   class="form-input"
-                                   placeholder="0-10">
-                        </div>
-                        
-                        <div class="form-field">
-                            <label class="form-label">5 Minutes</label>
-                            <input type="number" 
-                                   wire:model="formData.apgar_5min" 
-                                   min="0" max="10" 
-                                   class="form-input"
-                                   placeholder="0-10">
-                        </div>
-                        
-                        <div class="form-field">
-                            <label class="form-label">10 Minutes</label>
-                            <input type="number" 
-                                   wire:model="formData.apgar_10min" 
-                                   min="0" max="10" 
-                                   class="form-input"
-                                   placeholder="0-10 (only if 5 min <7)">
-                            <p style="font-size:0.65rem; color:#6b7280; margin-top:2px;">Required only if 5-minute APGAR is below 7</p>
-                        </div>
+
+                <hr class="section-divider">
+
+                {{-- ── Section 2: APGAR Scores ──────────────────────────────────── --}}
+                <p class="section-title">APGAR Scores</p>
+
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label class="form-label">1 Minute</label>
+                        <input type="number"
+                               wire:model.live="formData.apgar_1min"
+                               min="0" max="10"
+                               class="form-input"
+                               placeholder="0–10">
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">5 Minutes</label>
+                        <input type="number"
+                               wire:model.live="formData.apgar_5min"
+                               min="0" max="10"
+                               class="form-input"
+                               placeholder="0–10">
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">10 Minutes</label>
+                        <input type="number"
+                               wire:model="formData.apgar_10min"
+                               min="0" max="10"
+                               class="form-input"
+                               placeholder="0–10 (only if 5 min &lt;7)">
+                        <p class="hint-text">Required only if 5-minute APGAR is below 7</p>
                     </div>
                 </div>
-                
-                <!-- Section 3: Birth Measurements -->
-                <div style="margin-bottom: 24px;">
-                    <h4 style="font-size:0.85rem; font-weight:700; margin-bottom:12px; color:#1e3a5f;">Birth Measurements</h4>
-                    
-                    <div class="form-grid">
-                        <div class="form-field">
-                            <label class="form-label">Birth Weight (grams)</label>
-                            <input type="number" 
-                                   wire:model="formData.birth_weight_grams" 
-                                   step="1" 
-                                   class="form-input"
-                                   placeholder="e.g., 2850">
-                        </div>
-                        
-                        <div class="form-field">
-                            <label class="form-label">Birth Length (cm)</label>
-                            <input type="number" 
-                                   wire:model="formData.birth_length_cm" 
-                                   step="0.1" 
-                                   class="form-input"
-                                   placeholder="e.g., 48.5">
-                        </div>
+
+                <hr class="section-divider">
+
+                {{-- ── Section 3: Birth Measurements ───────────────────────────── --}}
+                <p class="section-title">Birth Measurements</p>
+
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label class="form-label">Birth Weight (grams)</label>
+                        <input type="number"
+                               wire:model="formData.birth_weight_grams"
+                               step="1"
+                               class="form-input"
+                               placeholder="e.g., 2850">
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">Birth Length (cm)</label>
+                        <input type="number"
+                               wire:model="formData.birth_length_cm"
+                               step="0.1"
+                               class="form-input"
+                               placeholder="e.g., 48.5">
                     </div>
                 </div>
-                
-                <!-- Section 4: Transfer Information -->
-                <div style="margin-bottom: 24px;">
-                    <div class="form-field-full">
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 12px;">
-                            <input type="checkbox" wire:model="formData.is_transfer" style="width: 18px; height: 18px;">
-                            <span style="font-weight: 600;">This baby is transferred from another facility</span>
-                        </label>
-                        
-                        @if($formData['is_transfer'])
-                        <div class="form-field-half">
-                            <label class="form-label">Referring Facility <span style="color:#dc2626;">*</span></label>
-                            <input type="text" 
-                                   wire:model="formData.referring_facility" 
-                                   class="form-input"
-                                   placeholder="e.g., Balaoan District Hospital">
-                            @error('formData.referring_facility') 
-                                <p class="text-danger text-xs mt-1" style="color:#dc2626; font-size:0.7rem;">{{ $message }}</p> 
-                            @enderror
-                        </div>
-                        @endif
+
+                <hr class="section-divider">
+
+                {{-- ── Section 4: Transfer ──────────────────────────────────────── --}}
+                <div>
+                    <label class="transfer-label" style="margin-bottom: 12px; display:inline-flex;">
+                        <input type="checkbox" wire:model.live="formData.is_transfer">
+                        This baby is transferred from another facility
+                    </label>
+
+                    @if($formData['is_transfer'])
+                    <div style="margin-top: 10px; max-width: 400px;">
+                        <label class="form-label">Referring Facility <span style="color:#dc2626;">*</span></label>
+                        <input type="text"
+                               wire:model="formData.referring_facility"
+                               class="form-input"
+                               placeholder="e.g., Balaoan District Hospital">
+                        @error('formData.referring_facility')
+                            <p class="error-text">{{ $message }}</p>
+                        @enderror
                     </div>
+                    @endif
                 </div>
-                
-                <!-- Section 5: Observations -->
-                <div style="margin-bottom: 24px;">
-                    <h4 style="font-size:0.85rem; font-weight:700; margin-bottom:12px; color:#1e3a5f;">Immediate Observations</h4>
-                    
-                    <div style="background: #f9fafb; padding: 12px; border-radius: 8px;">
+
+                <hr class="section-divider">
+
+                {{-- ── Section 5: Immediate Observations ───────────────────────── --}}
+                <p class="section-title">Immediate Observations</p>
+
+                <div style="background: #f9fafb; padding: 12px 16px; border-radius: 8px;">
+                    <div class="observation-grid">
                         @foreach($availableObservations as $key => $label)
-                        <label class="observation-checkbox">
+                        <label class="observation-item">
                             <input type="checkbox" wire:model="formData.observations" value="{{ $key }}">
                             <span>{{ $label }}</span>
                         </label>
                         @endforeach
                     </div>
                 </div>
-                
-                <!-- Section 6: Baby's Name (if already known) -->
-                <div style="margin-bottom: 24px;">
-                    <h4 style="font-size:0.85rem; font-weight:700; margin-bottom:12px; color:#1e3a5f;">Baby's Name (if already known)</h4>
-                    <p style="font-size:0.75rem; color:#6b7280; margin-bottom:12px;">If the mother has already named the baby, you can enter it now. Otherwise, leave blank and complete later.</p>
-                    
-                    <div class="form-grid">
-                        <div class="form-field">
-                            <label class="form-label">Family Name</label>
-                            <input type="text" wire:model="formData.baby_family_name" class="form-input" placeholder="e.g., Dela Cruz">
-                        </div>
-                        <div class="form-field">
-                            <label class="form-label">First Name</label>
-                            <input type="text" wire:model="formData.baby_first_name" class="form-input" placeholder="e.g., Maria">
-                        </div>
-                        <div class="form-field">
-                            <label class="form-label">Middle Name</label>
-                            <input type="text" wire:model="formData.baby_middle_name" class="form-input" placeholder="Optional">
-                        </div>
+
+                <hr class="section-divider">
+
+                {{-- ── Section 6: Pregnancy Interventions ──────────────────────── --}}
+                <p class="section-title">Pregnancy Interventions</p>
+
+                <div class="checkbox-row">
+
+                    {{-- Took Multivitamins --}}
+                    <div class="checkbox-item">
+                        <label class="checkbox-label">
+                            <input type="checkbox" wire:model.live="formData.took_multivitamins">
+                            Took Multivitamins
+                        </label>
+                        @if($formData['took_multivitamins'])
+                        <input type="text"
+                               wire:model="formData.multivitamins_details"
+                               class="checkbox-detail-input"
+                               placeholder="e.g., Folic acid, Iron, Calcium">
+                        @endif
+                    </div>
+
+                    {{-- Had Ultrasound --}}
+                    <div class="checkbox-item">
+                        <label class="checkbox-label">
+                            <input type="checkbox" wire:model.live="formData.had_ultrasound">
+                            Had Ultrasound
+                        </label>
+                        @if($formData['had_ultrasound'])
+                        <input type="text"
+                               wire:model="formData.ultrasound_details"
+                               class="checkbox-detail-input"
+                               placeholder="e.g., AOG 28 weeks, normal">
+                        @endif
+                    </div>
+
+                    {{-- Had Preterm Labor --}}
+                    <div class="checkbox-item">
+                        <label class="checkbox-label">
+                            <input type="checkbox" wire:model.live="formData.had_preterm_labor">
+                            Had Preterm Labor
+                        </label>
+                        @if($formData['had_preterm_labor'])
+                        <input type="text"
+                               wire:model="formData.steroids_given"
+                               class="checkbox-detail-input"
+                               placeholder="e.g., Betamethasone 12mg x 2 doses">
+                        @endif
+                    </div>
+
+                </div>
+
+                <hr class="section-divider">
+
+                {{-- ── Section 7: Baby's Name (optional) ───────────────────────── --}}
+                <p class="section-title">Baby's Name <span style="font-weight:400; color:#6b7280;">(if already known)</span></p>
+                <p class="hint-text" style="margin-bottom: 12px;">If the mother has already named the baby, you can enter it now. Otherwise, leave blank and complete later.</p>
+
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label class="form-label">Family Name</label>
+                        <input type="text" wire:model="formData.baby_family_name" class="form-input" placeholder="e.g., Dela Cruz">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">First Name</label>
+                        <input type="text" wire:model="formData.baby_first_name" class="form-input" placeholder="e.g., Maria">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Middle Name</label>
+                        <input type="text" wire:model="formData.baby_middle_name" class="form-input" placeholder="Optional">
                     </div>
                 </div>
-                
-                <!-- Submit Button -->
-                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-                    <button type="button" wire:click="$dispatch('close')" class="btn-secondary" style="background:#f3f4f6; padding: 10px 24px; border-radius: 8px; border: 1px solid #d1d5db; cursor: pointer;">
+
+                {{-- ── Submit ───────────────────────────────────────────────────── --}}
+                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                    <button type="button" wire:click="$dispatch('close')" class="btn-secondary">
                         Cancel
                     </button>
                     <button type="submit" class="btn-primary" wire:loading.attr="disabled">
@@ -322,17 +561,17 @@
                         <span wire:loading>Creating...</span>
                     </button>
                 </div>
-                
+
             </form>
         </div>
     </div>
-    
-    <div class="warning-box" style="margin-top: 16px;">
-        <p style="margin:0; font-size:0.8rem;">
+
+    <div class="warning-box">
+        <p>
             <strong>⚠️ Important:</strong> This creates a <strong>TEMPORARY</strong> record with ID format <strong>TEMP-YYYYMMDD-XXX</strong>.
             The clerk must convert this to a permanent record (LUMC-YYYY-xxxxxx) on the next business day.
             All clinical data entered before conversion will remain linked to the permanent record.
         </p>
     </div>
-    
+
 </x-filament-panels::page>

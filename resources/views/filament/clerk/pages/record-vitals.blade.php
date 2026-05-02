@@ -9,7 +9,9 @@
                 <img src="{{ asset('images/province-logo.png') }}" alt="Province of La Union" class="h-16 w-16 object-contain">
                 @else
                 <div class="h-16 w-16 rounded-full flex items-center justify-center text-3xl"
-                    style="background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4)">🏛️</div>
+                    style="background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4)">
+                    <x-heroicon-o-building-library class="w-10 h-10 text-white/90" />
+                </div>
                 @endif
             </div>
             <div class="text-center flex-1 mx-4">
@@ -29,7 +31,9 @@
                 <img src="{{ asset('images/bagong-pilipinas-logo-only.png') }}" alt="Philippine Flag" class="h-16 w-16 object-contain">
                 @else
                 <div class="h-16 w-16 rounded-full flex items-center justify-center text-3xl"
-                    style="background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4)">🇵🇭</div>
+                    style="background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4)">
+                    <x-heroicon-o-flag class="w-10 h-10 text-white/90" />
+                </div>
                 @endif
             </div>
         </div>

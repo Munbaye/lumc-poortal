@@ -4,6 +4,7 @@ namespace App\Filament\Doctor\Pages;
 
 use App\Models\DoctorsOrder;
 use App\Models\LabRequest;
+use App\Models\NicuBallardExam;
 use App\Models\RadiologyRequest;
 use App\Models\ResultUpload;
 use App\Models\Visit;
@@ -85,7 +86,12 @@ class PatientChart extends Page
         $this->visit = Visit::with([
             'patient',
             'medicalHistory.doctor',
-            'doctorsOrders' => fn($q) => $q->with('doctor')->orderBy('order_date', 'desc'),
+            'doctorsOrders'   => fn($q) => $q->with('doctor')->orderBy('order_date', 'desc'),
+            'ballardExams',
+            'erRecord',
+            'admissionRecord',
+            'consentRecord',
+            'vitals',
         ])->find($this->visitId);
 
         if (!$this->visit) {
@@ -94,7 +100,8 @@ class PatientChart extends Page
         }
     }
 
-    // Computed Properties
+    // ── Computed Properties ───────────────────────────────────────────────────
+
     public function getLabResultsProperty()
     {
         $requestIds = LabRequest::where('visit_id', $this->visitId)
@@ -141,14 +148,27 @@ class PatientChart extends Page
             && $this->visit->discharged_at === null);
     }
 
-    // Tab Navigation
+    // ── Ballard Score ─────────────────────────────────────────────────────────
+
+    public function getHasBallardScoreProperty(): bool
+    {
+        return $this->visit && $this->visit->ballardExams->count() > 0;
+    }
+
+    public function getBallardExamsProperty()
+    {
+        return $this->visit ? $this->visit->ballardExams : collect();
+    }
+
+    // ── Tab Navigation ────────────────────────────────────────────────────────
+
     public function setTab(string $tab): void
     {
         $this->activeTab           = $tab;
         $this->writingOrders       = false;
         $this->viewingLabRequestId = null;
         $this->viewingRadRequestId = null;
-        
+
         // Reset history view when leaving history tab
         if ($tab !== 'history') {
             $this->viewingHistoryVisitId = null;
@@ -156,7 +176,7 @@ class PatientChart extends Page
     }
 
     // ── Result View Methods ───────────────────────────────────────────────────
-    
+
     public function viewLabResult(int $requestId): void
     {
         $this->viewingLabRequestId = $requestId;
@@ -181,7 +201,7 @@ class PatientChart extends Page
     {
         $this->writingOrders = !$this->writingOrders;
         if ($this->writingOrders) {
-            $this->orderText = '';   // clear on open
+            $this->orderText = '';
         }
     }
 
@@ -201,7 +221,6 @@ class PatientChart extends Page
     /**
      * Save orders from the free-text box.
      * Splits by newline → creates one DoctorsOrder per non-blank line.
-     * All status, logging, and relationships are preserved.
      */
     public function saveOrders(): void
     {
@@ -210,7 +229,6 @@ class PatientChart extends Page
             return;
         }
 
-        // Split by newlines, trim each line, remove blank lines
         $lines = collect(explode("\n", $this->orderText))
             ->map(fn($line) => trim($line))
             ->filter(fn($line) => $line !== '')
@@ -218,7 +236,7 @@ class PatientChart extends Page
 
         if ($lines->isEmpty()) return;
 
-        $saved = 0;
+        $saved     = 0;
         $orderDate = now();
 
         foreach ($lines as $line) {
@@ -234,12 +252,12 @@ class PatientChart extends Page
         }
 
         ActivityLog::record(
-            action: ActivityLog::ACT_ADMITTED_PATIENT,
-            category: ActivityLog::CAT_CLINICAL,
-            subject: $this->visit,
+            action:       ActivityLog::ACT_ADMITTED_PATIENT,
+            category:     ActivityLog::CAT_CLINICAL,
+            subject:      $this->visit,
             subjectLabel: $this->visit->patient->full_name . ' (' . $this->visit->patient->case_no . ')',
-            newValues: ['orders_written' => $saved, 'doctor' => auth()->user()->name],
-            panel: 'doctor',
+            newValues:    ['orders_written' => $saved, 'doctor' => auth()->user()->name],
+            panel:        'doctor',
         );
 
         Notification::make()
@@ -298,6 +316,8 @@ class PatientChart extends Page
         return route('forms.physical-exam-form', ['visit' => $this->visitId]);
     }
 
+    // ── Visit History ─────────────────────────────────────────────────────────
+
     public function getPastVisitsCountProperty(): int
     {
         if (!$this->visit) return 0;
@@ -340,7 +360,6 @@ class PatientChart extends Page
         $requestIds = LabRequest::where('visit_id', $visitId)
             ->where('status', 'completed')
             ->pluck('id');
-
         return ResultUpload::where('request_type', 'lab')
             ->whereIn('request_id', $requestIds)
             ->with('uploadedBy')
@@ -353,7 +372,6 @@ class PatientChart extends Page
         $requestIds = RadiologyRequest::where('visit_id', $visitId)
             ->where('status', 'completed')
             ->pluck('id');
-
         return ResultUpload::where('request_type', 'radiology')
             ->whereIn('request_id', $requestIds)
             ->with('uploadedBy')

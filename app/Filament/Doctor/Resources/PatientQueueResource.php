@@ -43,8 +43,8 @@ class PatientQueueResource extends Resource
                     ->weight('semibold')
                     ->color(fn ($record) => $record->patient?->has_incomplete_info ? 'danger' : null)
                     ->description(fn ($record) => $record->patient?->has_incomplete_info
-                        ? '⚠️ Incomplete Info'
-                        : null
+                        ? 'Incomplete Info'
+                        : null      
                     ),
 
                 Tables\Columns\TextColumn::make('patient.age_display')

@@ -234,8 +234,10 @@
                 <td class="col-shift {{ $shiftClass }}">{{ $shift }}</td>
 
                 @foreach($dates as $d)
-                @php $cellVal = $entry->getTime($d, $shift); @endphp
-                <td class="col-day data-cell">{{ $cellVal ?: '' }}</td>
+                @php $cellTimes = $entry->getTimes($d, $shift); @endphp
+                <td class="col-day data-cell" style="font-size:6.5pt;line-height:1.3;vertical-align:top;padding:1px 2px;">
+                    {{ implode(' / ', $cellTimes) }}
+                </td>
                 @endforeach
 
                 {{-- Pad to 14 columns if fewer dates --}}

@@ -7,7 +7,6 @@ use App\Http\Controllers\ChartController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\ClerkFormController;
 use App\Http\Controllers\NurseFormController;
-use App\Http\Controllers\FormController;
 
 // ── PUBLIC LANDING PAGE ────────────────────────────────────────────────────────
 Route::get('/', function () {
@@ -106,6 +105,11 @@ Route::get('/forgot-password', function () {
 
 Route::middleware(['auth'])->group(function () {
 
+    // ── SIGNATURE SAVE ────────────────────────────────────────────────────────
+    // Accepts the panel name so the redirect goes back to the right panel's page.
+    Route::post('/signature/save/{panel}', [SignatureController::class, 'save'])
+        ->name('signature.save');
+
     // ── ER Record ─────────────────────────────────────────────────────────────
     Route::get('/forms/er-record/{visit}', [ClerkFormController::class, 'erRecord'])
         ->name('forms.er-record');
@@ -139,7 +143,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/results/rad/{radRequest}/upload', [ResultController::class, 'uploadRadResult'])->name('results.rad.upload');
 
     // ── Nursing / Clinical Printable Forms — visit-scoped ─────────────────────
-    // These accept a {visit} route parameter so the form can display real data.
     Route::get('/forms/vital-sign-monitoring-sheet/{visit}', [NurseFormController::class, 'vitalSignSheet'])
         ->name('forms.vital-sign-monitoring-sheet');
 
@@ -148,15 +151,23 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/forms/nurses-notes/{visit}', [NurseFormController::class, 'nursesNotes'])
         ->name('forms.nurses-notes');
- 
+
     Route::get('/forms/medication-records/{visit}', [NurseFormController::class, 'medicationRecords'])
         ->name('forms.medication-records');
-        
+
+    // ── Breastfeeding Observation Job Aid (NUR-044-0) ─────────────────────────
+    Route::get('/forms/breastfeeding-observation/{visit}', [NurseFormController::class, 'breastfeedingObservation'])
+        ->name('forms.breastfeeding-observation');
+
+    // Doctor Discharge Summary — printable standalone page
+    Route::get('/forms/discharge-summary/{visit}', [ChartController::class, 'dischargeSummaryPrint'])
+        ->name('forms.discharge-summary')
+        ->middleware('auth');
+
+    Route::get('/forms/ob-record/{visit}', [NurseFormController::class, 'obRecord'])
+    ->name('forms.ob-record');
+
     Route::get('/forms/tpr-record/{visit}', [NurseFormController::class, 'tprRecord'])
     ->name('forms.tpr-record');
 
-Route::get('/forms/ob-record/{visit}', [NurseFormController::class, 'obRecord'])
-    ->name('forms.ob-record');
-    
-}
-);
+});

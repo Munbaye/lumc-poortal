@@ -491,7 +491,7 @@ use App\Helpers\WHOGrowthChart;
 .mar-table th, .mar-table td {
     border: 1px solid #e5e7eb;
     padding: 0;
-    vertical-align: middle;
+    vertical-align: top;
     text-align: center;
 }
 .dark .mar-table th, .dark .mar-table td { border-color:#374151; }
@@ -578,6 +578,40 @@ use App\Helpers\WHOGrowthChart;
 .btn-mar-del:hover { color:#ef4444; background:#fee2e2; }
 .dark .btn-mar-del:hover { background:#450a0a; color:#fca5a5; }
  
+/* Multi-time MAR cell */
+.mar-times-wrap { display:flex; flex-direction:column; gap:2px; min-height:36px; padding:3px 3px; }
+.mar-time-chip  { display:inline-flex; align-items:center; gap:3px; background:#eff6ff; border:1px solid #bfdbfe;
+                  border-radius:3px; padding:2px 5px; font-size:.72rem; font-family:monospace; font-weight:700;
+                  color:#1e40af; white-space:nowrap; }
+.dark .mar-time-chip { background:#1e3a5f; border-color:#1d4ed8; color:#93c5fd; }
+.mar-time-chip-del { background:none; border:none; color:#93c5fd; cursor:pointer; font-size:.65rem;
+                     padding:0 1px; line-height:1; }
+.mar-time-chip-del:hover { color:#dc2626; }
+.mar-add-time-row { display:flex; gap:3px; margin-top:3px; align-items:center; }
+/* Wide enough to show HH:MM plus the AM/PM spinner */
+.mar-add-time-inp { border:1px solid #d1d5db; border-radius:4px; padding:3px 4px; font-size:.72rem;
+                    font-family:monospace; width:100px; min-width:100px; color:#111827; background:#fff; outline:none; }
+.dark .mar-add-time-inp { background:#374151; border-color:#4b5563; color:#f3f4f6; }
+.mar-add-time-inp:focus { border-color:#2563eb; box-shadow:0 0 0 1px rgba(37,99,235,.2); }
+.mar-add-time-btn {
+    background:#f3f4f6;
+    color:#374151;
+    border:1px solid #e5e7eb;
+    border-radius:4px;
+    padding:2px 6px;
+    font-size:.7rem;
+    cursor:pointer;
+}
+.mar-add-time-btn:hover {
+    background:#e5e7eb;
+}
+/* Dark mode */
+.dark .mar-add-time-btn {
+    background:#374151;
+    border-color:#4b5563;
+    color:#d1d5db;
+}
+
 .mar-date-header { font-size:.67rem; font-weight:700; color:#374151; white-space:nowrap; }
 .dark .mar-date-header { color:#e5e7eb; }
 .mar-date-sub { font-size:.58rem; color:#9ca3af; display:block; }
@@ -1214,11 +1248,105 @@ use App\Helpers\WHOGrowthChart;
         @elseif($activeTab === 'breastfeeding')
         @php $observations = $this->breastfeedingObservations; @endphp
 
+        <style>
+            /* ── Breastfeeding observation card ───────────────────────────────────── */
+            .bfobs-card {
+                background: #fff;
+                border: 1px solid #e5e7eb;
+                border-radius: 10px;
+                margin-bottom: 14px;
+                overflow: hidden;
+            }
+            .dark .bfobs-card { background: #1f2937; border-color: #374151; }
+
+            .bfobs-header {
+                background: #f9fafb;
+                border-bottom: 1px solid #e5e7eb;
+                padding: 9px 16px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .dark .bfobs-header { background: #111827; border-color: #374151; }
+
+            .bfobs-meta { font-size: 0.8rem; font-weight: 700; color: #1e293b; }
+            .dark .bfobs-meta { color: #f1f5f9; }
+            .bfobs-time { font-size: 0.7rem; color: #6b7280; margin-left: 8px; }
+
+            .bfobs-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 2px 10px;
+                border-radius: 20px;
+                font-size: 0.68rem;
+                font-weight: 700;
+            }
+            .bfobs-badge.well { background: #dcfce7; color: #166534; }
+            .bfobs-badge.diff { background: #fee2e2; color: #991b1b; }
+            .bfobs-badge.none { background: #f1f5f9; color: #64748b; }
+
+            .bfobs-body {
+                padding: 12px 16px;
+            }
+
+            /* 5-column section grid */
+            .bfobs-sections {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 10px;
+            }
+            @media (max-width: 900px) {
+                .bfobs-sections { grid-template-columns: repeat(2, 1fr); }
+            }
+
+            .bfobs-section { }
+
+            .bfobs-section-title {
+                font-size: 0.62rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #9ca3af;
+                margin-bottom: 5px;
+                padding-bottom: 3px;
+                border-bottom: 1px solid #f1f5f9;
+            }
+            .dark .bfobs-section-title { color: #6b7280; border-color: #374151; }
+
+            .bfobs-item {
+                display: flex;
+                align-items: flex-start;
+                gap: 5px;
+                font-size: 0.72rem;
+                color: #374151;
+                line-height: 1.35;
+                padding: 2px 0;
+            }
+            .dark .bfobs-item { color: #d1d5db; }
+
+            .bfobs-item.well .dot  { color: #16a34a; flex-shrink: 0; }
+            .bfobs-item.diff .dot  { color: #dc2626; flex-shrink: 0; }
+            .bfobs-item.well       { color: #166534; }
+            .bfobs-item.diff       { color: #991b1b; }
+            .dark .bfobs-item.well { color: #4ade80; }
+            .dark .bfobs-item.diff { color: #f87171; }
+
+            .bfobs-empty-section {
+                font-size: 0.68rem;
+                color: #d1d5db;
+                font-style: italic;
+            }
+            .dark .bfobs-empty-section { color: #4b5563; }
+        </style>
+
         <div class="sec-head">
             <h2 class="sec-title">🍼 Breastfeeding Observations (NUR-044-0)</h2>
-            <a href="{{ \App\Filament\Nurse\Pages\BreastfeedingObservation::getUrl(['visitId' => $visit->id]) }}" 
-            target="_blank" 
-            class="btn-primary" 
+            <a href="{{ \App\Filament\Nurse\Pages\BreastfeedingObservation::getUrl(['visitId' => $visit->id]) }}"
+            target="_blank"
+            class="btn-primary"
             style="padding: 6px 14px; font-size: 0.75rem;">
                 + New Observation
             </a>
@@ -1231,75 +1359,131 @@ use App\Helpers\WHOGrowthChart;
             <p class="ph-sub">Click "New Observation" to record a breastfeeding assessment.</p>
         </div>
         @else
+
         @foreach($observations as $obs)
-        <div class="bf-obs-card" style="background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 20px; overflow: hidden;">
-            <div style="background: #f0fdf4; border-bottom: 1px solid #bbf7d0; padding: 12px 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <div>
-                        <span style="font-weight: 700;">{{ \Carbon\Carbon::parse($obs->observation_date)->format('M d, Y') }}</span>
-                        <span style="font-size: 0.7rem; color: #6b7280; margin-left: 10px;">at {{ \Carbon\Carbon::parse($obs->observation_time)->format('h:i A') }}</span>
-                    </div>
-                    <div style="display: flex; gap: 8px;">
-                        <span class="badge-going-well">✅ {{ $obs->going_well_count }} going well</span>
-                        <span class="badge-difficulty">⚠️ {{ $obs->difficulty_count }} difficulty</span>
-                    </div>
-                    <span style="font-size: 0.7rem; color: #6b7280;">Observed by: {{ $obs->observer?->name ?? '—' }}</span>
+        @php
+            // ── Section data: label, well fields, diff fields ─────────────────
+            $sections = [
+                'General' => [
+                    'well' => [
+                        'general_mother_healthy' => 'Mother healthy',
+                        'general_mother_relaxed' => 'Mother relaxed',
+                        'general_mother_bonding' => 'Bonding signs',
+                        'general_baby_healthy'   => 'Baby healthy',
+                        'general_baby_calm'      => 'Baby calm',
+                        'general_baby_roots'     => 'Baby roots',
+                    ],
+                    'diff' => [
+                        'general_mother_ill'           => 'Mother ill/depressed',
+                        'general_mother_tense'         => 'Mother tense',
+                        'general_mother_no_eye_contact' => 'No eye contact',
+                        'general_baby_sleepy_ill'      => 'Baby sleepy/ill',
+                        'general_baby_restless_crying' => 'Baby restless/crying',
+                        'general_baby_no_root'         => 'Baby not rooting',
+                    ],
+                ],
+                'Breast' => [
+                    'well' => [
+                        'breast_healthy'       => 'Breast healthy',
+                        'breast_no_pain'       => 'No pain',
+                        'breast_fingers_away'  => 'Fingers away',
+                    ],
+                    'diff' => [
+                        'breast_red_swollen_sore'  => 'Red/swollen/sore',
+                        'breast_painful'           => 'Painful',
+                        'breast_fingers_on_areola' => 'Fingers on areola',
+                    ],
+                ],
+                'Position' => [
+                    'well' => [
+                        'position_head_body_line'  => 'Head/body aligned',
+                        'position_held_close'      => 'Held close',
+                        'position_body_supported'  => 'Body supported',
+                        'position_nose_to_nipple'  => 'Nose to nipple',
+                    ],
+                    'diff' => [
+                        'position_neck_twisted'    => 'Neck twisted',
+                        'position_not_held_close'  => 'Not held close',
+                        'position_head_neck_only'  => 'Head/neck only',
+                        'position_chin_to_nipple'  => 'Chin to nipple',
+                    ],
+                ],
+                'Attachment' => [
+                    'well' => [
+                        'attachment_more_areola_above'   => 'More areola above',
+                        'attachment_mouth_open_wide'     => 'Mouth open wide',
+                        'attachment_lip_turned_out'      => 'Lip turned out',
+                        'attachment_chin_touches_breast' => 'Chin touches',
+                    ],
+                    'diff' => [
+                        'attachment_more_areola_below'      => 'More areola below',
+                        'attachment_mouth_not_wide'         => 'Mouth not wide',
+                        'attachment_lips_forward_turned_in' => 'Lips turned in',
+                        'attachment_chin_not_touching'      => 'Chin not touching',
+                    ],
+                ],
+                'Suckling' => [
+                    'well' => [
+                        'suckling_slow_deep_pauses' => 'Slow, deep pauses',
+                        'suckling_cheeks_round'     => 'Cheeks round',
+                        'suckling_baby_releases'    => 'Baby releases',
+                        'suckling_oxytocin_reflex'  => 'Oxytocin reflex',
+                    ],
+                    'diff' => [
+                        'suckling_rapid_shallow'    => 'Rapid/shallow',
+                        'suckling_cheeks_pulled_in' => 'Cheeks pulled in',
+                        'suckling_mother_takes_off' => 'Mother takes off',
+                        'suckling_no_oxytocin_reflex' => 'No oxytocin reflex',
+                    ],
+                ],
+            ];
+        @endphp
+
+        <div class="bfobs-card">
+            {{-- Card header --}}
+            <div class="bfobs-header">
+                <div>
+                    <span class="bfobs-meta">
+                        {{ \Carbon\Carbon::parse($obs->observation_date)->format('M d, Y') }}
+                    </span>
+                    <span class="bfobs-time">at {{ \Carbon\Carbon::parse($obs->observation_time)->format('h:i A') }}</span>
+                    <span class="bfobs-time">· {{ $obs->observer?->name ?? '—' }}</span>
+                </div>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                    @if($obs->going_well_count > 0)
+                        <span class="bfobs-badge well">✅ {{ $obs->going_well_count }} going well</span>
+                    @endif
+                    @if($obs->difficulty_count > 0)
+                        <span class="bfobs-badge diff">⚠️ {{ $obs->difficulty_count }} difficulty</span>
+                    @elseif($obs->difficulty_count === 0)
+                        <span class="bfobs-badge none">No difficulties noted</span>
+                    @endif
                 </div>
             </div>
-            <div style="padding: 16px 20px;">
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-                    <div>
-                        <p style="font-weight: 700; font-size: 0.8rem; margin: 0 0 8px 0; color: #166534;">✅ Going Well Signs</p>
-                        <ul style="margin: 0; padding-left: 20px; font-size: 0.8rem;">
-                            @if($obs->general_mother_healthy)<li>Mother looks healthy</li>@endif
-                            @if($obs->general_mother_relaxed)<li>Mother relaxed and comfortable</li>@endif
-                            @if($obs->general_mother_bonding)<li>Signs of bonding</li>@endif
-                            @if($obs->general_baby_healthy)<li>Baby looks healthy</li>@endif
-                            @if($obs->general_baby_calm)<li>Baby calm and relaxed</li>@endif
-                            @if($obs->general_baby_roots)<li>Baby reaches or roots for breast</li>@endif
-                            @if($obs->breast_healthy)<li>Breast looks healthy</li>@endif
-                            @if($obs->breast_no_pain)<li>No pain or discomfort</li>@endif
-                            @if($obs->breast_fingers_away)<li>Fingers away from nipple</li>@endif
-                            @if($obs->position_head_body_line)<li>Head and body in line</li>@endif
-                            @if($obs->position_held_close)<li>Baby held close</li>@endif
-                            @if($obs->position_body_supported)<li>Whole body supported</li>@endif
-                            @if($obs->position_nose_to_nipple)<li>Nose to nipple</li>@endif
-                            @if($obs->attachment_more_areola_above)<li>More areola above top lip</li>@endif
-                            @if($obs->attachment_mouth_open_wide)<li>Mouth open wide</li>@endif
-                            @if($obs->attachment_lip_turned_out)<li>Lower lip turned out</li>@endif
-                            @if($obs->attachment_chin_touches_breast)<li>Chin touches breast</li>@endif
-                            @if($obs->suckling_slow_deep_pauses)<li>Slow, deep sucks with pauses</li>@endif
-                            @if($obs->suckling_cheeks_round)<li>Cheeks round when suckling</li>@endif
-                            @if($obs->suckling_baby_releases)<li>Baby releases breast when finished</li>@endif
-                            @if($obs->suckling_oxytocin_reflex)<li>Oxytocin reflex signs</li>@endif
-                        </ul>
+
+            {{-- Card body: 5-section grid --}}
+            <div class="bfobs-body">
+                <div class="bfobs-sections">
+                    @foreach($sections as $sectionName => $fields)
+                    @php
+                        $wellItems = collect($fields['well'])->filter(fn($label, $field) => $obs->{$field});
+                        $diffItems = collect($fields['diff'])->filter(fn($label, $field) => $obs->{$field});
+                        $hasAny = $wellItems->isNotEmpty() || $diffItems->isNotEmpty();
+                    @endphp
+                    <div class="bfobs-section">
+                        <div class="bfobs-section-title">{{ $sectionName }}</div>
+                        @if(!$hasAny)
+                            <div class="bfobs-empty-section">None noted</div>
+                        @else
+                            @foreach($wellItems as $label)
+                                <div class="bfobs-item well"><span class="dot">✓</span><span>{{ $label }}</span></div>
+                            @endforeach
+                            @foreach($diffItems as $label)
+                                <div class="bfobs-item diff"><span class="dot">✗</span><span>{{ $label }}</span></div>
+                            @endforeach
+                        @endif
                     </div>
-                    <div>
-                        <p style="font-weight: 700; font-size: 0.8rem; margin: 0 0 8px 0; color: #991b1b;">⚠️ Difficulty Signs</p>
-                        <ul style="margin: 0; padding-left: 20px; font-size: 0.8rem;">
-                            @if($obs->general_mother_ill)<li>Mother looks ill or depressed</li>@endif
-                            @if($obs->general_mother_tense)<li>Mother looks tense</li>@endif
-                            @if($obs->general_mother_no_eye_contact)<li>No eye contact</li>@endif
-                            @if($obs->general_baby_sleepy_ill)<li>Baby looks sleepy or ill</li>@endif
-                            @if($obs->general_baby_restless_crying)<li>Baby restless or crying</li>@endif
-                            @if($obs->general_baby_no_root)<li>Baby does not root</li>@endif
-                            @if($obs->breast_red_swollen_sore)<li>Breast red, swollen, or sore</li>@endif
-                            @if($obs->breast_painful)<li>Breast or nipple painful</li>@endif
-                            @if($obs->breast_fingers_on_areola)<li>Fingers on areola</li>@endif
-                            @if($obs->position_neck_twisted)<li>Neck and head twisted</li>@endif
-                            @if($obs->position_not_held_close)<li>Baby not held close</li>@endif
-                            @if($obs->position_head_neck_only)<li>Supported only by head/neck</li>@endif
-                            @if($obs->position_chin_to_nipple)<li>Chin to nipple approach</li>@endif
-                            @if($obs->attachment_more_areola_below)<li>More areola below bottom lip</li>@endif
-                            @if($obs->attachment_mouth_not_wide)<li>Mouth not wide</li>@endif
-                            @if($obs->attachment_lips_forward_turned_in)<li>Lips pointing forward or turned in</li>@endif
-                            @if($obs->attachment_chin_not_touching)<li>Chin not touching breast</li>@endif
-                            @if($obs->suckling_rapid_shallow)<li>Rapid shallow sucks</li>@endif
-                            @if($obs->suckling_cheeks_pulled_in)<li>Cheeks pulled in</li>@endif
-                            @if($obs->suckling_mother_takes_off)<li>Mother takes baby off breast</li>@endif
-                            @if($obs->suckling_no_oxytocin_reflex)<li>No oxytocin reflex signs</li>@endif
-                        </ul>
-                    </div>
+                    @endforeach
                 </div>
             </div>
         </div>
@@ -1672,6 +1856,70 @@ use App\Helpers\WHOGrowthChart;
         </div>
         @endif
 
+        {{-- 11. Growth Chart Printable (WHO 0–24 months) --}}
+        @php $growthMeasurements = $this->growthMeasurements; $growthTotal = count($growthMeasurements['weight'] ?? []) + count($growthMeasurements['length'] ?? []); @endphp
+        <div style="margin-bottom:32px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">📈 Growth Chart — WHO 0–24 Months</span>
+                <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
+                <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $growthTotal > 0 ? 'background:#ede9fe;color:#5b21b6;' : 'background:#f3f4f6;color:#6b7280;' }}">
+                    {{ $growthTotal > 0 ? $growthTotal . ' measurement' . ($growthTotal === 1 ? '' : 's') : 'No measurements yet' }}
+                </span>
+                @if($growthTotal > 0)
+                <a href="{{ route('forms.growth-chart', ['visit' => $visitId]) }}"
+                   target="_blank"
+                   style="font-size:.72rem;font-weight:700;color:#5b21b6;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#ede9fe;border:1px solid #ddd6fe;padding:3px 10px;border-radius:5px;white-space:nowrap;">
+                    🖨️ Open / Print
+                </a>
+                @endif
+            </div>
+            @if($growthTotal > 0)
+            <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+                <iframe src="{{ route('forms.growth-chart', ['visit' => $visitId]) }}"
+                    title="WHO Growth Chart"
+                    style="width:100%;min-height:1000px;border:none;display:block;"
+                    loading="lazy"></iframe>
+            </div>
+            @else
+            <div style="background:#fff;border:1.5px dashed #e5e7eb;border-radius:8px;padding:24px;text-align:center;">
+                <p style="font-size:.82rem;color:#9ca3af;">No growth measurements yet. Go to the 📈 Growth Chart tab to add weight and length measurements.</p>
+            </div>
+            @endif
+        </div>
+
+        {{-- 12. Ballard Score Printable (NUR-018-B) — NICU only --}}
+        @if($visit->visit_type === 'NICU')
+        @php $ballardExamsNurse = \App\Models\NicuBallardExam::where('visit_id', $visit->id)->get(); @endphp
+        <div style="margin-bottom:32px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">📊 Ballard Maturity Score (NUR-018-B)</span>
+                <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
+                <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $ballardExamsNurse->isNotEmpty() ? 'background:#d1fae5;color:#065f46;' : 'background:#fef3c7;color:#92400e;' }}">
+                    {{ $ballardExamsNurse->isNotEmpty() ? $ballardExamsNurse->count() . ' exam' . ($ballardExamsNurse->count() === 1 ? '' : 's') . ' recorded' : 'Not yet assessed' }}
+                </span>
+                @if($ballardExamsNurse->isNotEmpty())
+                <a href="{{ route('forms.ballard-score', ['visit' => $visit->id]) }}"
+                   target="_blank"
+                   style="font-size:.72rem;font-weight:700;color:#065f46;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#d1fae5;border:1px solid #6ee7b7;padding:3px 10px;border-radius:5px;white-space:nowrap;">
+                    🖨️ Open / Print
+                </a>
+                @endif
+            </div>
+            @if($ballardExamsNurse->isNotEmpty())
+            <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+                <iframe src="{{ route('forms.ballard-score', ['visit' => $visit->id]) }}"
+                    title="Ballard Maturity Score"
+                    style="width:100%;min-height:900px;border:none;display:block;"
+                    loading="lazy"></iframe>
+            </div>
+            @else
+            <div style="background:#fff;border:1.5px dashed #e5e7eb;border-radius:8px;padding:24px;text-align:center;">
+                <p style="font-size:.82rem;color:#9ca3af;">Ballard Score has not been assessed yet. The doctor fills this out from the Doctor panel.</p>
+            </div>
+            @endif
+        </div>
+        @endif
+
         {{-- ══ MAR TAB CONTENT ══════════════════════════════════════════ --}}
         @elseif($activeTab === 'mar')
         @php
@@ -1726,7 +1974,7 @@ use App\Helpers\WHOGrowthChart;
                         <th class="col-med" style="text-align:left;padding:8px 10px;">Medication</th>
                         <th class="col-shift">Shift</th>
                         @foreach($marDates as $d)
-                        <th style="min-width:56px;padding:5px 3px;">
+                        <th style="min-width:118px;padding:5px 3px;">
                             <span class="mar-date-header">{{ \Carbon\Carbon::parse($d)->format('M j') }}</span>
                             <span class="mar-date-sub">{{ \Carbon\Carbon::parse($d)->format('D') }}</span>
                         </th>
@@ -1775,16 +2023,35 @@ use App\Helpers\WHOGrowthChart;
                     {{-- Shift label --}}
                     <td class="col-shift {{ $shiftClass }}">{{ $shift }}</td>
  
-                    {{-- Date cells — time input, saves on blur --}}
+                    {{-- Date cells — multiple time entries per shift --}}
                     @foreach($marDates as $d)
-                    @php $cellVal = $entry->getTime($d, $shift); @endphp
-                    <td style="padding:0;">
-                        <input type="time"
-                               class="mar-cell-input"
-                               value="{{ $cellVal }}"
-                               wire:key="cell-{{ $entry->id }}-{{ $d }}-{{ $shift }}"
-                               @blur="$wire.marSaveCell({{ $entry->id }}, '{{ $d }}', '{{ $shift }}', $event.target.value)"
-                               title="{{ $d }} / {{ $shift }}">
+                    @php $cellTimes = $entry->getTimes($d, $shift); @endphp
+                    <td style="padding:2px 3px;vertical-align:top;" wire:key="cell-wrap-{{ $entry->id }}-{{ $d }}-{{ $shift }}">
+                        <div class="mar-times-wrap">
+                            {{-- Existing time chips --}}
+                            @foreach($cellTimes as $t)
+                            <span class="mar-time-chip">
+                                {{ $t }}
+                                <button type="button"
+                                        class="mar-time-chip-del"
+                                        wire:click="marRemoveTime({{ $entry->id }}, '{{ $d }}', '{{ $shift }}', '{{ $t }}')"
+                                        title="Remove {{ $t }}">✕</button>
+                            </span>
+                            @endforeach
+                            {{-- Add new time --}}
+                            <div class="mar-add-time-row"
+                                x-data="{ t: '' }"
+                                wire:key="cell-add-{{ $entry->id }}-{{ $d }}-{{ $shift }}">
+                                <input type="time"
+                                    x-model="t"
+                                    class="mar-add-time-inp"
+                                    title="Add time for {{ $d }} / {{ $shift }}">
+                                <button type="button"
+                                        class="mar-add-time-btn"
+                                        @click="if(t){ $wire.marAddTime({{ $entry->id }}, '{{ $d }}', '{{ $shift }}', t); t=''; }"
+                                        title="Add">+</button>
+                            </div>
+                        </div>
                     </td>
                     @endforeach
  

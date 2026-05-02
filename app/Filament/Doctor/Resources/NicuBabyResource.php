@@ -12,7 +12,7 @@ class NicuBabyResource extends Resource
 {
     protected static ?string $model = Visit::class;
     protected static ?string $navigationIcon = 'heroicon-o-heart';
-    protected static ?string $navigationLabel = '🍼 NICU Babies';
+    protected static ?string $navigationLabel = 'NICU Babies';
     protected static ?string $modelLabel = 'NICU Baby';
     protected static ?int $navigationSort = 3;
 
@@ -105,7 +105,7 @@ class NicuBabyResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->getStateUsing(fn ($record) => match ($record->status) {
-                        'provisional_registration' => '⚠️ Provisional',
+                        'provisional_registration' => 'Provisional',
                         'registered' => 'Registered',
                         'admitted' => 'Admitted',
                         default => ucfirst($record->status ?? '—'),

@@ -187,6 +187,81 @@ class ChartController extends Controller
         ]);
     }
 
+    public function growthChart(Visit $visit, Request $request): \Illuminate\View\View
+{
+    $visit->loadMissing(['patient']);
+
+    $patient = $visit->patient;
+    $gender  = $request->query('gender', $patient->sex === 'Female' ? 'girl' : 'boy');
+
+    $vitals = \App\Models\Vital::where('patient_id', $patient->id)
+        ->where(function ($q) {
+            $q->whereNotNull('weight_kg')->orWhereNotNull('height_cm');
+        })
+        ->orderBy('taken_at', 'asc')
+        ->get();
+
+    $dob = $patient->birth_datetime ?? $patient->birthday;
+
+    $weightMeasurements = [];
+    $lengthMeasurements = [];
+
+    foreach ($vitals as $v) {
+        $ageMonths = $dob
+            ? round(\Carbon\Carbon::parse($dob)->diffInDays($v->taken_at) / 30.44, 2)
+            : 0;
+
+        if ($ageMonths > 24) continue;
+
+        if ($v->weight_kg) {
+            $zScore = \App\Helpers\WHOGrowthChart::calculateZScore($v->weight_kg, $ageMonths, $gender, 'weight');
+            $weightMeasurements[] = [
+                'age_months' => $ageMonths,
+                'value'      => $v->weight_kg,
+                'date'       => $v->taken_at->format('M d, Y'),
+                'z_score'    => $zScore,
+                'color'      => ($zScore !== null && ($zScore < -2 || $zScore > 2)) ? '#dc2626' : '#3b82f6',
+            ];
+        }
+
+        if ($v->height_cm) {
+            $zScore = \App\Helpers\WHOGrowthChart::calculateZScore($v->height_cm, $ageMonths, $gender, 'length');
+            $lengthMeasurements[] = [
+                'age_months' => $ageMonths,
+                'value'      => $v->height_cm,
+                'date'       => $v->taken_at->format('M d, Y'),
+                'z_score'    => $zScore,
+                'color'      => ($zScore !== null && ($zScore < -2 || $zScore > 2)) ? '#dc2626' : '#8b5cf6',
+            ];
+        }
+    }
+
+    return view('forms.growth-chart', [
+        'visit'              => $visit,
+        'patient'            => $patient,
+        'gender'             => $gender,
+        'weightMeasurements' => $weightMeasurements,
+        'lengthMeasurements' => $lengthMeasurements,
+        'today'              => now()->timezone('Asia/Manila')->format('F j, Y'),
+    ]);
+}
+
+public function ballardScore(Visit $visit): \Illuminate\View\View
+{
+    $visit->loadMissing([
+        'patient',
+        'medicalHistory.doctor',
+        'nicuAdmission',
+        'ballardExams',
+    ]);
+
+    return view('forms.ballard-score-printable', [
+        'visit'   => $visit,
+        'patient' => $visit->patient,
+        'doctor'  => $visit->medicalHistory?->doctor,
+        'today'   => now()->timezone('Asia/Manila')->format('F j, Y'),
+    ]);
+}
     /**
      * Save a submitted radiology request to the database and log the action.
      */
