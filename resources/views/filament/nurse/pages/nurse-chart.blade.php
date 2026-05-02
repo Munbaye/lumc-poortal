@@ -491,7 +491,7 @@ use App\Helpers\WHOGrowthChart;
 .mar-table th, .mar-table td {
     border: 1px solid #e5e7eb;
     padding: 0;
-    vertical-align: middle;
+    vertical-align: top;
     text-align: center;
 }
 .dark .mar-table th, .dark .mar-table td { border-color:#374151; }
@@ -578,6 +578,40 @@ use App\Helpers\WHOGrowthChart;
 .btn-mar-del:hover { color:#ef4444; background:#fee2e2; }
 .dark .btn-mar-del:hover { background:#450a0a; color:#fca5a5; }
  
+/* Multi-time MAR cell */
+.mar-times-wrap { display:flex; flex-direction:column; gap:2px; min-height:36px; padding:3px 3px; }
+.mar-time-chip  { display:inline-flex; align-items:center; gap:3px; background:#eff6ff; border:1px solid #bfdbfe;
+                  border-radius:3px; padding:2px 5px; font-size:.72rem; font-family:monospace; font-weight:700;
+                  color:#1e40af; white-space:nowrap; }
+.dark .mar-time-chip { background:#1e3a5f; border-color:#1d4ed8; color:#93c5fd; }
+.mar-time-chip-del { background:none; border:none; color:#93c5fd; cursor:pointer; font-size:.65rem;
+                     padding:0 1px; line-height:1; }
+.mar-time-chip-del:hover { color:#dc2626; }
+.mar-add-time-row { display:flex; gap:3px; margin-top:3px; align-items:center; }
+/* Wide enough to show HH:MM plus the AM/PM spinner */
+.mar-add-time-inp { border:1px solid #d1d5db; border-radius:4px; padding:3px 4px; font-size:.72rem;
+                    font-family:monospace; width:100px; min-width:100px; color:#111827; background:#fff; outline:none; }
+.dark .mar-add-time-inp { background:#374151; border-color:#4b5563; color:#f3f4f6; }
+.mar-add-time-inp:focus { border-color:#2563eb; box-shadow:0 0 0 1px rgba(37,99,235,.2); }
+.mar-add-time-btn {
+    background:#f3f4f6;
+    color:#374151;
+    border:1px solid #e5e7eb;
+    border-radius:4px;
+    padding:2px 6px;
+    font-size:.7rem;
+    cursor:pointer;
+}
+.mar-add-time-btn:hover {
+    background:#e5e7eb;
+}
+/* Dark mode */
+.dark .mar-add-time-btn {
+    background:#374151;
+    border-color:#4b5563;
+    color:#d1d5db;
+}
+
 .mar-date-header { font-size:.67rem; font-weight:700; color:#374151; white-space:nowrap; }
 .dark .mar-date-header { color:#e5e7eb; }
 .mar-date-sub { font-size:.58rem; color:#9ca3af; display:block; }
@@ -1940,7 +1974,7 @@ use App\Helpers\WHOGrowthChart;
                         <th class="col-med" style="text-align:left;padding:8px 10px;">Medication</th>
                         <th class="col-shift">Shift</th>
                         @foreach($marDates as $d)
-                        <th style="min-width:56px;padding:5px 3px;">
+                        <th style="min-width:118px;padding:5px 3px;">
                             <span class="mar-date-header">{{ \Carbon\Carbon::parse($d)->format('M j') }}</span>
                             <span class="mar-date-sub">{{ \Carbon\Carbon::parse($d)->format('D') }}</span>
                         </th>
@@ -1989,16 +2023,35 @@ use App\Helpers\WHOGrowthChart;
                     {{-- Shift label --}}
                     <td class="col-shift {{ $shiftClass }}">{{ $shift }}</td>
  
-                    {{-- Date cells — time input, saves on blur --}}
+                    {{-- Date cells — multiple time entries per shift --}}
                     @foreach($marDates as $d)
-                    @php $cellVal = $entry->getTime($d, $shift); @endphp
-                    <td style="padding:0;">
-                        <input type="time"
-                               class="mar-cell-input"
-                               value="{{ $cellVal }}"
-                               wire:key="cell-{{ $entry->id }}-{{ $d }}-{{ $shift }}"
-                               @blur="$wire.marSaveCell({{ $entry->id }}, '{{ $d }}', '{{ $shift }}', $event.target.value)"
-                               title="{{ $d }} / {{ $shift }}">
+                    @php $cellTimes = $entry->getTimes($d, $shift); @endphp
+                    <td style="padding:2px 3px;vertical-align:top;" wire:key="cell-wrap-{{ $entry->id }}-{{ $d }}-{{ $shift }}">
+                        <div class="mar-times-wrap">
+                            {{-- Existing time chips --}}
+                            @foreach($cellTimes as $t)
+                            <span class="mar-time-chip">
+                                {{ $t }}
+                                <button type="button"
+                                        class="mar-time-chip-del"
+                                        wire:click="marRemoveTime({{ $entry->id }}, '{{ $d }}', '{{ $shift }}', '{{ $t }}')"
+                                        title="Remove {{ $t }}">✕</button>
+                            </span>
+                            @endforeach
+                            {{-- Add new time --}}
+                            <div class="mar-add-time-row"
+                                x-data="{ t: '' }"
+                                wire:key="cell-add-{{ $entry->id }}-{{ $d }}-{{ $shift }}">
+                                <input type="time"
+                                    x-model="t"
+                                    class="mar-add-time-inp"
+                                    title="Add time for {{ $d }} / {{ $shift }}">
+                                <button type="button"
+                                        class="mar-add-time-btn"
+                                        @click="if(t){ $wire.marAddTime({{ $entry->id }}, '{{ $d }}', '{{ $shift }}', t); t=''; }"
+                                        title="Add">+</button>
+                            </div>
+                        </div>
                     </td>
                     @endforeach
  

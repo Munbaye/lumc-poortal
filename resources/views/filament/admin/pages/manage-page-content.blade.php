@@ -12,10 +12,13 @@
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
-            margin-bottom: 22px;
+            margin-bottom: 20px;
         }
 
         .pc-tab {
+            display: inline-flex;
+            gap: 6px;
+            align-items: center;
             padding: 7px 16px;
             border-radius: 9px;
             font-size: 12.5px;
@@ -221,14 +224,15 @@
 
         /* ── SAVE BAR ─────────────────────────────────────────── */
         .pc-bar {
-            position: sticky;
+            
             bottom: 0;
             z-index: 50;
             background: rgba(255, 255, 255, .97);
             backdrop-filter: blur(12px);
-            border-top: 1px solid #e5e7eb;
+            border: 1px solid #e5e7eb;
             margin-top: 6px;
-            padding: 11px 0;
+            padding: 11px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -447,12 +451,18 @@
 
         {{-- TABS --}}
         <div class="pc-tabs">
-            <button type="button" class="pc-tab active" onclick="pcTab('hero',this)">🏠 Hero</button>
-            <button type="button" class="pc-tab" onclick="pcTab('stats',this)">📊 Stats</button>
-            <button type="button" class="pc-tab" onclick="pcTab('about',this)">🏥 About</button>
-            <button type="button" class="pc-tab" onclick="pcTab('mission',this)">🎯 Mission & Vision</button>
-            <button type="button" class="pc-tab" onclick="pcTab('depts',this)">🔬 Departments</button>
-            <button type="button" class="pc-tab" onclick="pcTab('contact',this)">📞 Contact & Footer</button>
+            <button type="button" class="pc-tab active" onclick="pcTab('hero',this)"><x-heroicon-o-home
+                    class="w-4 h-4" />Hero</button>
+            <button type="button" class="pc-tab" onclick="pcTab('stats',this)"><x-heroicon-o-chart-bar
+                    class="w-4 h-4" />Stats</button>
+            <button type="button" class="pc-tab" onclick="pcTab('about',this)"><x-heroicon-o-information-circle
+                    class="w-4 h-4" />About</button>
+            <button type="button" class="pc-tab" onclick="pcTab('mission',this)"><x-heroicon-o-bolt
+                    class="w-4 h-4" />Mission & Vision</button>
+            <button type="button" class="pc-tab" onclick="pcTab('depts',this)"><x-heroicon-o-building-office
+                    class="w-4 h-4" />Departments</button>
+            <button type="button" class="pc-tab" onclick="pcTab('contact',this)"><x-heroicon-o-phone
+                    class="w-4 h-4" />Contact & Footer</button>
         </div>
 
         {{-- ══ HERO ══ --}}
@@ -618,11 +628,7 @@
                     page immediately.</p>
             </div>
             <button type="button" wire:click="askSave" class="pc-btn pc-btn-blue" @click="dirty = false">
-                <svg xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px;" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                </svg>
+                <x-heroicon-m-arrow-down-tray class="w-4 h-4=" />
                 Save All Changes
             </button>
         </div>
