@@ -6,6 +6,27 @@ use App\Models\Visit;
 
 class NurseFormController extends Controller
 {
+
+public function tprRecord(Visit $visit)
+{
+    $vitals = \App\Models\Vital::where('visit_id', $visit->id)->get();
+
+    $temps = [];
+    $pulse = [];
+    $resp = [];
+
+    foreach ($vitals as $v) {
+        $day = \Carbon\Carbon::parse($v->created_at)->day;
+
+        $temps[$day] = $v->temperature;
+        $pulse[$day] = $v->pulse;
+        $resp[$day] = $v->respiration;
+    }
+
+    return view('forms.tpr-record', compact(
+        'visit','temps','pulse','resp'
+    ));
+}
     /**
      * GET /forms/vital-sign-monitoring-sheet/{visit}
      *
@@ -72,4 +93,11 @@ class NurseFormController extends Controller
 
         return view('forms.breastfeeding-observation', compact('visit'));
     }
+
+    public function obRecord($visitId)
+{
+    $visit = \App\Models\Visit::with('patient')->findOrFail($visitId);
+
+    return view('forms.ob-record', compact('visit'));
+}
 }

@@ -104,6 +104,18 @@ class NurseChart extends Page
     public string $measurementDate = '';
     public bool $savingMeasurement = false;
 
+
+public function tprRecord($visitId)
+{
+    $visit = Visit::findOrFail($visitId);
+
+    $vitals = Vital::where('visit_id', $visitId)
+        ->orderBy('taken_at', 'asc')
+        ->get();
+
+    return view('forms.tpr-record', compact('visit', 'vitals'));
+}
+
     public function mount(): void
     {
         if (!$this->visitId) {

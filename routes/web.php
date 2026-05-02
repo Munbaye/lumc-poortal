@@ -7,6 +7,7 @@ use App\Http\Controllers\ChartController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\ClerkFormController;
 use App\Http\Controllers\NurseFormController;
+use App\Http\Controllers\FormController;
 
 // ── PUBLIC LANDING PAGE ────────────────────────────────────────────────────────
 Route::get('/', function () {
@@ -150,22 +151,12 @@ Route::middleware(['auth'])->group(function () {
  
     Route::get('/forms/medication-records/{visit}', [NurseFormController::class, 'medicationRecords'])
         ->name('forms.medication-records');
+        
+    Route::get('/forms/tpr-record/{visit}', [NurseFormController::class, 'tprRecord'])
+    ->name('forms.tpr-record');
 
-<<<<<<< HEAD
-   Route::get('/nicu/dashboard', function () {
-    return view('nicu.dashboard');
-});
-});
-
-=======
-    // ── Breastfeeding Observation Job Aid (NUR-044-0) ─────────────────────────
-    Route::get('/forms/breastfeeding-observation/{visit}', [NurseFormController::class, 'breastfeedingObservation'])
-        ->name('forms.breastfeeding-observation');
-
-    // Doctor Discharge Summary — printable standalone page
-    Route::get('/forms/discharge-summary/{visit}', [ChartController::class, 'dischargeSummaryPrint'])
-        ->name('forms.discharge-summary')
-        ->middleware('auth');
-
-});
->>>>>>> origin/main
+Route::get('/forms/ob-record/{visit}', [NurseFormController::class, 'obRecord'])
+    ->name('forms.ob-record');
+    
+}
+);
