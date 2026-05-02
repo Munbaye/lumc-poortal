@@ -89,10 +89,19 @@
     }
 
     $typeOfSvc = $er?->type_of_service ?? $history?->service ?? '';
-    $patFamily  = $er?->patient_family_name  ?? strtoupper($patient->family_name);
-    $patFirst   = $er?->patient_first_name   ?? strtoupper($patient->first_name);
-    $patMiddle  = $er?->patient_middle_name  ?? strtoupper($patient->middle_name ?? '');
-    $addr       = $er?->permanent_address    ?? $patient->address;
+    $isProvisional = $patient->is_provisional ?? false;
+    $cleanAddr = function (?string $v): string {
+        if (!$v || trim($v) === '' || trim($v) === 'PENDING_CLERK_REGISTRATION') return '';
+        return $v;
+    };
+
+    $patFamily  = $er?->patient_family_name ?? ($isProvisional ? '' : strtoupper($patient->family_name));
+    $patFirst   = $er?->patient_first_name  ?? ($isProvisional ? '' : strtoupper($patient->first_name));
+    $patMiddle  = $er?->patient_middle_name ?? ($isProvisional ? '' : strtoupper($patient->middle_name ?? ''));
+    $addr       = collect([
+        $cleanAddr($er?->permanent_address ?? ''),
+        $isProvisional ? '' : $cleanAddr($patient->address ?? ''),
+    ])->first(fn ($v) => filled($v)) ?? '';
     $tel        = $er?->telephone_no         ?? $patient->contact_number ?? '';
     $nat        = $er?->nationality          ?? $patient->nationality ?? 'Filipino';
     $age        = $er?->age                  ?? $patient->current_age ?? $patient->age ?? '';

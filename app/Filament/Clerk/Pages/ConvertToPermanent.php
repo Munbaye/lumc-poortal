@@ -84,20 +84,22 @@ class ConvertToPermanent extends Page
             return;
         }
 
-        DB::beginTransaction();
         try {
+            // convertToPermanent() handles its own transaction — do NOT wrap again
             $this->baby->convertToPermanent(auth()->id());
-            DB::commit();
+
+            $freshBaby = $this->baby->fresh();
 
             Notification::make()
                 ->title('✓ Record Converted to Permanent')
-                ->body("Permanent Case Number: {$this->baby->fresh()->case_no}")
+                ->body("Permanent Case Number: {$freshBaby->case_no} — Please complete the Consent to Care form.")
                 ->success()
                 ->send();
 
-            $this->redirect('/clerk/visits');
+            // Task 2: After ADR/conversion is complete, go directly to Consent to Care
+            $this->redirect(route('forms.consent-to-care', ['visit' => $this->visit->id]));
+
         } catch (\Exception $e) {
-            DB::rollBack();
             Notification::make()
                 ->title('Error Converting Record')
                 ->body($e->getMessage())

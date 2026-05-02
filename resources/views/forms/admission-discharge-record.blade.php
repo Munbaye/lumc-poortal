@@ -100,12 +100,24 @@
 
     $first = fn(...$vals) => collect($vals)->first(fn($v) => filled($v)) ?? '';
 
-    $patFamilyVal = $first($adm?->patient_family_name, $er?->patient_family_name, strtoupper($patient->family_name));
-    $patFirstVal  = $first($adm?->patient_first_name,  $er?->patient_first_name,  strtoupper($patient->first_name));
-    $patMiddleVal = $first($adm?->patient_middle_name, $er?->patient_middle_name, strtoupper($patient->middle_name ?? ''));
-    $patNameFormatted = trim($patFamilyVal . ', ' . $patFirstVal . ($patMiddleVal ? ' ' . $patMiddleVal : ''));
+    $isProvisional = $patient->is_provisional ?? false;
 
-    $addr       = $first($adm?->permanent_address,   $er?->permanent_address,   $patient->address);
+    $patFamilyVal = $first($adm?->patient_family_name, $er?->patient_family_name, $isProvisional ? '' : strtoupper($patient->family_name));
+    $patFirstVal  = $first($adm?->patient_first_name,  $er?->patient_first_name,  $isProvisional ? '' : strtoupper($patient->first_name));
+    $patMiddleVal = $first($adm?->patient_middle_name, $er?->patient_middle_name, $isProvisional ? '' : strtoupper($patient->middle_name ?? ''));
+    $rawName      = trim($patFamilyVal . ', ' . $patFirstVal . ($patMiddleVal ? ' ' . $patMiddleVal : ''));
+    $patNameFormatted = ($rawName === ',' || $rawName === ', ') ? '' : $rawName;
+
+    $cleanAddr = function (?string $v): string {
+    if (!$v || trim($v) === '' || trim($v) === 'PENDING_CLERK_REGISTRATION') return '';
+    return $v;
+    };
+    $rawAddr = $isProvisional ? '' : $cleanAddr($patient->address ?? '');
+    $addr    = collect([
+        $cleanAddr($adm?->permanent_address ?? ''),
+        $cleanAddr($er?->permanent_address  ?? ''),
+        $rawAddr,
+    ])->first(fn ($v) => filled($v)) ?? '';
     $tel        = $first($adm?->telephone_no,         $er?->telephone_no,         $patient->contact_number ?? '');
     $sex        = $first($adm?->sex,                  $er?->sex,                  $patient->sex ?? '');
     $cs         = $first($adm?->civil_status,         $er?->civil_status,         $patient->civil_status ?? '');
@@ -506,7 +518,11 @@ async function saveAndContinue() {
         if (json.success) {
             showToast('✔ Admission Record saved — advancing…');
             btn.textContent = '✔ Saved';
+            @if($isNicu ?? false)
+            setTimeout(() => { window.location.href = '{{ $consentUrl }}'; }, 1200);
+            @else
             window.parent.postMessage({ type: 'admSaved', paymentClass: json.payment_class ?? 'Charity' }, '*');
+            @endif
         } else {
             showToast('⚠ Save failed: ' + (json.message ?? 'Unknown error'), true);
             btn.disabled = false; btn.textContent = '💾 Save & Continue →';

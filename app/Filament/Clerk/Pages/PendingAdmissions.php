@@ -3,7 +3,6 @@ namespace App\Filament\Clerk\Pages;
 
 use App\Models\Visit;
 use Filament\Pages\Page;
-use Illuminate\Support\Facades\Schema;
 
 class PendingAdmissions extends Page
 {
@@ -17,15 +16,14 @@ class PendingAdmissions extends Page
      * Returns visits where:
      *   - doctor_admitted_at IS NOT NULL  → doctor has made the "Admit" decision
      *   - clerk_admitted_at  IS NULL      → clerk has NOT yet completed the form
-     *
-     * This is the ONLY reliable query. We do NOT use status='admitted' alone
-     * because that matches already-completed admissions too.
+     *   - visit_type != 'NICU'            → NICU babies have their own registration flow
      */
     public function getPendingVisits(): \Illuminate\Database\Eloquent\Collection
     {
         return Visit::with(['patient', 'medicalHistory.doctor', 'doctorsOrders'])
-            ->whereNotNull('doctor_admitted_at')   // doctor decided "Admit"
-            ->whereNull('clerk_admitted_at')        // clerk hasn't completed yet
+            ->whereNotNull('doctor_admitted_at')
+            ->whereNull('clerk_admitted_at')
+            ->where('visit_type', '!=', 'NICU')
             ->whereDate('registered_at', '>=', now()->subDays(30))
             ->orderBy('doctor_admitted_at', 'asc')
             ->get();
@@ -36,6 +34,7 @@ class PendingAdmissions extends Page
         try {
             $count = Visit::whereNotNull('doctor_admitted_at')
                 ->whereNull('clerk_admitted_at')
+                ->where('visit_type', '!=', 'NICU')
                 ->whereDate('registered_at', '>=', now()->subDays(30))
                 ->count();
             return $count > 0 ? (string) $count : null;
