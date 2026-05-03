@@ -20,6 +20,7 @@ class VisitResource extends Resource
         return $table
             ->query(
                 Visit::with(['patient'])
+                    ->whereHas('patient', fn ($q) => $q->where('is_provisional', false))
                     ->latest('registered_at')
             )
             ->columns([
@@ -31,45 +32,27 @@ class VisitResource extends Resource
 
                 Tables\Columns\TextColumn::make('case_number')
                     ->label('Case No')
-                    ->getStateUsing(function ($record) {
-                        $patient = $record->patient;
-                        if (!$patient) return '—';
-
-                        if ($patient->is_provisional) {
-                            return $patient->temporary_case_no ?? 'TEMP-' . $patient->id;
-                        }
-                        return $patient->case_no ?? '—';
-                    })
-                    ->searchable(query: function (Builder $query, string $search) {
-                        $query->whereHas('patient', function (Builder $q) use ($search) {
-                            $q->where('case_no', 'like', "%{$search}%")
-                              ->orWhere('temporary_case_no', 'like', "%{$search}%");
-                        });
-                    })
+                    ->getStateUsing(fn ($record) => $record->patient?->case_no ?? '—')
                     ->copyable()
                     ->fontFamily('mono')
-                    ->badge(fn ($record) => $record->patient && $record->patient->is_provisional)
-                    ->color(fn ($record) => $record->patient && $record->patient->is_provisional ? 'warning' : 'primary')
-                    ->icon(fn ($record) => $record->patient && $record->patient->is_provisional ? 'heroicon-o-clock' : null)
-                    ->formatStateUsing(fn ($state, $record) =>
-                        $record->patient && $record->patient->is_provisional
-                            ? $state . ' (Temporary)'
-                            : $state
-                    ),
+                    ->badge()
+                    ->color('primary')
+                    ->searchable(query: function (Builder $query, string $search) {
+                        $query->whereHas('patient', fn (Builder $q) =>
+                            $q->where('case_no', 'like', "%{$search}%")
+                        );
+                    }),
 
                 Tables\Columns\TextColumn::make('patient_display_name')
                     ->label('Patient Name')
+                    ->getStateUsing(fn ($record) => optional($record->patient)->full_name ?? '—')
+                    ->weight('bold')
                     ->searchable(query: function (Builder $query, string $search) {
-                        $query->whereHas('patient', function (Builder $q) use ($search) {
+                        $query->whereHas('patient', fn (Builder $q) =>
                             $q->where('family_name', 'like', "%{$search}%")
                               ->orWhere('first_name', 'like', "%{$search}%")
-                              ->orWhere('temporary_case_no', 'like', "%{$search}%")
-                              ->orWhere('temporary_identifier', 'like', "%{$search}%");
-                        });
-                    })
-                    ->getStateUsing(fn ($record) => optional($record->patient)->display_name ?? '—')
-                    ->weight('bold')
-                    ->color(fn ($record) => optional($record->patient)->has_incomplete_info ? 'danger' : null),
+                        );
+                    }),
 
                 Tables\Columns\TextColumn::make('patient_age')
                     ->label('Age')
@@ -85,8 +68,8 @@ class VisitResource extends Resource
                     ->label('Entry')
                     ->badge()
                     ->color(fn ($state) => match ($state) {
-                        'ER'   => 'danger',
-                        'NICU' => 'success',
+                        'ER'    => 'danger',
+                        'NICU'  => 'success',
                         default => 'primary',
                     }),
 
@@ -96,73 +79,88 @@ class VisitResource extends Resource
                     ->tooltip(fn ($record) => $record->chief_complaint),
 
                 Tables\Columns\TextColumn::make('status')
-                    ->label('Visit Status')
+                    ->label('Status')
                     ->formatStateUsing(fn ($state) => match ($state) {
-                        'registered'               => 'Registered',
-                        'vitals_done'              => 'Vitals Done',
-                        'assessed'                 => 'Assessed',
-                        'discharged'               => 'Discharged',
-                        'admitted'                 => 'Admitted',
-                        'referred'                 => 'Referred',
-                        'provisional_registration' => 'Provisional Reg',
-                        default                    => ucfirst(str_replace('_', ' ', $state)),
+                        'registered'  => 'Registered',
+                        'vitals_done' => 'Vitals Done',
+                        'assessed'    => 'Assessed',
+                        'discharged'  => 'Discharged',
+                        'admitted'    => 'Admitted',
+                        'referred'    => 'Referred',
+                        default       => ucfirst(str_replace('_', ' ', $state)),
                     })
                     ->badge()
                     ->color(fn ($state) => match ($state) {
-                        'registered'               => 'warning',
-                        'vitals_done'              => 'info',
-                        'assessed'                 => 'success',
-                        'admitted'                 => 'primary',
-                        'provisional_registration' => 'danger',
-                        default                    => 'gray',
+                        'registered'  => 'warning',
+                        'vitals_done' => 'info',
+                        'assessed'    => 'success',
+                        'admitted'    => 'primary',
+                        'discharged'  => 'gray',
+                        default       => 'gray',
                     }),
             ])
             ->defaultSort('registered_at', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('record_type')
-                    ->label('Record Type')
-                    ->options([
-                        'all'         => 'All Records',
-                        'permanent'   => 'Permanent Records Only',
-                        'provisional' => '⚠️ Provisional Records (Need Conversion)',
-                    ])
-                    ->default('all')
-                    ->query(function (Builder $query, array $data) {
-                        if (($data['value'] ?? 'all') === 'provisional') {
-                            $query->whereHas('patient', fn ($q) => $q->where('is_provisional', true));
-                        } elseif (($data['value'] ?? 'all') === 'permanent') {
-                            $query->whereHas('patient', fn ($q) => $q->where('is_provisional', false));
-                        }
-                        return $query;
-                    }),
-
                 Tables\Filters\SelectFilter::make('visit_type')
                     ->label('Entry Point')
-                    ->options(['OPD' => 'OPD', 'ER' => 'ER', 'NICU' => 'NICU']),
+                    ->options([
+                        'OPD'  => 'OPD',
+                        'ER'   => 'ER',
+                        'NICU' => 'NICU',
+                    ])
+                    ->placeholder('All Entry Points')
+                    ->visible(fn ($livewire) => ($livewire->activeTab ?? 'all') === 'all'),
 
                 Tables\Filters\SelectFilter::make('status')
+                    ->label('Status')
                     ->options([
-                        'registered'               => 'Registered',
-                        'vitals_done'              => 'Vitals Done',
-                        'assessed'                 => 'Assessed',
-                        'discharged'               => 'Discharged',
-                        'admitted'                 => 'Admitted',
-                        'referred'                 => 'Referred',
-                        'provisional_registration' => 'Provisional Registration',
-                    ]),
+                        'registered'  => 'Registered',
+                        'vitals_done' => 'Vitals Done',
+                        'assessed'    => 'Assessed',
+                        'admitted'    => 'Admitted',
+                        'discharged'  => 'Discharged',
+                        'referred'    => 'Referred',
+                    ])
+                    ->placeholder('All Statuses'),
+
+                Tables\Filters\SelectFilter::make('sex')
+                    ->label('Sex')
+                    ->options(['Male' => 'Male', 'Female' => 'Female'])
+                    ->placeholder('All')
+                    ->query(fn (Builder $query, array $data) =>
+                        filled($data['value'])
+                            ? $query->whereHas('patient', fn ($q) => $q->where('sex', $data['value']))
+                            : $query
+                    ),
+
+                Tables\Filters\Filter::make('date_range')
+                    ->label('Date Range')
+                    ->form([
+                        \Filament\Forms\Components\DatePicker::make('from')
+                            ->label('From')
+                            ->native(false)
+                            ->displayFormat('M d, Y')
+                            ->placeholder('Start date'),
+                        \Filament\Forms\Components\DatePicker::make('until')
+                            ->label('Until')
+                            ->native(false)
+                            ->displayFormat('M d, Y')
+                            ->placeholder('End date'),
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        return $query
+                            ->when($data['from'],  fn ($q) => $q->whereDate('registered_at', '>=', $data['from']))
+                            ->when($data['until'], fn ($q) => $q->whereDate('registered_at', '<=', $data['until']));
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['from'])  $indicators[] = 'From: '  . \Carbon\Carbon::parse($data['from'])->format('M d, Y');
+                        if ($data['until']) $indicators[] = 'Until: ' . \Carbon\Carbon::parse($data['until'])->format('M d, Y');
+                        return $indicators;
+                    }),
             ])
             ->persistFiltersInSession()
             ->actions([
-                Tables\Actions\Action::make('review_and_convert')
-                    ->label('Review & Convert')
-                    ->icon('heroicon-o-eye')
-                    ->color('success')
-                    ->button()
-                    ->url(fn (Visit $record) =>
-                        \App\Filament\Clerk\Pages\ConvertToPermanent::getUrl(['visitId' => $record->id])
-                    )
-                    ->visible(fn (Visit $record) => $record->patient && $record->patient->is_provisional),
-
                 Tables\Actions\Action::make('add_vitals')
                     ->label('Add Vitals')
                     ->icon('heroicon-o-plus')
@@ -174,7 +172,7 @@ class VisitResource extends Resource
                     ->visible(fn (Visit $record) => $record->status === 'registered'),
 
                 Tables\Actions\Action::make('patient_history')
-                    ->label('Patient History')
+                    ->label('History')
                     ->icon('heroicon-o-clock')
                     ->color('gray')
                     ->button()
@@ -183,22 +181,10 @@ class VisitResource extends Resource
                             'patientId' => $record->patient_id,
                         ])
                     )
-                    ->visible(fn (Visit $record) => $record->patient_id),
+                    ->visible(fn (Visit $record) => (bool) $record->patient_id),
 
                 Tables\Actions\ViewAction::make(),
             ]);
-    }
-
-    public static function getNavigationBadge(): ?string
-    {
-        $count = Visit::whereHas('patient', fn ($q) => $q->where('is_provisional', true))->count();
-        return $count > 0 ? (string) $count : null;
-    }
-
-    public static function getNavigationBadgeColor(): ?string
-    {
-        $count = Visit::whereHas('patient', fn ($q) => $q->where('is_provisional', true))->count();
-        return $count > 0 ? 'danger' : 'success';
     }
 
     public static function canCreate(): bool { return false; }
