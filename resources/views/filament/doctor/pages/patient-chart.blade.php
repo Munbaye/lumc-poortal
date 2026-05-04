@@ -2106,25 +2106,6 @@
                     ">
                 📋 Discharge Patient
             </a>
-            @elseif($visit->status === 'discharged' && $visit->dischargeSummary)
-            <a href="{{ \App\Filament\Doctor\Pages\DischargeSummaryPage::getUrl(['visitId' => $visit->id]) }}"
-                style="
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 6px;
-                        background: rgba(255,255,255,.15);
-                        border: 1px solid rgba(255,255,255,.3);
-                        color: #fff;
-                        font-size: 0.74rem;
-                        font-weight: 600;
-                        padding: 7px 14px;
-                        border-radius: 7px;
-                        text-decoration: none;
-                        white-space: nowrap;
-                        flex-shrink: 0;
-                    ">
-                📋 View Discharge Summary
-            </a>
             @endif
         </div>
 
@@ -2347,6 +2328,55 @@
                 <div class="form-missing-card">
                     <div class="form-missing-icon"><x-heroicon-o-beaker class="w-8 h-8" /></div>
                     <p class="form-missing-text">No IV / blood transfusion entries yet. These are entered by the nurse from the Nurse panel.</p>
+                </div>
+                @endif
+            </div>
+
+            {{-- ── 8. Discharge Summary ────────────────────────────────────── --}}
+            @php
+            $hasDischargeSummary = (bool) $visit->dischargeSummary;
+            @endphp
+            <div class="form-section">
+                <div class="form-section-header">
+                    <span class="form-section-label">📋 Discharge Summary</span>
+                    <div class="form-section-line"></div>
+                    @if($visit->status === 'discharged')
+                        <span class="form-section-badge {{ $hasDischargeSummary ? 'form-section-badge-saved' : 'form-section-badge-missing' }}">
+                            {{ $hasDischargeSummary ? 'Completed' : 'Not yet completed' }}
+                        </span>
+                    @else
+                        <span class="form-section-badge form-section-badge-missing">Patient not yet discharged</span>
+                    @endif
+                    @if(!$isReadonly)
+                    <a href="{{ \App\Filament\Doctor\Pages\DischargeSummaryPage::getUrl(['visitId' => $visit->id]) }}"
+                        target="_blank"
+                        style="font-size:.72rem;font-weight:700;color:#059669;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;padding:3px 10px;border-radius:5px;white-space:nowrap;margin-left:4px;">
+                        {{ $hasDischargeSummary ? '📋 Open / Edit' : '📋 Create' }}
+                    </a>
+                    @elseif($hasDischargeSummary)
+                    <a href="{{ \App\Filament\Doctor\Pages\DischargeSummaryPage::getUrl(['visitId' => $visit->id]) }}"
+                        target="_blank"
+                        style="font-size:.72rem;font-weight:700;color:#059669;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;padding:3px 10px;border-radius:5px;white-space:nowrap;margin-left:4px;">
+                        🖨️ Open / Print
+                    </a>
+                    @endif
+                </div>
+                @if($hasDischargeSummary)
+                <div class="form-iframe-wrap">
+                    <iframe src="{{ route('forms.discharge-summary', ['visit' => $visit->id]) }}"
+                        title="Discharge Summary"
+                        style="width:100%;min-height:1100px;border:none;display:block;"
+                        loading="lazy"></iframe>
+                </div>
+                @elseif($visit->status === 'discharged')
+                <div class="form-missing-card">
+                    <div class="form-missing-icon">📋</div>
+                    <p class="form-missing-text">Discharge Summary has not been completed yet.</p>
+                </div>
+                @else
+                <div class="form-missing-card">
+                    <div class="form-missing-icon">📋</div>
+                    <p class="form-missing-text">Discharge Summary will be available once the patient is discharged.</p>
                 </div>
                 @endif
             </div>
