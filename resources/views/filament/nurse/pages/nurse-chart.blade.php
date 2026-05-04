@@ -1976,6 +1976,47 @@ use App\Helpers\WHOGrowthChart;
         </div>
         @endif
 
+        {{-- 13. Discharge Summary --}}
+        @php $hasDischargeSummary = (bool) $visit->dischargeSummary; @endphp
+        <div style="margin-bottom:32px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">📋 Discharge Summary</span>
+                <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
+                @if($visit->status === 'discharged')
+                    <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $hasDischargeSummary ? 'background:#d1fae5;color:#065f46;' : 'background:#fef3c7;color:#92400e;' }}">
+                        {{ $hasDischargeSummary ? 'Completed' : 'Not yet completed' }}
+                    </span>
+                @else
+                    <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;background:#f3f4f6;color:#6b7280;">
+                        Patient not yet discharged
+                    </span>
+                @endif
+                @if($hasDischargeSummary)
+                <a href="{{ route('forms.discharge-summary', ['visit' => $visit->id]) }}"
+                   target="_blank"
+                   style="font-size:.72rem;font-weight:700;color:#059669;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;padding:3px 10px;border-radius:5px;white-space:nowrap;">
+                    🖨️ Open / Print
+                </a>
+                @endif
+            </div>
+            @if($hasDischargeSummary)
+            <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+                <iframe src="{{ route('forms.discharge-summary', ['visit' => $visit->id]) }}"
+                    title="Discharge Summary"
+                    style="width:100%;min-height:1100px;border:none;display:block;"
+                    loading="lazy"></iframe>
+            </div>
+            @elseif($visit->status === 'discharged')
+            <div style="background:#fff;border:1.5px dashed #e5e7eb;border-radius:8px;padding:24px;text-align:center;">
+                <p style="font-size:.82rem;color:#9ca3af;">Discharge Summary has not been completed yet.</p>
+            </div>
+            @else
+            <div style="background:#fff;border:1.5px dashed #e5e7eb;border-radius:8px;padding:24px;text-align:center;">
+                <p style="font-size:.82rem;color:#9ca3af;">Discharge Summary will be available once the patient is discharged.</p>
+            </div>
+            @endif
+        </div>
+
         {{-- ══ MAR TAB CONTENT ══════════════════════════════════════════ --}}
         @elseif($activeTab === 'mar')
         @php
