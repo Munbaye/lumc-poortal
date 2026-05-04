@@ -25,23 +25,11 @@ use App\Helpers\WHOGrowthChart;
 .btn-back-hdr { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:#fff; font-size:.78rem; font-weight:600; padding:7px 14px; border-radius:6px; text-decoration:none; flex-shrink:0; cursor:pointer; }
 .btn-back-hdr:hover { background:rgba(255,255,255,.25); }
 
-/* ── Group pill bar ─────────────────────────────────────────────── */
-.chart-group-bar { display:flex; align-items:center; gap:8px; padding:10px 16px; background:#fff; border-bottom:1px solid #e5e7eb; flex-wrap:wrap; }
-.dark .chart-group-bar { background:#1f2937; border-bottom-color:#374151; }
-.chart-group-pill { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:9999px; font-size:.75rem; font-weight:600; cursor:pointer; border:1.5px solid #e5e7eb; background:#f9fafb; color:#6b7280; transition:all .15s; white-space:nowrap; }
-.chart-group-pill:hover { border-color:#fda4af; color:#be123c; background:#fff1f2; }
-.dark .chart-group-pill { background:#1f2937; border-color:#374151; color:#9ca3af; }
-.dark .chart-group-pill:hover { border-color:#fb7185; color:#fb7185; background:#1f1524; }
-.chart-group-pill.active { background:#ffe4e6; border-color:#fca5a5; color:#be123c; }
-.dark .chart-group-pill.active { background:#1f1524; border-color:#fb7185; color:#fb7185; }
-.chart-group-pill svg { width:13px; height:13px; flex-shrink:0; }
-.group-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-
-/* ── Subtab bar ─────────────────────────────────────────────────── */
-.chart-subtabs { display:flex; align-items:center; background:#fff; border-bottom:2px solid #e5e7eb; padding:0 16px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; }
-.chart-subtabs::-webkit-scrollbar { display:none; }
-.dark .chart-subtabs { background:#111827; border-bottom-color:#374151; }
-.chart-tab { display:inline-flex; align-items:center; gap:6px; padding:9px 13px; font-size:.78rem; font-weight:600; color:#6b7280; cursor:pointer; border:none; background:none; border-bottom:2.5px solid transparent; margin-bottom:-2px; white-space:nowrap; transition:color .15s,border-color .15s; }
+/* ── Single flat tab bar ────────────────────────────────────────── */
+.chart-tabs { display:flex; align-items:center; background:#fff; border-bottom:2px solid #e5e7eb; padding:0 16px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; }
+.chart-tabs::-webkit-scrollbar { display:none; }
+.dark .chart-tabs { background:#1f2937; border-bottom-color:#374151; }
+.chart-tab { display:inline-flex; align-items:center; gap:6px; padding:10px 13px; font-size:.78rem; font-weight:600; color:#6b7280; cursor:pointer; border:none; background:none; border-bottom:2.5px solid transparent; margin-bottom:-2px; white-space:nowrap; transition:color .15s,border-color .15s; }
 .chart-tab:hover { color:#374151; }
 .dark .chart-tab { color:#9ca3af; }
 .dark .chart-tab:hover { color:#e5e7eb; }
@@ -674,71 +662,12 @@ use App\Helpers\WHOGrowthChart;
     </div>
     @endif
 
-    {{-- ════ GROUPED NAVIGATION ════════════════════════════════════ --}}
+    {{-- ════ TABS ═══════════════════════════════════════════════════ --}}
     @if(!$isReadonly)
-    @php
-        $groupMap = [
-            'clinical'   => ['orders','notes','mar','handover'],
-            'monitoring' => ['vitals','iv','tpr','io'],
-            'nicu'       => ['breastfeeding','growth'],
-            'forms'      => ['forms'],
-        ];
-        $activeGroup = 'clinical';
-        foreach($groupMap as $grp => $tabs) {
-            if(in_array($activeTab, $tabs)) { $activeGroup = $grp; break; }
-        }
-        $isNicu = $visit->visit_type === 'NICU';
-    @endphp
+    @php $isNicu = $visit->visit_type === 'NICU'; @endphp
+    <div class="chart-tabs">
 
-    {{-- ── Group pill bar ─────────────────────────────────────────── --}}
-    <div class="chart-group-bar">
-
-        {{-- Clinical Care --}}
-        <button wire:click="setTab('orders')" type="button"
-                class="chart-group-pill {{ $activeGroup==='clinical' ? 'active':'' }}">
-            <x-heroicon-o-clipboard-document-list class="w-4 h-4" />
-            Clinical Care
-            @if($pendingCnt > 0)
-                <span class="tab-badge" style="margin-left:2px;">{{ $pendingCnt }}</span>
-            @endif
-        </button>
-
-        {{-- Monitoring --}}
-        <button wire:click="setTab('vitals')" type="button"
-                class="chart-group-pill {{ $activeGroup==='monitoring' ? 'active':'' }}">
-            <x-heroicon-o-heart class="w-4 h-4" />
-            Monitoring
-            @if($vitalsCount > 0)
-                <span class="tab-badge tab-badge-blue" style="margin-left:2px;">{{ $vitalsCount }}</span>
-            @endif
-        </button>
-
-        {{-- NICU — only for NICU patients --}}
-        @if($isNicu)
-        <button wire:click="setTab('breastfeeding')" type="button"
-                class="chart-group-pill {{ $activeGroup==='nicu' ? 'active':'' }}">
-            <x-heroicon-o-heart class="w-4 h-4" />
-            NICU Care
-            @if($this->breastfeedingObservationsCount > 0)
-                <span class="tab-badge tab-badge-green" style="margin-left:2px;">{{ $this->breastfeedingObservationsCount }}</span>
-            @endif
-        </button>
-        @endif
-
-        {{-- Forms & Records --}}
-        <button wire:click="setTab('forms')" type="button"
-                class="chart-group-pill {{ $activeGroup==='forms' ? 'active':'' }}">
-            <x-heroicon-o-document-text class="w-4 h-4" />
-            Forms &amp; Records
-        </button>
-
-    </div>
-
-    {{-- ── Subtab bar ──────────────────────────────────────────────── --}}
-    <div class="chart-subtabs">
-
-        {{-- Clinical Care subtabs --}}
-        @if($activeGroup === 'clinical')
+        {{-- Doctor's Orders --}}
         <button wire:click="setTab('orders')" type="button"
                 class="chart-tab {{ $activeTab==='orders' ? 'active':'' }}">
             <x-heroicon-o-clipboard-document-list class="w-4 h-4" />
@@ -746,52 +675,33 @@ use App\Helpers\WHOGrowthChart;
             @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>
             @elseif($allOrders->count() > 0)<span class="tab-badge tab-badge-green">✓</span>@endif
         </button>
+
+        {{-- Nurse's Notes --}}
         <button wire:click="setTab('notes')" type="button"
                 class="chart-tab {{ $activeTab==='notes' ? 'active':'' }}">
             <x-heroicon-o-pencil-square class="w-4 h-4" />
             Nurse's Notes
             @if($allNotes->count() > 0)<span class="tab-badge" style="background:#6366f1;">{{ $allNotes->count() }}</span>@endif
         </button>
-        <button wire:click="setTab('mar')" type="button"
-                class="chart-tab {{ $activeTab==='mar' ? 'active':'' }}">
-            <x-heroicon-o-clipboard-document-check class="w-4 h-4" />
-            MAR
-        </button>
-        <button wire:click="setTab('handover')" type="button"
-                class="chart-tab {{ $activeTab==='handover' ? 'active':'' }}">
-            <x-heroicon-o-arrow-path class="w-4 h-4" />
-            Handover
-        </button>
-        @endif
 
-        {{-- Monitoring subtabs --}}
-        @if($activeGroup === 'monitoring')
+        {{-- Vital Signs --}}
         <button wire:click="setTab('vitals')" type="button"
                 class="chart-tab {{ $activeTab==='vitals' ? 'active':'' }}">
             <x-heroicon-o-heart class="w-4 h-4" />
             Vital Signs
             @if($vitalsCount > 0)<span class="tab-badge tab-badge-blue">{{ $vitalsCount }}</span>@endif
         </button>
+
+        {{-- IV Fluid / Blood --}}
         <button wire:click="setTab('iv')" type="button"
                 class="chart-tab {{ $activeTab==='iv' ? 'active':'' }}">
             <x-heroicon-o-beaker class="w-4 h-4" />
             IV Fluid / Blood
             @if($ivCount > 0)<span class="tab-badge tab-badge-teal">{{ $ivCount }}</span>@endif
         </button>
-        <button wire:click="setTab('tpr')" type="button"
-                class="chart-tab {{ $activeTab==='tpr' ? 'active':'' }}">
-            <x-heroicon-o-fire class="w-4 h-4" />
-            TPR Record
-        </button>
-        <button wire:click="setTab('io')" type="button"
-                class="chart-tab {{ $activeTab==='io' ? 'active':'' }}">
-            <x-heroicon-o-calculator class="w-4 h-4" />
-            I &amp; O
-        </button>
-        @endif
 
-        {{-- NICU subtabs --}}
-        @if($activeGroup === 'nicu' && $isNicu)
+        {{-- NICU-only tabs --}}
+        @if($isNicu)
         <button wire:click="setTab('breastfeeding')" type="button"
                 class="chart-tab {{ $activeTab==='breastfeeding' ? 'active':'' }}">
             <x-heroicon-o-heart class="w-4 h-4" />
@@ -807,14 +717,40 @@ use App\Helpers\WHOGrowthChart;
         </button>
         @endif
 
-        {{-- Forms & Records subtabs --}}
-        @if($activeGroup === 'forms')
+        {{-- Patient Forms --}}
         <button wire:click="setTab('forms')" type="button"
                 class="chart-tab {{ $activeTab==='forms' ? 'active':'' }}">
             <x-heroicon-o-document-text class="w-4 h-4" />
             Patient Forms
         </button>
-        @endif
+
+        {{-- MAR --}}
+        <button wire:click="setTab('mar')" type="button"
+                class="chart-tab {{ $activeTab==='mar' ? 'active':'' }}">
+            <x-heroicon-o-clipboard-document-check class="w-4 h-4" />
+            MAR
+        </button>
+
+        {{-- TPR Record --}}
+        <button wire:click="setTab('tpr')" type="button"
+                class="chart-tab {{ $activeTab==='tpr' ? 'active':'' }}">
+            <x-heroicon-o-fire class="w-4 h-4" />
+            TPR Record
+        </button>
+
+        {{-- I & O --}}
+        <button wire:click="setTab('io')" type="button"
+                class="chart-tab {{ $activeTab==='io' ? 'active':'' }}">
+            <x-heroicon-o-calculator class="w-4 h-4" />
+            I &amp; O
+        </button>
+
+        {{-- Handover --}}
+        <button wire:click="setTab('handover')" type="button"
+                class="chart-tab {{ $activeTab==='handover' ? 'active':'' }}">
+            <x-heroicon-o-arrow-path class="w-4 h-4" />
+            Handover
+        </button>
 
     </div>
     @endif{{-- !isReadonly --}}
@@ -834,7 +770,7 @@ use App\Helpers\WHOGrowthChart;
         <div class="mark-all-banner">
             <div class="mark-all-text"><strong>{{ $pendingCnt }} pending order(s)</strong> — click "Mark All as Carried" to carry all at once, or mark each individually below.</div>
             <button wire:click="carryAllOrders" wire:loading.attr="disabled" wire:loading.class="opacity-60" type="button" class="btn-mark-all">
-                <span wire:loading.remove wire:target="carryAllOrders">✅ Mark All as Carried</span>
+                <span wire:loading.remove wire:target="carryAllOrders"><x-heroicon-o-check-circle class="w-4 h-4" /> Mark All as Carried</span>
                 <span wire:loading wire:target="carryAllOrders">Marking…</span>
             </button>
         </div>
@@ -1571,10 +1507,10 @@ use App\Helpers\WHOGrowthChart;
                 </div>
                 <div style="display: flex; gap: 6px; align-items: center;">
                     @if($obs->going_well_count > 0)
-                        <span class="bfobs-badge well">✅ {{ $obs->going_well_count }} going well</span>
+                        <span class="bfobs-badge well"><x-heroicon-o-check-circle class="w-3 h-3 inline" /> {{ $obs->going_well_count }} going well</span>
                     @endif
                     @if($obs->difficulty_count > 0)
-                        <span class="bfobs-badge diff">⚠️ {{ $obs->difficulty_count }} difficulty</span>
+                        <span class="bfobs-badge diff"><x-heroicon-o-exclamation-triangle class="w-4 h-4 inline" /> {{ $obs->difficulty_count }} difficulty</span>
                     @elseif($obs->difficulty_count === 0)
                         <span class="bfobs-badge none">No difficulties noted</span>
                     @endif
