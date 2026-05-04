@@ -5,7 +5,7 @@
 .ph-name { font-size:1.05rem; font-weight:800; color:#fff; }
 .ph-case { font-family:monospace; font-size:.78rem; color:#fda4af; margin-top:2px; }
 .ph-pills { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-.ph-pill { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.22); border-radius:6px; padding:4px 12px; font-size:.78rem; color:#ffe4e6; font-weight:600; }
+.ph-pill { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.22); border-radius:6px; padding:4px 12px; font-size:.78rem; color:#ffe4e6; font-weight:600; display:inline-flex; align-items:center; gap:5px; }
 
 .btn-back { display:inline-flex; align-items:center; gap:6px; background:none; border:1px solid #e5e7eb; border-radius:7px; padding:8px 16px; font-size:.82rem; font-weight:600; color:#374151; cursor:pointer; text-decoration:none; margin-bottom:16px; }
 .btn-back:hover { background:#f3f4f6; }
@@ -42,7 +42,7 @@
 .col-records { width:100px; min-width:90px; }
 .col-arrow { width:28px; min-width:28px; text-align:center; }
 
-.type-badge { display:inline-block; padding:2px 9px; border-radius:9999px; font-size:.7rem; font-weight:700; white-space:nowrap; }
+.type-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 9px; border-radius:9999px; font-size:.7rem; font-weight:700; white-space:nowrap; }
 .type-er  { background:#fee2e2; color:#991b1b; }
 .type-opd { background:#eff6ff; color:#1d4ed8; }
 
@@ -70,10 +70,13 @@
 .current-row td { background:#fffbeb !important; }
 .current-badge { font-size:.62rem; font-weight:700; background:#fef3c7; color:#92400e; padding:1px 6px; border-radius:9999px; margin-left:5px; display:block; margin-top:2px; }
 .empty-state { text-align:center; padding:56px 24px; }
-.empty-icon  { font-size:2.8rem; margin-bottom:10px; }
+.empty-icon-wrap { width:52px; height:52px; border-radius:14px; background:#fff1f2; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; color:#be123c; }
+.dark .empty-icon-wrap { background:#4c0519; color:#fda4af; }
 .empty-title { font-size:.95rem; font-weight:700; color:#374151; margin-bottom:4px; }
 .dark .empty-title { color:#e5e7eb; }
 .empty-sub { font-size:.82rem; color:#9ca3af; }
+
+.active-dot { width:8px; height:8px; border-radius:50%; background:#f59e0b; display:inline-block; flex-shrink:0; }
 </style>
 
 @php $patient = $this->patient; @endphp
@@ -96,10 +99,16 @@
             <span class="ph-pill" style="font-size:.72rem;">{{ \Str::limit($patient->address, 40) }}</span>
         @endif
         @if($patient->contact_number)
-            <span class="ph-pill">📞 {{ $patient->contact_number }}</span>
+            <span class="ph-pill">
+                <x-heroicon-o-phone style="width:13px;height:13px;" />
+                {{ $patient->contact_number }}
+            </span>
         @endif
         @if($patient->has_incomplete_info)
-            <span class="ph-pill" style="background:rgba(220,38,38,.3);">⚠️ Incomplete Info</span>
+            <span class="ph-pill" style="background:rgba(220,38,38,.3);">
+                <x-heroicon-o-exclamation-triangle style="width:13px;height:13px;" />
+                Incomplete Info
+            </span>
         @endif
     </div>
 </div>
@@ -122,7 +131,9 @@
 <div class="vt-wrap">
     @if($visits->isEmpty())
     <div class="empty-state">
-        <div class="empty-icon">🗂️</div>
+        <div class="empty-icon-wrap">
+            <x-heroicon-o-folder-open class="w-7 h-7" />
+        </div>
         <p class="empty-title">No visits found</p>
         <p class="empty-sub">This patient has no recorded visits yet.</p>
     </div>
@@ -177,9 +188,15 @@
                 </td>
 
                 <td class="col-type">
-                    <span class="type-badge {{ $visit->visit_type === 'ER' ? 'type-er' : 'type-opd' }}">
-                        {{ $visit->visit_type === 'ER' ? '🚑 ER' : '📋 OPD' }}
-                    </span>
+                    @if($visit->visit_type === 'ER')
+                        <span class="type-badge type-er">
+                            <x-heroicon-o-truck style="width:11px;height:11px;" /> ER
+                        </span>
+                    @else
+                        <span class="type-badge type-opd">
+                            <x-heroicon-o-clipboard-document-list style="width:11px;height:11px;" /> OPD
+                        </span>
+                    @endif
                     @if($isCurrent)<span class="current-badge">Active</span>@endif
                 </td>
 
@@ -241,10 +258,11 @@
 </div>
 
 @if($visits->isNotEmpty())
-<p style="font-size:.7rem;color:#9ca3af;margin-top:8px;">
+<p style="font-size:.7rem;color:#9ca3af;margin-top:8px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
     Tags: <strong>ER</strong> ER-001 · <strong>ADM</strong> Admission Record ·
     <strong>CTC</strong> Consent to Care · <strong>VS</strong> Vital Signs ·
-    <strong>Rx</strong> Doctor's Orders · 🟡 = currently admitted
+    <strong>Rx</strong> Doctor's Orders ·
+    <span class="active-dot"></span> = currently admitted
 </p>
 @endif
 

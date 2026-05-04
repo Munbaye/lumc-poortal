@@ -15,9 +15,7 @@
         gap: 20px;
     }
     
-    .bf-header-item {
-        text-align: center;
-    }
+    .bf-header-item { text-align: center; }
     
     .bf-header-label {
         font-size: 0.7rem;
@@ -56,6 +54,9 @@
         font-size: 0.9rem;
         font-weight: 700;
         color: #166534;
+        display: flex;
+        align-items: center;
+        gap: 7px;
     }
     .dark .bf-section-title { color: #86efac; }
     
@@ -76,7 +77,6 @@
     .dark .bf-card { background: #1f2937; border-color: #374151; }
     
     .bf-card-header {
-        background: #f3f4f6;
         padding: 10px 16px;
         font-weight: 700;
         font-size: 0.85rem;
@@ -85,8 +85,17 @@
         align-items: center;
         gap: 8px;
     }
-    .dark .bf-card-header { background: #374151; border-bottom-color: #4b5563; }
-    
+    .bf-card-header-well {
+        background: #f0fdf4;
+        color: #166534;
+    }
+    .dark .bf-card-header-well { background: #064e3b; border-bottom-color: #065f46; color: #86efac; }
+    .bf-card-header-diff {
+        background: #fff1f2;
+        color: #991b1b;
+    }
+    .dark .bf-card-header-diff { background: #4c0519; border-bottom-color: #7f1d1d; color: #fca5a5; }
+
     .bf-card-body { padding: 16px; }
     
     .bf-checkbox-group { margin-bottom: 12px; }
@@ -102,11 +111,11 @@
     .bf-checkbox-label:hover { background: #f0fdf4; }
     .dark .bf-checkbox-label:hover { background: #064e3b; }
     
-    .bf-checkbox-label input { width: 16px; height: 16px; cursor: pointer; }
+    .bf-checkbox-label input { width: 16px; height: 16px; cursor: pointer; accent-color: #1d4ed8; }
     .bf-checkbox-label span { font-size: 0.85rem; color: #374151; }
     .dark .bf-checkbox-label span { color: #e5e7eb; }
     
-    .btn-primary { background: #1d4ed8; color: #fff; border: none; padding: 12px 28px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; }
+    .btn-primary { display:inline-flex; align-items:center; gap:6px; background: #1d4ed8; color: #fff; border: none; padding: 12px 28px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; }
     .btn-primary:hover { background: #1e40af; }
     .btn-secondary { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 10px 24px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; }
     
@@ -122,10 +131,18 @@
         gap: 8px;
     }
     .dark .observer-badge { background: #312e81; color: #c7d2fe; }
+
+    .subgroup-label-well { font-weight:700; font-size:0.75rem; color:#166534; margin:12px 0 8px 0; display:flex; align-items:center; gap:5px; }
+    .subgroup-label-well:first-of-type { margin-top:0; }
+    .subgroup-label-diff { font-weight:700; font-size:0.75rem; color:#991b1b; margin:12px 0 8px 0; display:flex; align-items:center; gap:5px; }
+    .subgroup-label-diff:first-of-type { margin-top:0; }
+    .dark .subgroup-label-well { color:#86efac; }
+    .dark .subgroup-label-diff { color:#fca5a5; }
 </style>
 
 <div class="bf-container">
-    {{-- Header with Mother's name, Baby's name, Date, Baby's age --}}
+
+    {{-- ── Patient Header ─────────────────────────────────────────── --}}
     <div class="bf-header">
         <div class="bf-header-grid">
             <div class="bf-header-item">
@@ -154,274 +171,152 @@
             </div>
         </div>
     </div>
-    
+
     <form wire:submit="save">
-        {{-- Observer Info (logged automatically) --}}
+
+        {{-- ── Observer Info ───────────────────────────────────────── --}}
         <div class="bf-section">
             <div class="bf-section-header">
-                <span class="bf-section-title">👩‍⚕️ Observation Information</span>
+                <span class="bf-section-title">
+                    <x-heroicon-o-user-circle style="width:16px;height:16px;" />
+                    Observation Information
+                </span>
             </div>
             <div class="bf-section-body">
                 <div class="observer-badge">
-                    <span>🕒 {{ now()->format('h:i A') }}</span>
-                    <span>|</span>
-                    <span>👤 Observed by: {{ auth()->user()->name }}</span>
+                    <x-heroicon-o-clock style="width:14px;height:14px;" />
+                    {{ now()->format('h:i A') }}
+                    <span style="opacity:.5;">|</span>
+                    <x-heroicon-o-user style="width:14px;height:14px;" />
+                    Observed by: {{ auth()->user()->name }}
                 </div>
             </div>
         </div>
-        
-        {{-- Two-column layout --}}
+
+        {{-- ── Two-column observation form ─────────────────────────── --}}
         <div class="bf-grid">
-            
+
             {{-- GOING WELL COLUMN --}}
             <div class="bf-card">
-                <div class="bf-card-header">
-                    <span>✅ Signs that Breastfeeding is Going Well</span>
+                <div class="bf-card-header bf-card-header-well">
+                    <x-heroicon-o-check-circle style="width:16px;height:16px;" />
+                    Signs that Breastfeeding is Going Well
                 </div>
                 <div class="bf-card-body">
-                    
-                    {{-- General --}}
-                    <p style="font-weight: 700; font-size: 0.75rem; color: #166534; margin: 0 0 8px 0;">General</p>
+
+                    <p class="subgroup-label-well">General</p>
                     <div class="bf-checkbox-group">
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="generalMotherHealthy">
-                            <span>Mother looks healthy</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="generalMotherRelaxed">
-                            <span>Mother relaxed and comfortable</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="generalMotherBonding">
-                            <span>Signs of bonding between mother and baby</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="generalBabyHealthy">
-                            <span>Baby looks healthy</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="generalBabyCalm">
-                            <span>Baby calm and relaxed</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="generalBabyRoots">
-                            <span>Baby reaches or roots for breast if hungry</span>
-                        </label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="generalMotherHealthy"><span>Mother looks healthy</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="generalMotherRelaxed"><span>Mother relaxed and comfortable</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="generalMotherBonding"><span>Signs of bonding between mother and baby</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="generalBabyHealthy"><span>Baby looks healthy</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="generalBabyCalm"><span>Baby calm and relaxed</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="generalBabyRoots"><span>Baby reaches or roots for breast if hungry</span></label>
                     </div>
-                    
-                    {{-- Breast --}}
-                    <p style="font-weight: 700; font-size: 0.75rem; color: #166534; margin: 12px 0 8px 0;">Breast</p>
+
+                    <p class="subgroup-label-well">Breast</p>
                     <div class="bf-checkbox-group">
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="breastHealthy">
-                            <span>Breast looks healthy</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="breastNoPain">
-                            <span>No pain or discomfort</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="breastFingersAway">
-                            <span>Breast well supported with fingers away from nipple</span>
-                        </label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="breastHealthy"><span>Breast looks healthy</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="breastNoPain"><span>No pain or discomfort</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="breastFingersAway"><span>Breast well supported with fingers away from nipple</span></label>
                     </div>
-                    
-                    {{-- Baby's Position --}}
-                    <p style="font-weight: 700; font-size: 0.75rem; color: #166534; margin: 12px 0 8px 0;">Baby's Position</p>
+
+                    <p class="subgroup-label-well">Baby's Position</p>
                     <div class="bf-checkbox-group">
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="positionHeadBodyLine">
-                            <span>Baby's head and body in line</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="positionHeldClose">
-                            <span>Baby held close to mother's body</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="positionBodySupported">
-                            <span>Baby's whole body supported</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="positionNoseToNipple">
-                            <span>Baby approaches breast, nose to nipple</span>
-                        </label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="positionHeadBodyLine"><span>Baby's head and body in line</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="positionHeldClose"><span>Baby held close to mother's body</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="positionBodySupported"><span>Baby's whole body supported</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="positionNoseToNipple"><span>Baby approaches breast, nose to nipple</span></label>
                     </div>
-                    
-                    {{-- Baby's Attachment --}}
-                    <p style="font-weight: 700; font-size: 0.75rem; color: #166534; margin: 12px 0 8px 0;">Baby's Attachment</p>
+
+                    <p class="subgroup-label-well">Baby's Attachment</p>
                     <div class="bf-checkbox-group">
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="attachmentMoreAreolaAbove">
-                            <span>More areola seen above baby's top lip</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="attachmentMouthOpenWide">
-                            <span>Baby's mouth open wide</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="attachmentLipTurnedOut">
-                            <span>Lower lip turned outwards</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="attachmentChinTouchesBreast">
-                            <span>Baby's chin touches breast</span>
-                        </label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="attachmentMoreAreolaAbove"><span>More areola seen above baby's top lip</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="attachmentMouthOpenWide"><span>Baby's mouth open wide</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="attachmentLipTurnedOut"><span>Lower lip turned outwards</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="attachmentChinTouchesBreast"><span>Baby's chin touches breast</span></label>
                     </div>
-                    
-                    {{-- Suckling --}}
-                    <p style="font-weight: 700; font-size: 0.75rem; color: #166534; margin: 12px 0 8px 0;">Suckling</p>
+
+                    <p class="subgroup-label-well">Suckling</p>
                     <div class="bf-checkbox-group">
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="sucklingSlowDeepPauses">
-                            <span>Slow, deep sucks with pauses</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="sucklingCheeksRound">
-                            <span>Cheeks round when suckling</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="sucklingBabyReleases">
-                            <span>Baby releases breast when finished</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="sucklingOxytocinReflex">
-                            <span>Mother notices signs of oxytocin reflex</span>
-                        </label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="sucklingSlowDeepPauses"><span>Slow, deep sucks with pauses</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="sucklingCheeksRound"><span>Cheeks round when suckling</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="sucklingBabyReleases"><span>Baby releases breast when finished</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="sucklingOxytocinReflex"><span>Mother notices signs of oxytocin reflex</span></label>
                     </div>
-                    
+
                 </div>
             </div>
-            
+
             {{-- DIFFICULTY COLUMN --}}
             <div class="bf-card">
-                <div class="bf-card-header">
-                    <span>⚠️ Signs of Possible Difficulty</span>
+                <div class="bf-card-header bf-card-header-diff">
+                    <x-heroicon-o-exclamation-triangle style="width:16px;height:16px;" />
+                    Signs of Possible Difficulty
                 </div>
                 <div class="bf-card-body">
-                    
-                    {{-- General --}}
-                    <p style="font-weight: 700; font-size: 0.75rem; color: #991b1b; margin: 0 0 8px 0;">General</p>
+
+                    <p class="subgroup-label-diff">General</p>
                     <div class="bf-checkbox-group">
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="generalMotherIll">
-                            <span>Mother looks ill or depressed</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="generalMotherTense">
-                            <span>Mother looks tense and uncomfortable</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="generalMotherNoEyeContact">
-                            <span>No mother / baby eye contact</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="generalBabySleepyIll">
-                            <span>Baby looks sleepy or ill</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="generalBabyRestlessCrying">
-                            <span>Baby is restless or crying</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="generalBabyNoRoot">
-                            <span>Baby does not reach or root</span>
-                        </label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="generalMotherIll"><span>Mother looks ill or depressed</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="generalMotherTense"><span>Mother looks tense and uncomfortable</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="generalMotherNoEyeContact"><span>No mother / baby eye contact</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="generalBabySleepyIll"><span>Baby looks sleepy or ill</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="generalBabyRestlessCrying"><span>Baby is restless or crying</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="generalBabyNoRoot"><span>Baby does not reach or root</span></label>
                     </div>
-                    
-                    {{-- Breast --}}
-                    <p style="font-weight: 700; font-size: 0.75rem; color: #991b1b; margin: 12px 0 8px 0;">Breast</p>
+
+                    <p class="subgroup-label-diff">Breast</p>
                     <div class="bf-checkbox-group">
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="breastRedSwollenSore">
-                            <span>Breasts look red, swollen, or sore</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="breastPainful">
-                            <span>Breast or nipple painful</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="breastFingersOnAreola">
-                            <span>Breast held with fingers on areola</span>
-                        </label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="breastRedSwollenSore"><span>Breasts look red, swollen, or sore</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="breastPainful"><span>Breast or nipple painful</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="breastFingersOnAreola"><span>Breast held with fingers on areola</span></label>
                     </div>
-                    
-                    {{-- Baby's Position --}}
-                    <p style="font-weight: 700; font-size: 0.75rem; color: #991b1b; margin: 12px 0 8px 0;">Baby's Position</p>
+
+                    <p class="subgroup-label-diff">Baby's Position</p>
                     <div class="bf-checkbox-group">
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="positionNeckTwisted">
-                            <span>Baby's neck and head twisted to feed</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="positionNotHeldClose">
-                            <span>Baby not held close</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="positionHeadNeckOnly">
-                            <span>Baby supported by head and neck only</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="positionChinToNipple">
-                            <span>Baby approaches breast, lower lip / chin to nipple</span>
-                        </label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="positionNeckTwisted"><span>Baby's neck and head twisted to feed</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="positionNotHeldClose"><span>Baby not held close</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="positionHeadNeckOnly"><span>Baby supported by head and neck only</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="positionChinToNipple"><span>Baby approaches breast, lower lip / chin to nipple</span></label>
                     </div>
-                    
-                    {{-- Baby's Attachment --}}
-                    <p style="font-weight: 700; font-size: 0.75rem; color: #991b1b; margin: 12px 0 8px 0;">Baby's Attachment</p>
+
+                    <p class="subgroup-label-diff">Baby's Attachment</p>
                     <div class="bf-checkbox-group">
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="attachmentMoreAreolaBelow">
-                            <span>More areola seen below bottom lip</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="attachmentMouthNotWide">
-                            <span>Baby's mouth not open wide</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="attachmentLipsForwardTurnedIn">
-                            <span>Lips pointing forward or turned in</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="attachmentChinNotTouching">
-                            <span>Baby's chin not touching breast</span>
-                        </label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="attachmentMoreAreolaBelow"><span>More areola seen below bottom lip</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="attachmentMouthNotWide"><span>Baby's mouth not open wide</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="attachmentLipsForwardTurnedIn"><span>Lips pointing forward or turned in</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="attachmentChinNotTouching"><span>Baby's chin not touching breast</span></label>
                     </div>
-                    
-                    {{-- Suckling --}}
-                    <p style="font-weight: 700; font-size: 0.75rem; color: #991b1b; margin: 12px 0 8px 0;">Suckling</p>
+
+                    <p class="subgroup-label-diff">Suckling</p>
                     <div class="bf-checkbox-group">
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="sucklingRapidShallow">
-                            <span>Rapid shallow sucks</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="sucklingCheeksPulledIn">
-                            <span>Cheeks pulled in when suckling</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="sucklingMotherTakesOff">
-                            <span>Mother takes baby off the breast</span>
-                        </label>
-                        <label class="bf-checkbox-label">
-                            <input type="checkbox" wire:model="sucklingNoOxytocinReflex">
-                            <span>No signs of oxytocin reflex</span>
-                        </label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="sucklingRapidShallow"><span>Rapid shallow sucks</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="sucklingCheeksPulledIn"><span>Cheeks pulled in when suckling</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="sucklingMotherTakesOff"><span>Mother takes baby off the breast</span></label>
+                        <label class="bf-checkbox-label"><input type="checkbox" wire:model="sucklingNoOxytocinReflex"><span>No signs of oxytocin reflex</span></label>
                     </div>
-                    
+
                 </div>
             </div>
         </div>
-        
-        {{-- Buttons --}}
-        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-bottom: 40px;">
-            <button type="button" onclick="window.location.href='/nurse/nurse-chart?visitId={{ $visitId }}'" class="btn-secondary">
+
+        {{-- ── Submit buttons ──────────────────────────────────────── --}}
+        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px; padding-bottom:40px;">
+            <button type="button"
+                    onclick="window.location.href='/nurse/nurse-chart?visitId={{ $visitId }}'"
+                    class="btn-secondary">
                 Cancel
             </button>
             <button type="submit" class="btn-primary" wire:loading.attr="disabled">
-                <span wire:loading.remove>💾 Save Observation</span>
+                <span wire:loading.remove>
+                    <x-heroicon-o-archive-box-arrow-down style="width:16px;height:16px;" />
+                    Save Observation
+                </span>
                 <span wire:loading>Saving...</span>
             </button>
         </div>
+
     </form>
 </div>
 </x-filament-panels::page>

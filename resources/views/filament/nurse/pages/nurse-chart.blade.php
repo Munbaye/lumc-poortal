@@ -25,14 +25,30 @@ use App\Helpers\WHOGrowthChart;
 .btn-back-hdr { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:#fff; font-size:.78rem; font-weight:600; padding:7px 14px; border-radius:6px; text-decoration:none; flex-shrink:0; cursor:pointer; }
 .btn-back-hdr:hover { background:rgba(255,255,255,.25); }
 
-.chart-tabs { display:flex; border-bottom:2px solid #e5e7eb; background:#fff; padding:0 16px; overflow-x:auto; }
-.dark .chart-tabs { background:#1f2937; border-bottom-color:#374151; }
-.chart-tab { display:inline-flex; align-items:center; gap:6px; padding:11px 14px; font-size:.8rem; font-weight:600; color:#6b7280; cursor:pointer; border:none; background:none; border-bottom:2.5px solid transparent; margin-bottom:-2px; white-space:nowrap; transition:color .15s,border-color .15s; }
+/* ── Group pill bar ─────────────────────────────────────────────── */
+.chart-group-bar { display:flex; align-items:center; gap:8px; padding:10px 16px; background:#fff; border-bottom:1px solid #e5e7eb; flex-wrap:wrap; }
+.dark .chart-group-bar { background:#1f2937; border-bottom-color:#374151; }
+.chart-group-pill { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:9999px; font-size:.75rem; font-weight:600; cursor:pointer; border:1.5px solid #e5e7eb; background:#f9fafb; color:#6b7280; transition:all .15s; white-space:nowrap; }
+.chart-group-pill:hover { border-color:#fda4af; color:#be123c; background:#fff1f2; }
+.dark .chart-group-pill { background:#1f2937; border-color:#374151; color:#9ca3af; }
+.dark .chart-group-pill:hover { border-color:#fb7185; color:#fb7185; background:#1f1524; }
+.chart-group-pill.active { background:#ffe4e6; border-color:#fca5a5; color:#be123c; }
+.dark .chart-group-pill.active { background:#1f1524; border-color:#fb7185; color:#fb7185; }
+.chart-group-pill svg { width:13px; height:13px; flex-shrink:0; }
+.group-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+
+/* ── Subtab bar ─────────────────────────────────────────────────── */
+.chart-subtabs { display:flex; align-items:center; background:#fff; border-bottom:2px solid #e5e7eb; padding:0 16px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; }
+.chart-subtabs::-webkit-scrollbar { display:none; }
+.dark .chart-subtabs { background:#111827; border-bottom-color:#374151; }
+.chart-tab { display:inline-flex; align-items:center; gap:6px; padding:9px 13px; font-size:.78rem; font-weight:600; color:#6b7280; cursor:pointer; border:none; background:none; border-bottom:2.5px solid transparent; margin-bottom:-2px; white-space:nowrap; transition:color .15s,border-color .15s; }
 .chart-tab:hover { color:#374151; }
 .dark .chart-tab { color:#9ca3af; }
+.dark .chart-tab:hover { color:#e5e7eb; }
 .chart-tab.active { color:#f43f5e; border-bottom-color:#f43f5e; font-weight:700; }
 .dark .chart-tab.active { color:#fb7185; border-bottom-color:#fb7185; }
-.tab-badge { background:#ef4444; color:#fff; font-size:.62rem; font-weight:700; padding:1px 5px; border-radius:9999px; min-width:17px; text-align:center; }
+.chart-tab svg { width:14px; height:14px; flex-shrink:0; }
+.tab-badge { background:#ef4444; color:#fff; font-size:.6rem; font-weight:700; padding:1px 5px; border-radius:9999px; min-width:17px; text-align:center; line-height:1.5; }
 .tab-badge-green { background:#059669; }
 .tab-badge-blue  { background:#2563eb; }
 .tab-badge-teal  { background:#0d9488; }
@@ -647,55 +663,159 @@ use App\Helpers\WHOGrowthChart;
             <span class="svc-pill">{{ $service }}</span>
             <div class="h-pill"><p class="pl">Admitted</p><p class="pv">{{ $admittedAt }}</p></div>
             @if($history?->doctor)<div class="h-pill"><p class="pl">Physician</p><p class="pv">Dr. {{ $history->doctor->name }}</p></div>@endif
-            <a href="{{ $this->getPatientHistoryUrl() }}" class="btn-back-hdr">🗂️ All Visits →</a>
+            <a href="{{ $this->getPatientHistoryUrl() }}" class="btn-back-hdr">All Visits →</a>
         </div>
         <button wire:click="goBack" type="button" class="btn-back-hdr">← Patient List</button>
     </div>
 
     @if($isReadonly)
     <div style="background:#fef9c3;border-bottom:2px solid #f59e0b;padding:10px 24px;display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:600;color:#92400e;">
-        📂 Past Visit — Read Only &nbsp;·&nbsp; <span style="font-weight:400;">This visit is completed. No changes can be made.</span>
+        Past Visit — Read Only &nbsp;·&nbsp; <span style="font-weight:400;">This visit is completed. No changes can be made.</span>
     </div>
     @endif
 
-    {{-- ════ TABS ═══════════════════════════════════════════════════ --}}
+    {{-- ════ GROUPED NAVIGATION ════════════════════════════════════ --}}
     @if(!$isReadonly)
-    <div class="chart-tabs">
-        <button wire:click="setTab('orders')"   class="chart-tab {{ $activeTab==='orders'   ? 'active':'' }}">
-            📋 Doctor's Orders
+    @php
+        $groupMap = [
+            'clinical'   => ['orders','notes','mar','handover'],
+            'monitoring' => ['vitals','iv','tpr','io'],
+            'nicu'       => ['breastfeeding','growth'],
+            'forms'      => ['forms'],
+        ];
+        $activeGroup = 'clinical';
+        foreach($groupMap as $grp => $tabs) {
+            if(in_array($activeTab, $tabs)) { $activeGroup = $grp; break; }
+        }
+        $isNicu = $visit->visit_type === 'NICU';
+    @endphp
+
+    {{-- ── Group pill bar ─────────────────────────────────────────── --}}
+    <div class="chart-group-bar">
+
+        {{-- Clinical Care --}}
+        <button wire:click="setTab('orders')" type="button"
+                class="chart-group-pill {{ $activeGroup==='clinical' ? 'active':'' }}">
+            <x-heroicon-o-clipboard-document-list class="w-4 h-4" />
+            Clinical Care
+            @if($pendingCnt > 0)
+                <span class="tab-badge" style="margin-left:2px;">{{ $pendingCnt }}</span>
+            @endif
+        </button>
+
+        {{-- Monitoring --}}
+        <button wire:click="setTab('vitals')" type="button"
+                class="chart-group-pill {{ $activeGroup==='monitoring' ? 'active':'' }}">
+            <x-heroicon-o-heart class="w-4 h-4" />
+            Monitoring
+            @if($vitalsCount > 0)
+                <span class="tab-badge tab-badge-blue" style="margin-left:2px;">{{ $vitalsCount }}</span>
+            @endif
+        </button>
+
+        {{-- NICU — only for NICU patients --}}
+        @if($isNicu)
+        <button wire:click="setTab('breastfeeding')" type="button"
+                class="chart-group-pill {{ $activeGroup==='nicu' ? 'active':'' }}">
+            <x-heroicon-o-heart class="w-4 h-4" />
+            NICU Care
+            @if($this->breastfeedingObservationsCount > 0)
+                <span class="tab-badge tab-badge-green" style="margin-left:2px;">{{ $this->breastfeedingObservationsCount }}</span>
+            @endif
+        </button>
+        @endif
+
+        {{-- Forms & Records --}}
+        <button wire:click="setTab('forms')" type="button"
+                class="chart-group-pill {{ $activeGroup==='forms' ? 'active':'' }}">
+            <x-heroicon-o-document-text class="w-4 h-4" />
+            Forms &amp; Records
+        </button>
+
+    </div>
+
+    {{-- ── Subtab bar ──────────────────────────────────────────────── --}}
+    <div class="chart-subtabs">
+
+        {{-- Clinical Care subtabs --}}
+        @if($activeGroup === 'clinical')
+        <button wire:click="setTab('orders')" type="button"
+                class="chart-tab {{ $activeTab==='orders' ? 'active':'' }}">
+            <x-heroicon-o-clipboard-document-list class="w-4 h-4" />
+            Doctor's Orders
             @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>
             @elseif($allOrders->count() > 0)<span class="tab-badge tab-badge-green">✓</span>@endif
         </button>
-        <button wire:click="setTab('notes')"    class="chart-tab {{ $activeTab==='notes'    ? 'active':'' }}">
-            📝 Nurse's Notes
+        <button wire:click="setTab('notes')" type="button"
+                class="chart-tab {{ $activeTab==='notes' ? 'active':'' }}">
+            <x-heroicon-o-pencil-square class="w-4 h-4" />
+            Nurse's Notes
             @if($allNotes->count() > 0)<span class="tab-badge" style="background:#6366f1;">{{ $allNotes->count() }}</span>@endif
         </button>
-        <button wire:click="setTab('vitals')"   class="chart-tab {{ $activeTab==='vitals'   ? 'active':'' }}">
-            📊 Vital Signs
+        <button wire:click="setTab('mar')" type="button"
+                class="chart-tab {{ $activeTab==='mar' ? 'active':'' }}">
+            <x-heroicon-o-clipboard-document-check class="w-4 h-4" />
+            MAR
+        </button>
+        <button wire:click="setTab('handover')" type="button"
+                class="chart-tab {{ $activeTab==='handover' ? 'active':'' }}">
+            <x-heroicon-o-arrow-path class="w-4 h-4" />
+            Handover
+        </button>
+        @endif
+
+        {{-- Monitoring subtabs --}}
+        @if($activeGroup === 'monitoring')
+        <button wire:click="setTab('vitals')" type="button"
+                class="chart-tab {{ $activeTab==='vitals' ? 'active':'' }}">
+            <x-heroicon-o-heart class="w-4 h-4" />
+            Vital Signs
             @if($vitalsCount > 0)<span class="tab-badge tab-badge-blue">{{ $vitalsCount }}</span>@endif
         </button>
-        <button wire:click="setTab('iv')"       class="chart-tab {{ $activeTab==='iv'       ? 'active':'' }}">
-            💧 IV Fluid / Blood
+        <button wire:click="setTab('iv')" type="button"
+                class="chart-tab {{ $activeTab==='iv' ? 'active':'' }}">
+            <x-heroicon-o-beaker class="w-4 h-4" />
+            IV Fluid / Blood
             @if($ivCount > 0)<span class="tab-badge tab-badge-teal">{{ $ivCount }}</span>@endif
         </button>
-        {{-- Only show Breastfeeding tab for NICU patients --}}
-        @if($visit->visit_type === 'NICU')
-        <button wire:click="setTab('breastfeeding')" class="chart-tab {{ $activeTab==='breastfeeding' ? 'active':'' }}">
-            <span class="tab-icon">🍼</span> Breastfeeding
+        <button wire:click="setTab('tpr')" type="button"
+                class="chart-tab {{ $activeTab==='tpr' ? 'active':'' }}">
+            <x-heroicon-o-fire class="w-4 h-4" />
+            TPR Record
+        </button>
+        <button wire:click="setTab('io')" type="button"
+                class="chart-tab {{ $activeTab==='io' ? 'active':'' }}">
+            <x-heroicon-o-calculator class="w-4 h-4" />
+            I &amp; O
+        </button>
+        @endif
+
+        {{-- NICU subtabs --}}
+        @if($activeGroup === 'nicu' && $isNicu)
+        <button wire:click="setTab('breastfeeding')" type="button"
+                class="chart-tab {{ $activeTab==='breastfeeding' ? 'active':'' }}">
+            <x-heroicon-o-heart class="w-4 h-4" />
+            Breastfeeding
             @if($this->breastfeedingObservationsCount > 0)
                 <span class="tab-badge tab-badge-green">{{ $this->breastfeedingObservationsCount }}</span>
             @endif
         </button>
-        <button wire:click="setTab('growth')" class="chart-tab {{ $activeTab==='growth' ? 'active':'' }}">
-            <span class="tab-icon">📈</span> Growth Chart
+        <button wire:click="setTab('growth')" type="button"
+                class="chart-tab {{ $activeTab==='growth' ? 'active':'' }}">
+            <x-heroicon-o-chart-bar class="w-4 h-4" />
+            Growth Chart
         </button>
         @endif
+
+        {{-- Forms & Records subtabs --}}
+        @if($activeGroup === 'forms')
+        <button wire:click="setTab('forms')" type="button"
+                class="chart-tab {{ $activeTab==='forms' ? 'active':'' }}">
+            <x-heroicon-o-document-text class="w-4 h-4" />
+            Patient Forms
         </button>
-        <button wire:click="setTab('forms')"    class="chart-tab {{ $activeTab==='forms'    ? 'active':'' }}">📄 Patient Forms</button>
-        <button wire:click="setTab('mar')"      class="chart-tab {{ $activeTab==='mar'      ? 'active':'' }}">💊 MAR</button>
-        <button wire:click="setTab('tpr')" class="chart-tab {{ $activeTab==='tpr' ? 'active':'' }}">🌡️ TPR Record</button>
-        <button wire:click="setTab('io')"       class="chart-tab {{ $activeTab==='io'       ? 'active':'' }}">📏 I &amp; O</button>
-        <button wire:click="setTab('handover')" class="chart-tab {{ $activeTab==='handover' ? 'active':'' }}">🔄 Handover</button>
+        @endif
+
     </div>
     @endif{{-- !isReadonly --}}
 
@@ -708,7 +828,7 @@ use App\Helpers\WHOGrowthChart;
             <span style="font-size:.78rem;color:#6b7280;">{{ $allOrders->count() }} order(s) &nbsp;·&nbsp; <span style="color:#d97706;font-weight:700;">{{ $pendingCnt }} pending</span> &nbsp;·&nbsp; {{ $allOrders->where('status','carried')->count() }} carried</span>
         </div>
         @if($allOrders->isEmpty())
-        <div class="empty-state"><div class="empty-icon">📋</div><p class="empty-title">No orders written yet</p><p class="empty-sub">Doctor's orders will appear here once written from the Doctor panel.</p></div>
+        <div class="empty-state"><div class="empty-icon"><x-heroicon-o-clipboard-document-list class="w-10 h-10 mx-auto text-gray-300" /></div><p class="empty-title">No orders written yet</p><p class="empty-sub">Doctor's orders will appear here once written from the Doctor panel.</p></div>
         @else
         @if($pendingCnt > 0)
         <div class="mark-all-banner">
@@ -853,7 +973,7 @@ use App\Helpers\WHOGrowthChart;
                         wire:loading.attr="disabled"
                         wire:loading.class="opacity-60"
                         type="button" class="btn-primary">
-                    <span wire:loading.remove wire:target="saveNote">💾 Save Note</span>
+                    <span wire:loading.remove wire:target="saveNote">Save Note</span>
                     <span wire:loading wire:target="saveNote">Saving…</span>
                 </button>
                 <button wire:click="toggleAddNote" type="button" class="btn-secondary">Cancel</button>
@@ -863,7 +983,7 @@ use App\Helpers\WHOGrowthChart;
  
         @if($allNotes->isEmpty() && !$addingNote)
         <div class="empty-state">
-            <div class="empty-icon">📝</div>
+            <div class="empty-icon"><x-heroicon-o-pencil-square class="w-10 h-10 mx-auto text-gray-300" /></div>
             <p class="empty-title">No nurse's notes yet</p>
             <p class="empty-sub">Click "Add FDAR Note" above to write the first nursing note.</p>
         </div>
@@ -920,11 +1040,11 @@ use App\Helpers\WHOGrowthChart;
         @php $allVitals = $this->allVitals; @endphp
 
         <div class="sec-head">
-            <h2 class="sec-title">📊 Vital Signs Monitoring Sheet</h2>
+            <h2 class="sec-title">Vital Signs Monitoring Sheet</h2>
             <div style="display:flex;align-items:center;gap:10px;">
                 <span style="font-size:.78rem;color:#6b7280;">{{ $allVitals->count() }} entr{{ $allVitals->count() === 1 ? 'y':'ies' }}</span>
                 @if(!$addingVital)
-                <button wire:click="openAddVital" type="button" class="btn-add-vital">➕ Add New Entry</button>
+                <button wire:click="openAddVital" type="button" class="btn-add-vital">Add New Entry</button>
                 @endif
             </div>
         </div>
@@ -932,7 +1052,7 @@ use App\Helpers\WHOGrowthChart;
         {{-- ── ADD ENTRY FORM ─────────────────────────────────────── --}}
         @if($addingVital)
         <div class="vs-entry-form">
-            <p class="vs-form-title">➕ New Entry <span style="font-weight:400;color:#6b7280;font-size:.78rem;">{{ auth()->user()->name }}</span></p>
+            <p class="vs-form-title">New Entry <span style="font-weight:400;color:#6b7280;font-size:.78rem;">{{ auth()->user()->name }}</span></p>
             <div class="vs-single-row">
                 <div class="vs-field"><label class="vs-label">Date &amp; Time *</label><input type="datetime-local" wire:model="vitalTakenAt" class="vs-input"></div>
                 <div class="vs-field"><label class="vs-label">SpO₂ (%)</label><input type="number" wire:model="vitalSpO2" min="0" max="100" class="vs-input"></div>
@@ -946,7 +1066,7 @@ use App\Helpers\WHOGrowthChart;
             </div>
             <div style="display:flex;gap:10px;align-items:center;padding-top:12px;border-top:1px solid #dbeafe;">
                 <button wire:click="saveVital" wire:loading.attr="disabled" wire:loading.class="opacity-60" type="button" class="btn-primary-blue">
-                    <span wire:loading.remove wire:target="saveVital">💾 Save Entry</span>
+                    <span wire:loading.remove wire:target="saveVital">Save Entry</span>
                     <span wire:loading wire:target="saveVital">Saving…</span>
                 </button>
                 <button wire:click="cancelAddVital" type="button" class="btn-secondary">Cancel</button>
@@ -956,7 +1076,7 @@ use App\Helpers\WHOGrowthChart;
 
         {{-- ── MONITORING SHEET TABLE ─────────────────────────────── --}}
         @if($allVitals->isEmpty())
-        <div class="empty-state"><div class="empty-icon">📊</div><p class="empty-title">No vital signs recorded yet</p><p class="empty-sub">Click "Add New Entry" to record the first vital signs.</p></div>
+        <div class="empty-state"><div class="empty-icon"><x-heroicon-o-heart class="w-10 h-10 mx-auto text-gray-300" /></div><p class="empty-title">No vital signs recorded yet</p><p class="empty-sub">Click "Add New Entry" to record the first vital signs.</p></div>
         @else
         <div class="vs-sheet-wrap">
             <table class="vs-table">
@@ -986,7 +1106,7 @@ use App\Helpers\WHOGrowthChart;
                     <td class="col-left">
                         <p style="font-family:monospace;font-size:.76rem;color:#6b7280;">{{ $v->taken_at->timezone('Asia/Manila')->format('M j, Y') }}</p>
                         <p style="font-family:monospace;font-size:.9rem;font-weight:700;color:#111827;margin-top:1px;">{{ $v->taken_at->timezone('Asia/Manila')->format('H:i') }}</p>
-                        <p class="vs-nurse-tag">🧑‍⚕️ {{ $v->nurse_name }}</p>
+                        <p class="vs-nurse-tag">{{ $v->nurse_name }}</p>
                         @if($isReg)<span class="vs-reg-badge">Triage / Registration</span>@endif
                     </td>
                     <td>@if($v->o2_saturation !== null)<span class="vs-val {{ $abnO2 ? 'vs-abnormal':'' }}">{{ $v->o2_saturation }}</span>@else<span class="vs-val-na">—</span>@endif</td>
@@ -1015,11 +1135,11 @@ use App\Helpers\WHOGrowthChart;
         @php $allIvEntries = $this->allIvEntries; @endphp
 
         <div class="sec-head">
-            <h2 class="sec-title">💧 Intravenous Fluid Sheet / Blood Transfusion Sheet</h2>
+            <h2 class="sec-title">Intravenous Fluid Sheet / Blood Transfusion Sheet</h2>
             <div style="display:flex;align-items:center;gap:10px;">
                 <span style="font-size:.78rem;color:#6b7280;">{{ $allIvEntries->count() }} entr{{ $allIvEntries->count() === 1 ? 'y':'ies' }}</span>
                 @if(!$addingIv && $editingIvId === null)
-                <button wire:click="openAddIv" type="button" class="btn-add-iv">➕ Add New Entry</button>
+                <button wire:click="openAddIv" type="button" class="btn-add-iv">Add New Entry</button>
                 @endif
             </div>
         </div>
@@ -1028,7 +1148,7 @@ use App\Helpers\WHOGrowthChart;
         @if($addingIv)
         <div class="iv-entry-form">
             <p class="iv-form-title">
-                ➕ New IV / Blood Transfusion Entry
+                New IV / Blood Transfusion Entry
                 <span style="font-weight:400;color:#6b7280;font-size:.78rem;">{{ auth()->user()->name }}</span>
             </p>
 
@@ -1089,7 +1209,7 @@ use App\Helpers\WHOGrowthChart;
                         wire:loading.attr="disabled"
                         wire:loading.class="opacity-60"
                         type="button" class="btn-primary-teal">
-                    <span wire:loading.remove wire:target="saveIvEntry">💾 Save Entry</span>
+                    <span wire:loading.remove wire:target="saveIvEntry">Save Entry</span>
                     <span wire:loading wire:target="saveIvEntry">Saving…</span>
                 </button>
                 <button wire:click="cancelAddIv" type="button" class="btn-secondary">Cancel</button>
@@ -1100,7 +1220,7 @@ use App\Helpers\WHOGrowthChart;
         {{-- ── SHEET TABLE ────────────────────────────────────────── --}}
         @if($allIvEntries->isEmpty())
         <div class="empty-state">
-            <div class="empty-icon">💧</div>
+            <div class="empty-icon"><x-heroicon-o-beaker class="w-10 h-10 mx-auto text-gray-300" /></div>
             <p class="empty-title">No IV / Blood Transfusion entries yet</p>
             <p class="empty-sub">Click "Add New Entry" to record the first IV fluid or blood product.</p>
         </div>
@@ -1215,7 +1335,7 @@ use App\Helpers\WHOGrowthChart;
                                     wire:loading.class="opacity-60"
                                     type="button" class="btn-primary-teal"
                                     style="padding:5px 12px;font-size:.75rem;">
-                                <span wire:loading.remove wire:target="saveIvEdit">💾 Save</span>
+                                <span wire:loading.remove wire:target="saveIvEdit">Save</span>
                                 <span wire:loading wire:target="saveIvEdit">…</span>
                             </button>
                             <button wire:click="cancelEditIv" type="button"
@@ -1343,7 +1463,7 @@ use App\Helpers\WHOGrowthChart;
         </style>
 
         <div class="sec-head">
-            <h2 class="sec-title">🍼 Breastfeeding Observations (NUR-044-0)</h2>
+            <h2 class="sec-title">Breastfeeding Observations (NUR-044-0)</h2>
             <a href="{{ \App\Filament\Nurse\Pages\BreastfeedingObservation::getUrl(['visitId' => $visit->id]) }}"
             target="_blank"
             class="btn-primary"
@@ -1354,7 +1474,7 @@ use App\Helpers\WHOGrowthChart;
 
         @if($observations->isEmpty())
         <div class="placeholder-card">
-            <div class="ph-icon">🍼</div>
+            <div class="ph-icon"><x-heroicon-o-heart class="w-10 h-10 mx-auto text-gray-300" /></div>
             <p class="ph-title">No breastfeeding observations recorded yet</p>
             <p class="ph-sub">Click "New Observation" to record a breastfeeding assessment.</p>
         </div>
@@ -1500,17 +1620,17 @@ use App\Helpers\WHOGrowthChart;
         @endphp
 
         <div class="sec-head">
-            <h2 class="sec-title">📈 WHO Growth Chart - {{ ucfirst($growthChartType) }}-for-Age ({{ $gender === 'boy' ? 'Boys' : 'Girls' }})</h2>
+            <h2 class="sec-title">WHO Growth Chart - {{ ucfirst($growthChartType) }}-for-Age ({{ $gender === 'boy' ? 'Boys' : 'Girls' }})</h2>
             <div style="display: flex; gap: 8px;">
                 <button wire:click="setGrowthChartType('length')" 
                     class="btn-secondary" 
                     style="padding: 6px 14px; font-size: 0.75rem; {{ $growthChartType === 'length' ? 'background:#1d4ed8; color:#fff;' : '' }}">
-                    📏 Length
+                    Length
                 </button>
                 <button wire:click="setGrowthChartType('weight')" 
                     class="btn-secondary" 
                     style="padding: 6px 14px; font-size: 0.75rem; {{ $growthChartType === 'weight' ? 'background:#1d4ed8; color:#fff;' : '' }}">
-                    ⚖️ Weight
+                    Weight
                 </button>
             </div>
         </div>
@@ -1526,7 +1646,7 @@ use App\Helpers\WHOGrowthChart;
         @if(!empty($allMeasurements))
         <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;">
             <p style="font-weight: 700; font-size: 0.85rem; margin-bottom: 12px; color: #374151; display: flex; align-items: center; gap: 8px;">
-                📋 Measurement History Log
+                Measurement History Log
                 <span style="font-size: 0.7rem; font-weight: normal; color: #6b7280;">({{ count($allMeasurements) }} records)</span>
             </p>
             <div style="overflow-x: auto;">
@@ -1561,7 +1681,7 @@ use App\Helpers\WHOGrowthChart;
                             </td>
                             <td style="padding: 8px 12px;">
                                 <span style="display: inline-flex; align-items: center; gap: 4px;">
-                                    <span>👩‍⚕️</span> {{ $m['recorded_by'] ?? 'Unknown' }}
+                                    <span></span> {{ $m['recorded_by'] ?? 'Unknown' }}
                                 </span>
                             </td>
                             <td style="padding: 8px 12px; font-size: 0.7rem; color: #6b7280;">
@@ -1578,7 +1698,7 @@ use App\Helpers\WHOGrowthChart;
         {{-- Add Measurement Form --}}
         <div class="measurement-form" style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; padding: 16px 20px; margin-top: 20px;">
             <p style="font-weight: 700; font-size: 0.85rem; margin-bottom: 12px; color: #166534;">
-                ➕ Add New Measurement
+                Add New Measurement
             </p>
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: end;">
                 <div>
@@ -1595,13 +1715,13 @@ use App\Helpers\WHOGrowthChart;
                 </div>
                 <div>
                     <button wire:click="saveGrowthMeasurement" wire:loading.attr="disabled" class="btn-primary" style="width: 100%;">
-                        <span wire:loading.remove>💾 Save Measurement</span>
+                        <span wire:loading.remove>Save Measurement</span>
                         <span wire:loading>Saving...</span>
                     </button>
                 </div>
             </div>
             <p style="font-size: 0.7rem; color: #6b7280; margin-top: 8px;">
-                💡 Tip: You can enter weight OR length, or both. The chart will update automatically.
+                Tip: You can enter weight OR length, or both. The chart will update automatically.
             </p>
         </div>
 
@@ -1624,7 +1744,7 @@ use App\Helpers\WHOGrowthChart;
         @if($isErVisit)
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">🏥 ER Record (ER-001)</span>
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">ER Record (ER-001)</span>
                 <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $hasErRecord ? 'background:#d1fae5;color:#065f46;' : 'background:#fef3c7;color:#92400e;' }}">
                     {{ $hasErRecord ? 'Saved' : 'Not yet filled' }}
@@ -1646,7 +1766,7 @@ use App\Helpers\WHOGrowthChart;
         {{-- 2. Admission & Discharge Record --}}
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">📋 Admission &amp; Discharge Record (ADM-001)</span>
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">Admission &amp; Discharge Record (ADM-001)</span>
                 <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $hasAdmRecord ? 'background:#d1fae5;color:#065f46;' : 'background:#fef3c7;color:#92400e;' }}">
                     {{ $hasAdmRecord ? 'Saved' : 'Not yet filled' }}
@@ -1667,7 +1787,7 @@ use App\Helpers\WHOGrowthChart;
         {{-- 3. Consent to Care --}}
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">📄 Consent to Care (NUR-002-1)</span>
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">Consent to Care (NUR-002-1)</span>
                 <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $hasConsent ? 'background:#d1fae5;color:#065f46;' : 'background:#fef3c7;color:#92400e;' }}">
                     {{ $hasConsent ? 'Saved' : 'Not yet filled' }}
@@ -1688,7 +1808,7 @@ use App\Helpers\WHOGrowthChart;
         {{-- 4. History Form --}}
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">📝 History Form (NUR-006)</span>
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">History Form (NUR-006)</span>
                 <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $hasHistory ? 'background:#d1fae5;color:#065f46;' : 'background:#fef3c7;color:#92400e;' }}">
                     {{ $hasHistory ? 'Filled' : 'Not yet assessed' }}
@@ -1709,7 +1829,7 @@ use App\Helpers\WHOGrowthChart;
         {{-- 5. Physical Examination Form --}}
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">🩺 Physical Examination Form (NUR-005)</span>
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">Physical Examination Form (NUR-005)</span>
                 <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $hasHistory ? 'background:#d1fae5;color:#065f46;' : 'background:#fef3c7;color:#92400e;' }}">
                     {{ $hasHistory ? 'Filled' : 'Not yet assessed' }}
@@ -1730,7 +1850,7 @@ use App\Helpers\WHOGrowthChart;
         {{-- 6. Vital Sign Monitoring Sheet (NUR-014) --}}
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">📊 Vital Sign Monitoring Sheet (NUR-014)</span>
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">Vital Sign Monitoring Sheet (NUR-014)</span>
                 <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
                 @php $vsCount = $this->vitalsCount; @endphp
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $vsCount > 0 ? 'background:#dbeafe;color:#1e40af;' : 'background:#f3f4f6;color:#6b7280;' }}">
@@ -1739,7 +1859,7 @@ use App\Helpers\WHOGrowthChart;
                 <a href="{{ route('forms.vital-sign-monitoring-sheet', ['visit' => $visit->id]) }}"
                    target="_blank"
                    style="font-size:.72rem;font-weight:700;color:#2563eb;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#eff6ff;border:1px solid #bfdbfe;padding:3px 10px;border-radius:5px;">
-                    🖨️ Open / Print
+                    Open / Print
                 </a>
             </div>
             <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
@@ -1753,7 +1873,7 @@ use App\Helpers\WHOGrowthChart;
         {{-- 7. IV / Blood Transfusion Sheet (NUR-012) --}}
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">💧 IV / Blood Transfusion Sheet (NUR-012)</span>
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">IV / Blood Transfusion Sheet (NUR-012)</span>
                 <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
                 @php $ivCnt = $this->ivEntriesCount; @endphp
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $ivCnt > 0 ? 'background:#ccfbf1;color:#0f766e;' : 'background:#f3f4f6;color:#6b7280;' }}">
@@ -1762,7 +1882,7 @@ use App\Helpers\WHOGrowthChart;
                 <a href="{{ route('forms.iv-bt-sheet', ['visit' => $visit->id]) }}"
                    target="_blank"
                    style="font-size:.72rem;font-weight:700;color:#0f766e;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#f0fdfa;border:1px solid #99f6e4;padding:3px 10px;border-radius:5px;">
-                    🖨️ Open / Print
+                    Open / Print
                 </a>
             </div>
             <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
@@ -1776,7 +1896,7 @@ use App\Helpers\WHOGrowthChart;
         {{-- 8. Nurse's Notes (NUR-010) ──────────────────────── --}}
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">📝 Nurse's Notes (NUR-010)</span>
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">Nurse's Notes (NUR-010)</span>
                 <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
                 @php $notesCount = $allNotes->count(); @endphp
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $notesCount > 0 ? 'background:#ede9fe;color:#5b21b6;' : 'background:#f3f4f6;color:#6b7280;' }}">
@@ -1785,7 +1905,7 @@ use App\Helpers\WHOGrowthChart;
                 <a href="{{ route('forms.nurses-notes', ['visit' => $visit->id]) }}"
                    target="_blank"
                    style="font-size:.72rem;font-weight:700;color:#5b21b6;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#faf5ff;border:1px solid #ddd6fe;padding:3px 10px;border-radius:5px;">
-                    🖨️ Open / Print
+                    Open / Print
                 </a>
             </div>
             <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
@@ -1799,7 +1919,7 @@ use App\Helpers\WHOGrowthChart;
         {{-- 9. Medication Administration Record (NUR-011) --}}
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">💊 Medication Administration Record (NUR-011)</span>
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">Medication Administration Record (NUR-011)</span>
                 <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
                 @php $marCount = $this->marEntriesCount; @endphp
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $marCount > 0 ? 'background:#fff1f2;color:#be123c;' : 'background:#f3f4f6;color:#6b7280;' }}">
@@ -1808,7 +1928,7 @@ use App\Helpers\WHOGrowthChart;
                 <a href="{{ route('forms.medication-records', ['visit' => $visit->id]) }}"
                    target="_blank"
                    style="font-size:.72rem;font-weight:700;color:#be123c;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#fff1f2;border:1px solid #fecdd3;padding:3px 10px;border-radius:5px;white-space:nowrap;">
-                    🖨️ Open / Print
+                    Open / Print
                 </a>
             </div>
             @if($marCount > 0)
@@ -1820,7 +1940,7 @@ use App\Helpers\WHOGrowthChart;
             </div>
             @else
             <div style="background:#fff;border:1.5px dashed #e5e7eb;border-radius:8px;padding:24px;text-align:center;">
-                <p style="font-size:.82rem;color:#9ca3af;">No medications recorded yet. Go to the 💊 MAR tab to add medications and date columns.</p>
+                <p style="font-size:.82rem;color:#9ca3af;">No medications recorded yet. Go to the MAR tab to add medications and date columns.</p>
             </div>
             @endif
         </div>
@@ -1829,7 +1949,7 @@ use App\Helpers\WHOGrowthChart;
         @if($visit->visit_type === 'NICU')
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">🍼 Breastfeeding Observation Job Aid (NUR-044-0)</span>
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">Breastfeeding Observation Job Aid (NUR-044-0)</span>
                 <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
                 @php $bfCount = $this->breastfeedingObservationsCount; @endphp
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $bfCount > 0 ? 'background:#dcfce7;color:#166534;' : 'background:#f3f4f6;color:#6b7280;' }}">
@@ -1838,7 +1958,7 @@ use App\Helpers\WHOGrowthChart;
                 <a href="{{ route('forms.breastfeeding-observation', ['visit' => $visit->id]) }}"
                    target="_blank"
                    style="font-size:.72rem;font-weight:700;color:#166534;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;padding:3px 10px;border-radius:5px;white-space:nowrap;">
-                    🖨️ Open / Print
+                    Open / Print
                 </a>
             </div>
             @if($bfCount > 0)
@@ -1850,7 +1970,7 @@ use App\Helpers\WHOGrowthChart;
             </div>
             @else
             <div style="background:#fff;border:1.5px dashed #e5e7eb;border-radius:8px;padding:24px;text-align:center;">
-                <p style="font-size:.82rem;color:#9ca3af;">No breastfeeding observations recorded yet. Go to the 🍼 Breastfeeding tab to add observations.</p>
+                <p style="font-size:.82rem;color:#9ca3af;">No breastfeeding observations recorded yet. Go to the Breastfeeding tab to add observations.</p>
             </div>
             @endif
         </div>
@@ -1860,7 +1980,7 @@ use App\Helpers\WHOGrowthChart;
         @php $growthMeasurements = $this->growthMeasurements; $growthTotal = count($growthMeasurements['weight'] ?? []) + count($growthMeasurements['length'] ?? []); @endphp
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">📈 Growth Chart — WHO 0–24 Months</span>
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">Growth Chart — WHO 0–24 Months</span>
                 <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $growthTotal > 0 ? 'background:#ede9fe;color:#5b21b6;' : 'background:#f3f4f6;color:#6b7280;' }}">
                     {{ $growthTotal > 0 ? $growthTotal . ' measurement' . ($growthTotal === 1 ? '' : 's') : 'No measurements yet' }}
@@ -1869,7 +1989,7 @@ use App\Helpers\WHOGrowthChart;
                 <a href="{{ route('forms.growth-chart', ['visit' => $visitId]) }}"
                    target="_blank"
                    style="font-size:.72rem;font-weight:700;color:#5b21b6;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#ede9fe;border:1px solid #ddd6fe;padding:3px 10px;border-radius:5px;white-space:nowrap;">
-                    🖨️ Open / Print
+                    Open / Print
                 </a>
                 @endif
             </div>
@@ -1882,7 +2002,7 @@ use App\Helpers\WHOGrowthChart;
             </div>
             @else
             <div style="background:#fff;border:1.5px dashed #e5e7eb;border-radius:8px;padding:24px;text-align:center;">
-                <p style="font-size:.82rem;color:#9ca3af;">No growth measurements yet. Go to the 📈 Growth Chart tab to add weight and length measurements.</p>
+                <p style="font-size:.82rem;color:#9ca3af;">No growth measurements yet. Go to the Growth Chart tab to add weight and length measurements.</p>
             </div>
             @endif
         </div>
@@ -1892,7 +2012,7 @@ use App\Helpers\WHOGrowthChart;
         @php $ballardExamsNurse = \App\Models\NicuBallardExam::where('visit_id', $visit->id)->get(); @endphp
         <div style="margin-bottom:32px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">📊 Ballard Maturity Score (NUR-018-B)</span>
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">Ballard Maturity Score (NUR-018-B)</span>
                 <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $ballardExamsNurse->isNotEmpty() ? 'background:#d1fae5;color:#065f46;' : 'background:#fef3c7;color:#92400e;' }}">
                     {{ $ballardExamsNurse->isNotEmpty() ? $ballardExamsNurse->count() . ' exam' . ($ballardExamsNurse->count() === 1 ? '' : 's') . ' recorded' : 'Not yet assessed' }}
@@ -1901,7 +2021,7 @@ use App\Helpers\WHOGrowthChart;
                 <a href="{{ route('forms.ballard-score', ['visit' => $visit->id]) }}"
                    target="_blank"
                    style="font-size:.72rem;font-weight:700;color:#065f46;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#d1fae5;border:1px solid #6ee7b7;padding:3px 10px;border-radius:5px;white-space:nowrap;">
-                    🖨️ Open / Print
+                    Open / Print
                 </a>
                 @endif
             </div>
@@ -1928,7 +2048,7 @@ use App\Helpers\WHOGrowthChart;
         @endphp
  
         <div class="sec-head">
-            <h2 class="sec-title">💊 Medication Administration Record (MAR)</h2>
+            <h2 class="sec-title">Medication Administration Record (MAR)</h2>
             <span style="font-size:.78rem;color:#6b7280;">
                 {{ count($marDates) }} date col{{ count($marDates) === 1 ? '' : 's' }}
                 &nbsp;·&nbsp; {{ $marEntries->count() }} medication{{ $marEntries->count() === 1 ? '' : 's' }}
@@ -1960,7 +2080,7 @@ use App\Helpers\WHOGrowthChart;
  
         @if(empty($marDates))
         <div class="empty-state">
-            <div class="empty-icon">💊</div>
+            <div class="empty-icon"><x-heroicon-o-clipboard-document-check class="w-10 h-10 mx-auto text-gray-300" /></div>
             <p class="empty-title">No date columns yet</p>
             <p class="empty-sub">Use the date picker above to add the first date column, then add medication rows below.</p>
         </div>
@@ -1987,7 +2107,7 @@ use App\Helpers\WHOGrowthChart;
                 <tr>
                     <td colspan="{{ 2 + count($marDates) }}"
                         style="padding:32px;text-align:center;color:#9ca3af;font-size:.82rem;font-style:italic;">
-                        No medications yet — click "➕ Add Medication Row" below to add the first row.
+                        No medications yet — click "Add Medication Row" below to add the first row.
                     </td>
                 </tr>
                 @else
@@ -2015,7 +2135,7 @@ use App\Helpers\WHOGrowthChart;
                             <button wire:click="marDeleteMed({{ $entry->id }})"
                                     type="button"
                                     class="btn-mar-del"
-                                    title="Remove this medication row">🗑</button>
+                                    title="Remove this medication row">✕</button>
                         </div>
                     </td>
                     @endif
@@ -2074,7 +2194,7 @@ use App\Helpers\WHOGrowthChart;
                     wire:loading.class="opacity-60"
                     type="button"
                     class="btn-mar-add-med">
-                <span wire:loading.remove wire:target="marAddMedication">➕ Add Medication Row</span>
+                <span wire:loading.remove wire:target="marAddMedication">Add Medication Row</span>
                 <span wire:loading wire:target="marAddMedication">Adding…</span>
             </button>
             <span style="font-size:.72rem;color:#9ca3af;">
@@ -2165,7 +2285,7 @@ use App\Helpers\WHOGrowthChart;
 
         {{-- ── Section header ──────────────────────────────────────────── --}}
         <div class="sec-head">
-            <h2 class="sec-title">🌡️ TPR Graphic Record</h2>
+            <h2 class="sec-title">TPR Graphic Record</h2>
             <span style="font-size:.78rem;color:#6b7280;">
                 {{ $tprVitals->count() }} vital reading{{ $tprVitals->count() !== 1 ? 's' : '' }}
                 @if($admittedAt)
@@ -2176,9 +2296,9 @@ use App\Helpers\WHOGrowthChart;
 
         @if($tprVitals->isEmpty())
         <div class="empty-state">
-            <div class="empty-icon">🌡️</div>
+            <div class="empty-icon"><x-heroicon-o-fire class="w-10 h-10 mx-auto text-gray-300" /></div>
             <p class="empty-title">No vital signs recorded yet</p>
-            <p class="empty-sub">Go to the 📊 Vital Signs tab to add the first vital signs entry.</p>
+            <p class="empty-sub">Go to the Vital Signs tab to add the first vital signs entry.</p>
         </div>
         @else
 
@@ -2357,12 +2477,12 @@ use App\Helpers\WHOGrowthChart;
 
             <div class="tpr-io-head">
                 <div>
-                    <span style="font-size:.88rem;font-weight:700;color:#111827;">🚽 Urine &amp; Stool Output</span>
+                    <span style="font-size:.88rem;font-weight:700;color:#111827;">Urine &amp; Stool Output</span>
                     <span style="font-size:.72rem;color:#9ca3af;margin-left:8px;">Per shift · Per day</span>
                 </div>
                 @if(!$tprAddingIo && !$tprIoEditId)
                 <button wire:click="tprOpenAddIo" type="button" class="btn-tpr-add">
-                    ➕ Add Entry
+                    Add Entry
                 </button>
                 @endif
             </div>
@@ -2371,7 +2491,7 @@ use App\Helpers\WHOGrowthChart;
             @if($tprAddingIo || $tprIoEditId)
             <div class="tpr-io-form" x-data="{ stoolCount: @js($tprIoStool) }">
                 <p style="font-size:.82rem;font-weight:700;color:#065f46;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #bbf7d0;">
-                    {{ $tprIoEditId ? '✎ Edit Entry' : '➕ New Urine & Stool Entry' }}
+                    {{ $tprIoEditId ? 'Edit Entry' : '➕ New Urine & Stool Entry' }}
                 </p>
 
                 <div class="tpr-io-form-grid">
@@ -2432,7 +2552,7 @@ use App\Helpers\WHOGrowthChart;
                             wire:loading.attr="disabled"
                             wire:loading.class="opacity-60"
                             type="button" class="btn-tpr-save">
-                        <span wire:loading.remove wire:target="tprSaveIo">💾 Save</span>
+                        <span wire:loading.remove wire:target="tprSaveIo">Save</span>
                         <span wire:loading wire:target="tprSaveIo">Saving…</span>
                     </button>
                     <button wire:click="tprCancelIo" type="button" class="btn-secondary">Cancel</button>
@@ -2443,7 +2563,7 @@ use App\Helpers\WHOGrowthChart;
             {{-- ── Entries table ───────────────────────────────────────── --}}
             @if($tprIoEntries->isEmpty())
             <div style="text-align:center;padding:36px 24px;">
-                <div style="font-size:2rem;margin-bottom:8px;">🚽</div>
+                <div style="font-size:2rem;margin-bottom:8px;"><x-heroicon-o-calculator class="w-8 h-8 mx-auto text-gray-300" /></div>
                 <p style="font-size:.88rem;font-weight:700;color:#374151;margin-bottom:4px;">No urine &amp; stool entries yet</p>
                 <p style="font-size:.78rem;color:#9ca3af;">Click "Add Entry" above to record per-shift output.</p>
             </div>
@@ -2501,7 +2621,7 @@ use App\Helpers\WHOGrowthChart;
                                 <button wire:click="tprOpenEditIo({{ $io->id }})" type="button"
                                         style="font-size:.7rem;color:#6b7280;background:#f3f4f6;border:none;border-radius:4px;padding:3px 7px;cursor:pointer;">✎</button>
                                 <button wire:click="tprDeleteIo({{ $io->id }})" type="button"
-                                        class="btn-tpr-del">🗑</button>
+                                        class="btn-tpr-del">✕</button>
                                 @endif
                             </div>
                         </td>
@@ -2525,9 +2645,9 @@ use App\Helpers\WHOGrowthChart;
                 <span style="font-size:.75rem;color:#374151;background:#fff;border:1px solid #e5e7eb;padding:2px 10px;border-radius:6px;">
                     <strong>{{ \Carbon\Carbon::parse($date)->format('M j') }}</strong>
                     &nbsp;·&nbsp;
-                    🚱 <span style="color:#0284c7;font-weight:700;">{{ $totalUrine }}×</span>
+                    <span style="font-size:.82rem;font-weight:600;color:#6b7280;">Urine</span> <span style="color:#0284c7;font-weight:700;">{{ $totalUrine }}×</span>
                     &nbsp;·&nbsp;
-                    🚽 <span style="color:#7c3aed;font-weight:700;">{{ $totalStool }}×</span>
+                    <span style="font-size:.82rem;font-weight:600;color:#6b7280;">Stool</span> <span style="color:#7c3aed;font-weight:700;">{{ $totalStool }}×</span>
                 </span>
                 @endforeach
             </div>
@@ -2539,10 +2659,10 @@ use App\Helpers\WHOGrowthChart;
         {{-- ══ PLACEHOLDER TABS ════════════════════════════════════ --}}
 
         @elseif($activeTab === 'io')
-        @include('filament.nurse.pages.partials.placeholder', ['icon'=>'📏','title'=>'Intake & Output Record','desc'=>'Monitor all fluid intake (oral, IV, NG) and output (urine, drain, emesis, stool) with shift and 24-hour totals.','full'=>true])
+        @include('filament.nurse.pages.partials.placeholder', ['icon'=>'','title'=>'Intake & Output Record','desc'=>'Monitor all fluid intake (oral, IV, NG) and output (urine, drain, emesis, stool) with shift and 24-hour totals.','full'=>true])
 
         @elseif($activeTab === 'handover')
-        @include('filament.nurse.pages.partials.placeholder', ['icon'=>'🔄','title'=>'Nursing Handover / Endorsement','desc'=>'Structured shift-to-shift endorsement using SBAR format for safe patient handover.','full'=>true])
+        @include('filament.nurse.pages.partials.placeholder', ['icon'=>'','title'=>'Nursing Handover / Endorsement','desc'=>'Structured shift-to-shift endorsement using SBAR format for safe patient handover.','full'=>true])
 
         @endif
 

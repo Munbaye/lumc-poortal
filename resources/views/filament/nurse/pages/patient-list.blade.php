@@ -12,8 +12,6 @@
 /* ════════════════════════════════════════════════════════════════
    NURSE — PATIENT LIST DASHBOARD
    Rose/Pink · light + dark safe
-   #be123c primary — DO NOT override fi-topbar or fi-sidebar here
-   Those are handled by NursePanelProvider.php
 ════════════════════════════════════════════════════════════════ */
 
 :root {
@@ -48,12 +46,11 @@
     top: -80px; right: -60px;
     pointer-events: none;
 }
-.dash-header::after {
-    content: '🏥';
+.dash-header-icon {
     position: absolute; right: 26px; top: 50%;
     transform: translateY(-50%);
-    font-size: 4.5rem; opacity: .08;
-    pointer-events: none; line-height: 1;
+    opacity: .08; pointer-events: none;
+    color: #fff;
 }
 .dash-left { position: relative; z-index: 1; }
 .dash-eyebrow { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
@@ -65,7 +62,7 @@
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
 .eyebrow-label { font-size:.67rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:rgba(255,255,255,.75); }
 .dash-title { font-size:1.55rem; font-weight:800; color:#fff; margin:0 0 5px; letter-spacing:-.025em; line-height:1.2; }
-.dash-tagline { font-size:.78rem; color:rgba(255,255,255,.72); }
+.dash-tagline { font-size:.78rem; color:rgba(255,255,255,.72); display:flex; align-items:center; gap:6px; }
 
 .dash-right {
     position: relative; z-index: 1;
@@ -97,22 +94,22 @@ html.dark       .stat-card { background:#0f172a; border-color:#1e293b; }
 html:not(.dark) .stat-card.is-accent { border-color:var(--np-mid); background:linear-gradient(140deg,var(--np-light) 0%,#fff 65%); }
 html.dark       .stat-card.is-accent { border-color:#4c0519; background:linear-gradient(140deg,rgba(190,18,60,.12) 0%,#0f172a 65%); }
 
-.stat-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
-html:not(.dark) .si-rose  { background:#fff1f2; }
-html:not(.dark) .si-amber { background:#fef3c7; }
-html:not(.dark) .si-blue  { background:#eff6ff; }
-html.dark .si-rose  { background:#4c0519; }
-html.dark .si-amber { background:#1c1400; }
-html.dark .si-blue  { background:#0c1a2e; }
+.stat-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+html:not(.dark) .si-rose  { background:#fff1f2; color:#be123c; }
+html:not(.dark) .si-green { background:#f0fdf4; color:#059669; }
+html:not(.dark) .si-amber { background:#fef3c7; color:#d97706; }
+html:not(.dark) .si-blue  { background:#eff6ff; color:#2563eb; }
+html.dark .si-rose  { background:#4c0519; color:#fda4af; }
+html.dark .si-green { background:#052e16; color:#6ee7b7; }
+html.dark .si-amber { background:#1c1400; color:#fde047; }
+html.dark .si-blue  { background:#0c1a2e; color:#7dd3fc; }
 
 .stat-label { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin-bottom:2px; }
 html:not(.dark) .stat-label { color:#9ca3af; }
 html.dark       .stat-label { color:#475569; }
-
 .stat-value { font-size:2.2rem; font-weight:800; line-height:1.1; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
 html:not(.dark) .stat-value { color:#111827; }
 html.dark       .stat-value { color:#f1f5f9; }
-
 .stat-sub { font-size:.75rem; margin-top:2px; }
 html:not(.dark) .stat-sub { color:#6b7280; }
 html.dark       .stat-sub { color:#475569; }
@@ -124,15 +121,13 @@ html.dark       .stat-sub { color:#475569; }
 html:not(.dark) .view-toggle { background:#f9fafb; border-color:#e5e7eb; }
 html.dark       .view-toggle { background:#0f172a; border-color:#1e293b; }
 
-.vt-btn { padding:6px 16px; border-radius:7px; font-size:.78rem; font-weight:600; color:#6b7280; background:none; border:none; cursor:pointer; transition:all .15s; }
+.vt-btn { display:inline-flex; align-items:center; gap:5px; padding:6px 14px; border-radius:7px; font-size:.78rem; font-weight:600; color:#6b7280; background:none; border:none; cursor:pointer; transition:all .15s; white-space:nowrap; }
+.vt-btn svg { width:13px; height:13px; flex-shrink:0; }
 html:not(.dark) .vt-btn.active { background:#fff; color:var(--np); box-shadow:0 1px 4px rgba(0,0,0,.08); font-weight:700; }
 html.dark       .vt-btn.active { background:#1e293b; color:#fda4af; box-shadow:0 1px 4px rgba(0,0,0,.3); font-weight:700; }
 
 .search-wrap { flex:1; min-width:220px; position:relative; }
-.search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); pointer-events:none; font-size:.82rem; }
-html:not(.dark) .search-icon { color:#9ca3af; }
-html.dark       .search-icon { color:#475569; }
-
+.search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); pointer-events:none; color:#9ca3af; display:flex; align-items:center; }
 .search-input {
     width:100%; padding:9px 14px 9px 36px;
     border:1.5px solid; border-radius:10px; font-size:.83rem; outline:none;
@@ -169,15 +164,12 @@ html:not(.dark) .patients-table-wrap { background:#fff; border-color:#e5e7eb; }
 html.dark       .patients-table-wrap { background:#0f172a; border-color:#1e293b; }
 
 .patients-table { width:100%; border-collapse:collapse; font-size:.83rem; }
-
 .patients-table thead tr { border-bottom:1px solid; }
 html:not(.dark) .patients-table thead tr { background:#f9fafb; border-bottom-color:#e5e7eb; }
 html.dark       .patients-table thead tr { background:#0a0f1a; border-bottom-color:#1e293b; }
-
 .patients-table th { padding:10px 15px; text-align:left; font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; white-space:nowrap; }
 html:not(.dark) .patients-table th { color:#9ca3af; }
 html.dark       .patients-table th { color:#475569; }
-
 .patients-table td { padding:12px 15px; border-bottom:1px solid; vertical-align:middle; }
 html:not(.dark) .patients-table td { border-bottom-color:#f3f4f6; color:#374151; }
 html.dark       .patients-table td { border-bottom-color:#1e293b; color:#cbd5e1; }
@@ -221,8 +213,9 @@ html.dark .s-assessed   { background:#0c1a2e; color:#7dd3fc; }
 html.dark .s-referred   { background:#1c1400; color:#fde047; }
 html.dark .s-vitals     { background:#052e16; color:#86efac; }
 
-.type-er  { background:#fee2e2; color:#991b1b; font-size:.7rem; font-weight:700; padding:2px 7px; border-radius:9999px; }
-.type-opd { background:#eff6ff; color:#1d4ed8; font-size:.7rem; font-weight:700; padding:2px 7px; border-radius:9999px; }
+.type-badge { display:inline-flex; align-items:center; gap:4px; font-size:.7rem; font-weight:700; padding:2px 8px; border-radius:9999px; }
+.type-er  { background:#fee2e2; color:#991b1b; }
+.type-opd { background:#eff6ff; color:#1d4ed8; }
 html.dark .type-er  { background:#450a0a; color:#fca5a5; }
 html.dark .type-opd { background:#0c1a2e; color:#7dd3fc; }
 
@@ -243,9 +236,9 @@ html.dark       .adm-time { color:#cbd5e1; }
 
 /* ── Empty state ───────────────────────────────────────────── */
 .empty-state { text-align:center; padding:60px 20px; }
-.empty-icon-wrap { width:56px; height:56px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:1.6rem; margin:0 auto 14px; }
-html:not(.dark) .empty-icon-wrap { background:var(--np-light); }
-html.dark       .empty-icon-wrap { background:#4c0519; }
+.empty-icon-wrap { width:56px; height:56px; border-radius:16px; display:flex; align-items:center; justify-content:center; margin:0 auto 14px; }
+html:not(.dark) .empty-icon-wrap { background:var(--np-light); color:var(--np); }
+html.dark       .empty-icon-wrap { background:#4c0519; color:#fda4af; }
 .empty-title { font-size:.9rem; font-weight:700; margin-bottom:4px; }
 html:not(.dark) .empty-title { color:#111827; }
 html.dark       .empty-title { color:#f1f5f9; }
@@ -284,73 +277,44 @@ html.dark .btn-filter .f-count { background:var(--npa); }
     box-shadow:0 8px 32px rgba(0,0,0,.14);
 }
 html.dark .filter-panel { background:#0f172a; border-color:#1e293b; box-shadow:0 8px 32px rgba(0,0,0,.5); }
-.fp-head {
-    display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid #f3f4f6;
-}
+.fp-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid #f3f4f6; }
 html.dark .fp-head { border-bottom-color:#1e293b; }
 .fp-head-title { font-size:.88rem; font-weight:700; color:#111827; }
 html.dark .fp-head-title { color:#f1f5f9; }
 .fp-reset { font-size:.78rem; color:var(--np); font-weight:600; background:none; border:none; cursor:pointer; padding:0; }
 html.dark .fp-reset { color:#fda4af; }
 .fp-field { margin-bottom:13px; }
-.fp-label {
-    display:block; font-size:.68rem; font-weight:700;
-    text-transform:uppercase; letter-spacing:.07em; margin-bottom:4px;
-}
+.fp-label { display:block; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; margin-bottom:4px; }
 html:not(.dark) .fp-label { color:#9ca3af; }
 html.dark       .fp-label { color:#475569; }
-.fp-sel, .fp-date {
-    width:100%; padding:8px 10px; border:1.5px solid;
-    border-radius:8px; font-size:.82rem; outline:none; box-sizing:border-box;
-    transition:border-color .15s;
-}
+.fp-sel, .fp-date { width:100%; padding:8px 10px; border:1.5px solid; border-radius:8px; font-size:.82rem; outline:none; box-sizing:border-box; transition:border-color .15s; }
 html:not(.dark) .fp-sel, html:not(.dark) .fp-date { background:#fff; border-color:#e5e7eb; color:#111827; }
 html:not(.dark) .fp-sel:focus, html:not(.dark) .fp-date:focus { border-color:var(--np); }
 html.dark       .fp-sel, html.dark       .fp-date { background:#0f172a; border-color:#1e293b; color:#e2e8f0; }
 html.dark       .fp-sel:focus, html.dark       .fp-date:focus { border-color:var(--npa); }
-.fp-sel {
-    appearance:none; -webkit-appearance:none;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat:no-repeat; background-position:right 9px center; background-size:11px; padding-right:26px;
-}
+.fp-sel { appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 9px center; background-size:11px; padding-right:26px; }
 .fp-date-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .fp-date-sub { font-size:.65rem; color:#9ca3af; margin-bottom:3px; }
-.fp-active-range {
-    font-size:.7rem; color:var(--np); font-weight:600;
-    margin-top:5px; background:var(--np-light);
-    border-radius:6px; padding:3px 8px; display:inline-block;
-}
+.fp-active-range { font-size:.7rem; color:var(--np); font-weight:600; margin-top:5px; background:var(--np-light); border-radius:6px; padding:3px 8px; display:inline-flex; align-items:center; gap:5px; }
 html.dark .fp-active-range { color:#fda4af; background:#4c0519; }
 
 /* ── Active filter badges ──────────────────────────────────── */
-.active-filter-bar {
-    display:flex; align-items:center; gap:6px;
-    flex-wrap:wrap; padding:8px 0 4px; font-size:.78rem;
-}
+.active-filter-bar { display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:8px 0 4px; font-size:.78rem; }
 .af-label { color:#6b7280; font-weight:600; white-space:nowrap; font-size:.75rem; }
 html.dark .af-label { color:#475569; }
-.af-badge {
-    display:inline-flex; align-items:center; gap:4px;
-    background:var(--np-light); color:var(--np-dark);
-    border:1px solid var(--np-mid); border-radius:9999px;
-    padding:2px 10px; font-size:.7rem; font-weight:700; white-space:nowrap;
-}
+.af-badge { display:inline-flex; align-items:center; gap:4px; background:var(--np-light); color:var(--np-dark); border:1px solid var(--np-mid); border-radius:9999px; padding:2px 10px; font-size:.7rem; font-weight:700; white-space:nowrap; }
 html.dark .af-badge { background:#4c0519; color:#fda4af; border-color:#7f1d1d; }
-.af-badge button {
-    background:none; border:none; cursor:pointer; color:inherit;
-    font-size:.85rem; padding:0; margin-left:2px; line-height:1;
-}
-.af-clear-all {
-    background:none; border:none; color:#9ca3af; cursor:pointer;
-    font-size:.75rem; font-weight:600; margin-left:2px;
-}
+.af-badge button { background:none; border:none; cursor:pointer; color:inherit; font-size:.85rem; padding:0; margin-left:2px; line-height:1; }
+.af-clear-all { background:none; border:none; color:#9ca3af; cursor:pointer; font-size:.75rem; font-weight:600; margin-left:2px; }
 html.dark .af-clear-all { color:#475569; }
+
+.pending-clerk-badge { background:#fef3c7; color:#92400e; padding:2px 7px; border-radius:9999px; font-weight:700; font-size:.68rem; display:inline-flex; align-items:center; gap:4px; }
+html.dark .pending-clerk-badge { background:#1c1400; color:#fde047; }
 
 @media(max-width:768px) {
     .stats-bar { grid-template-columns:1fr; }
     .dash-header { flex-direction:column; gap:12px; padding:16px; }
-    .dash-header::after { display:none; }
+    .dash-header-icon { display:none; }
     .dash-right { align-items:flex-start; flex-direction:row; flex-wrap:wrap; gap:8px; }
     .filter-bar { flex-direction:column; align-items:stretch; }
     .search-wrap { min-width:unset; width:100%; }
@@ -367,7 +331,10 @@ html.dark .af-clear-all { color:#475569; }
             <span class="eyebrow-label">Active · LUMC Portal</span>
         </div>
         <h1 class="dash-title">Nurse Dashboard</h1>
-        <p class="dash-tagline">🏥 Nursing Services · Patient Care</p>
+        <p class="dash-tagline">
+            <x-heroicon-o-building-office-2 class="w-4 h-4" style="color:rgba(255,255,255,.8);" />
+            Nursing Services · Patient Care
+        </p>
     </div>
     <div class="dash-right">
         <div class="user-chip">
@@ -376,12 +343,18 @@ html.dark .af-clear-all { color:#475569; }
         </div>
         <span class="dash-clock" id="nurse-clock">{{ now()->timezone('Asia/Manila')->format('D, M j · H:i') }}</span>
     </div>
+    {{-- Decorative background icon --}}
+    <div class="dash-header-icon">
+        <x-heroicon-o-building-office-2 style="width:72px;height:72px;" />
+    </div>
 </div>
 
 {{-- ══ STAT CARDS ══ --}}
 <div class="stats-bar">
     <div class="stat-card is-accent">
-        <div class="stat-icon si-rose">🏥</div>
+        <div class="stat-icon si-rose">
+            <x-heroicon-o-building-office-2 class="w-6 h-6" />
+        </div>
         <div>
             <div class="stat-label">Currently Admitted</div>
             <div class="stat-value">{{ $this->totalAdmitted }}</div>
@@ -389,7 +362,9 @@ html.dark .af-clear-all { color:#475569; }
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;background:#f0fdf4;">🏁</div>
+        <div class="stat-icon si-green">
+            <x-heroicon-o-check-circle class="w-6 h-6" />
+        </div>
         <div>
             <div class="stat-label">Discharged</div>
             <div class="stat-value">{{ $this->totalDischarged }}</div>
@@ -397,7 +372,9 @@ html.dark .af-clear-all { color:#475569; }
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon si-amber">📋</div>
+        <div class="stat-icon si-amber">
+            <x-heroicon-o-clipboard-document-list class="w-6 h-6" />
+        </div>
         <div>
             <div class="stat-label">Pending Orders</div>
             <div class="stat-value">{{ $this->totalPendingOrders }}</div>
@@ -405,7 +382,9 @@ html.dark .af-clear-all { color:#475569; }
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon si-blue">⏰</div>
+        <div class="stat-icon si-blue">
+            <x-heroicon-o-calendar-days class="w-6 h-6" />
+        </div>
         <div>
             <div class="stat-label">Shift Date</div>
             <div class="stat-value" style="font-size:1.3rem;">{{ now()->timezone('Asia/Manila')->format('M j, Y') }}</div>
@@ -416,22 +395,27 @@ html.dark .af-clear-all { color:#475569; }
 
 {{-- ══ FILTER BAR ══ --}}
 <div class="filter-bar">
-<div class="view-toggle">
+    <div class="view-toggle">
         <button wire:click="$set('viewFilter','admitted')" type="button"
                 class="vt-btn {{ $viewFilter === 'admitted' ? 'active' : '' }}">
-            🏥 Admitted
+            <x-heroicon-o-building-office-2 class="w-4 h-4" />
+            Admitted
         </button>
         <button wire:click="$set('viewFilter','discharged')" type="button"
                 class="vt-btn {{ $viewFilter === 'discharged' ? 'active' : '' }}">
-            🏁 Discharged
+            <x-heroicon-o-check-circle class="w-4 h-4" />
+            Discharged
         </button>
         <button wire:click="$set('viewFilter','all')" type="button"
                 class="vt-btn {{ $viewFilter === 'all' ? 'active' : '' }}">
-            🗂️ All Patients
+            <x-heroicon-o-folder-open class="w-4 h-4" />
+            All Patients
         </button>
     </div>
     <div class="search-wrap">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon">
+            <x-heroicon-o-magnifying-glass style="width:15px;height:15px;" />
+        </span>
         <input type="text" wire:model.live.debounce.300ms="search"
                placeholder="Search by patient name or case number…"
                class="search-input">
@@ -445,9 +429,9 @@ html.dark .af-clear-all { color:#475569; }
         @endif
     </button>
     @if($search)
-    <button wire:click="$set('search','')"
-            style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.78rem;font-weight:600;">
-        ✕ Clear
+    <button wire:click="$set('search','')" type="button"
+            style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.78rem;font-weight:600;display:inline-flex;align-items:center;gap:4px;">
+        <x-heroicon-o-x-mark style="width:13px;height:13px;" /> Clear
     </button>
     @endif
 </div>
@@ -460,7 +444,6 @@ html.dark .af-clear-all { color:#475569; }
             <span class="fp-head-title">Filters</span>
             <button type="button" wire:click="clearFilters" class="fp-reset">Reset</button>
         </div>
-
         <div class="fp-field">
             <label class="fp-label">Sex</label>
             <select wire:model.live="sexFilter" class="fp-sel">
@@ -469,7 +452,6 @@ html.dark .af-clear-all { color:#475569; }
                 <option value="Female">Female</option>
             </select>
         </div>
-
         <div class="fp-field">
             <label class="fp-label">Service</label>
             <select wire:model.live="serviceFilter" class="fp-sel">
@@ -479,22 +461,21 @@ html.dark .af-clear-all { color:#475569; }
                 @endforeach
             </select>
         </div>
-
         <div class="fp-field">
             <label class="fp-label">Date Range (Registration)</label>
             <div class="fp-date-row">
                 <div>
                     <div class="fp-date-sub">From</div>
-                    <input type="date" wire:model.live="dateFrom" class="fp-date" placeholder="Start date">
+                    <input type="date" wire:model.live="dateFrom" class="fp-date">
                 </div>
                 <div>
                     <div class="fp-date-sub">Until</div>
-                    <input type="date" wire:model.live="dateUntil" class="fp-date" placeholder="End date">
+                    <input type="date" wire:model.live="dateUntil" class="fp-date">
                 </div>
             </div>
             @if($dateFrom || $dateUntil)
             <div class="fp-active-range">
-                📅
+                <x-heroicon-o-calendar-days style="width:13px;height:13px;" />
                 @if($dateFrom && $dateUntil)
                     {{ \Carbon\Carbon::parse($dateFrom)->format('M j') }} – {{ \Carbon\Carbon::parse($dateUntil)->format('M j, Y') }}
                 @elseif($dateFrom)
@@ -581,9 +562,15 @@ html.dark .af-clear-all { color:#475569; }
                 </td>
                 @if($viewFilter === 'all' || $viewFilter === 'discharged')
                 <td>
-                    <span class="{{ $visit->visit_type === 'ER' ? 'type-er' : 'type-opd' }}">
-                        {{ $visit->visit_type === 'ER' ? '🚑 ER' : '📋 OPD' }}
-                    </span>
+                    @if($visit->visit_type === 'ER')
+                        <span class="type-badge type-er">
+                            <x-heroicon-o-truck style="width:11px;height:11px;" /> ER
+                        </span>
+                    @else
+                        <span class="type-badge type-opd">
+                            <x-heroicon-o-clipboard-document-list style="width:11px;height:11px;" /> OPD
+                        </span>
+                    @endif
                 </td>
                 <td><span class="status-pill {{ $statusClass }}">{{ $statusLabel }}</span></td>
                 @endif
@@ -614,7 +601,11 @@ html.dark .af-clear-all { color:#475569; }
                 @if($viewFilter === 'admitted')
                 <td style="text-align:center;">
                     <span class="orders-badge {{ $pendingCount > 0 ? 'has-orders' : 'no-orders' }}">
-                        {{ $pendingCount > 0 ? $pendingCount : '✓' }}
+                        @if($pendingCount > 0)
+                            {{ $pendingCount }}
+                        @else
+                            <x-heroicon-o-check style="width:12px;height:12px;" />
+                        @endif
                     </span>
                 </td>
                 @endif
@@ -625,8 +616,11 @@ html.dark .af-clear-all { color:#475569; }
                             <p class="adm-ago">{{ $visit->clerk_admitted_at->diffForHumans() }}</p>
                         @else
                             <p class="adm-time">{{ $visit->doctor_admitted_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
-                            <p style="font-size:.7rem;margin-top:2px;">
-                                <span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:9999px;font-weight:700;font-size:.68rem;">⏳ Pending Clerk</span>
+                            <p style="margin-top:2px;">
+                                <span class="pending-clerk-badge">
+                                    <x-heroicon-o-clock style="width:11px;height:11px;" />
+                                    Pending Clerk
+                                </span>
                             </p>
                         @endif
                     @elseif($viewFilter === 'discharged')
@@ -654,7 +648,9 @@ html.dark .af-clear-all { color:#475569; }
 
     @else
     <div class="empty-state">
-        <div class="empty-icon-wrap">🏥</div>
+        <div class="empty-icon-wrap">
+            <x-heroicon-o-building-office-2 class="w-7 h-7" />
+        </div>
         <p class="empty-title">
             @if($search || $this->hasActiveFilters) No patients match your search or filters
             @elseif($viewFilter === 'admitted') No admitted patients

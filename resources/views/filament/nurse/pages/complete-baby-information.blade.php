@@ -272,15 +272,15 @@
     
     <div class="nicu-form-card">
         <div class="nicu-card-header">
-            <h3>📋 Complete Baby Information - NUR-022-0 (Maternal/Prenatal History)</h3>
+            <h3><x-heroicon-o-clipboard-document-list class="w-4 h-4" /> Complete Baby Information - NUR-022-0 (Maternal/Prenatal History)</h3>
         </div>
         <div class="nicu-card-body">
             
             <div class="info-box">
                 <p style="margin:0; font-size:0.8rem;">
-                    <strong>👶 Temporary ID:</strong> {{ $baby->temporary_case_no ?? '—' }}<br>
-                    <strong>📅 Birth Date/Time:</strong> {{ $baby->birth_datetime ? \Carbon\Carbon::parse($baby->birth_datetime)->format('M d, Y h:i A') : '—' }}<br>
-                    <strong>⚥ Sex:</strong> {{ $baby->sex ?? '—' }}
+                    <strong><x-heroicon-o-user class="w-4 h-4" /> Temporary ID:</strong> {{ $baby->temporary_case_no ?? '—' }}<br>
+                    <strong><x-heroicon-o-calendar-days class="w-4 h-4" /> Birth Date/Time:</strong> {{ $baby->birth_datetime ? \Carbon\Carbon::parse($baby->birth_datetime)->format('M d, Y h:i A') : '—' }}<br>
+                    <strong><x-heroicon-o-user-group class="w-4 h-4" /> Sex:</strong> {{ $baby->sex ?? '—' }}
                 </p>
             </div>
             
@@ -521,7 +521,7 @@
                         Cancel
                     </button>
                     <button type="submit" class="btn-primary" wire:loading.attr="disabled" @if($isReadOnly) disabled @endif>
-                        <span wire:loading.remove>💾 {{ $this->getSubmitButtonLabel() }}</span>
+                        <span wire:loading.remove><x-heroicon-o-archive-box-arrow-down class="w-4 h-4" /> {{ $this->getSubmitButtonLabel() }}</span>
                         <span wire:loading>Saving...</span>
                     </button>
                 </div>
@@ -532,7 +532,7 @@
     
     <div class="info-box" style="background:#fef3c7; border-left-color:#f59e0b; margin-top:16px;">
         <p style="margin:0; font-size:0.8rem;">
-            <strong>⚠️ Note:</strong> After saving this information, the clerk will convert this provisional record to a permanent record (LUMC-YYYY-xxxxxx).
+            <strong><x-heroicon-o-exclamation-triangle class="w-4 h-4 inline" /> Note:</strong> After saving this information, the clerk will convert this provisional record to a permanent record (LUMC-YYYY-xxxxxx).
             All clinical data (vitals, medications, notes) will remain linked to the permanent record.
         </p>
     </div>
