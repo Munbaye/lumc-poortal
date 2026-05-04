@@ -236,6 +236,7 @@ class PatientChart extends Page
 
     public function toggleWriteOrders(): void
     {
+        if ($this->isReadonly) return;
         $this->writingOrders = !$this->writingOrders;
         if ($this->writingOrders) {
             $this->orderText = '';   // clear on open
@@ -262,6 +263,11 @@ class PatientChart extends Page
      */
     public function saveOrders(): void
     {
+        if ($this->isReadonly) {
+            Notification::make()->title('This visit is discharged. No new orders can be written.')->warning()->send();
+            return;
+        }
+
         if (trim($this->orderText) === '') {
             Notification::make()->title('Please type at least one order.')->warning()->send();
             return;
@@ -310,6 +316,11 @@ class PatientChart extends Page
 
     public function discontinueOrder(int $orderId): void
     {
+        if ($this->isReadonly) {
+            Notification::make()->title('This visit is discharged. No changes can be made.')->warning()->send();
+            return;
+        }
+
         $order = DoctorsOrder::where('visit_id', $this->visitId)->find($orderId);
         if (!$order) {
             Notification::make()->title('Order not found.')->danger()->send();

@@ -205,22 +205,20 @@ class NurseChart extends Page
     public function getIsReadonlyProperty(): bool
     {
         if (!$this->visit) return true;
-        
-        // NICU-specific: Allow editing for provisional and registered status (not admitted yet)
-        if ($this->visit->visit_type === 'NICU') {
-            // NICU is editable if:
-            // - Not yet admitted (provisional_registration or registered)
-            // OR admitted but not yet discharged
-            if ($this->visit->status === 'admitted' && $this->visit->discharged_at !== null) {
-                return true; // Discharged = read-only
-            }
-            return false; // All other NICU statuses are editable
+
+        // A discharged visit is ALWAYS read-only, regardless of visit type
+        if ($this->visit->discharged_at !== null || $this->visit->status === 'discharged') {
+            return true;
         }
-        
-        // Original logic for non-NICU visits
+
+        // NICU: provisional and other pre-admission statuses are still editable
+        if ($this->visit->visit_type === 'NICU') {
+            return false;
+        }
+
+        // Standard: must be fully admitted by clerk and not yet discharged
         return !($this->visit->status === 'admitted'
-            && $this->visit->clerk_admitted_at !== null
-            && $this->visit->discharged_at === null);
+            && $this->visit->clerk_admitted_at !== null);
     }
 
     // ── Tab navigation ─────────────────────────────────────────────────────────
@@ -260,6 +258,11 @@ class NurseChart extends Page
 
     public function carryOrder(int $orderId): void
     {
+        if ($this->isReadonly) {
+            Notification::make()->title('This visit is discharged. No changes can be made.')->warning()->send();
+            return;
+        }
+
         $order = DoctorsOrder::where('visit_id', $this->visitId)->find($orderId);
 
         if (!$order) {
@@ -305,6 +308,11 @@ class NurseChart extends Page
 
     public function carryAllOrders(): void
     {
+        if ($this->isReadonly) {
+            Notification::make()->title('This visit is discharged. No changes can be made.')->warning()->send();
+            return;
+        }
+
         $pendingOrders = DoctorsOrder::where('visit_id', $this->visitId)
             ->where('status', DoctorsOrder::STATUS_PENDING)
             ->get();
@@ -357,6 +365,11 @@ class NurseChart extends Page
 
     public function saveNote(): void
     {
+        if ($this->isReadonly) {
+            Notification::make()->title('This visit is discharged. No entries can be added.')->warning()->send();
+            return;
+        }
+
         if (!filled($this->fdarF) && !filled($this->fdarD)
             && !filled($this->fdarA) && !filled($this->fdarR)) {
             Notification::make()->title('Please fill in at least one FDAR field.')->warning()->send();
@@ -430,6 +443,11 @@ class NurseChart extends Page
 
     public function saveVital(): void
     {
+        if ($this->isReadonly) {
+            Notification::make()->title('This visit is discharged. No entries can be added.')->warning()->send();
+            return;
+        }
+
         $hasData = $this->vitalTemp || $this->vitalSpO2 || $this->vitalCR
             || $this->vitalPR || $this->vitalRR
             || filled($this->vitalNeuroVS)
@@ -518,6 +536,11 @@ class NurseChart extends Page
 
     public function saveIvEntry(): void
     {
+        if ($this->isReadonly) {
+            Notification::make()->title('This visit is discharged. No entries can be added.')->warning()->send();
+            return;
+        }
+
         if (!filled($this->ivDateStarted)) {
             Notification::make()->title('Date Started is required.')->warning()->send();
             return;
@@ -648,6 +671,11 @@ class NurseChart extends Page
     /** Add a new date column to this visit's MAR. */
     public function marAddDate(): void
     {
+        if ($this->isReadonly) {
+            Notification::make()->title('This visit is discharged. No entries can be added.')->warning()->send();
+            return;
+        }
+
         if (!filled($this->marNewDate)) {
             Notification::make()->title('Please pick a date.')->warning()->send();
             return;
@@ -716,6 +744,11 @@ class NurseChart extends Page
     /** Add a new medication row. */
     public function marAddMedication(): void
     {
+        if ($this->isReadonly) {
+            Notification::make()->title('This visit is discharged. No entries can be added.')->warning()->send();
+            return;
+        }
+
         $maxOrder = MarEntry::where('visit_id', $this->visitId)->max('sort_order') ?? 0;
 
         MarEntry::create([
@@ -762,6 +795,11 @@ class NurseChart extends Page
 
     public function tprSaveIo(): void
     {
+        if ($this->isReadonly) {
+            Notification::make()->title('This visit is discharged. No entries can be added.')->warning()->send();
+            return;
+        }
+
         if (!filled($this->tprIoDate) || !filled($this->tprIoShift)) {
             Notification::make()->title('Date and Shift are required.')->warning()->send();
             return;
@@ -890,6 +928,11 @@ class NurseChart extends Page
 
     public function saveGrowthMeasurement(): void
     {
+        if ($this->isReadonly) {
+            Notification::make()->title('This visit is discharged. No entries can be added.')->warning()->send();
+            return;
+        }
+
         $this->savingMeasurement = true;
         
         try {

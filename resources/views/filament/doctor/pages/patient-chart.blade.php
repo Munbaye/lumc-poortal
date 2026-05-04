@@ -2025,6 +2025,7 @@
     $radResults = $this->radResults;
     $totalResults = $labResults->count() + $radResults->count();
     $pastCount = $this->pastVisitsCount;
+    $isReadonly = $this->isReadonly;
 
     // Which forms exist for this visit
     $hasErRecord = (bool) $visit->erRecord;
@@ -2127,8 +2128,15 @@
             @endif
         </div>
 
-        {{-- ════ TABS ═══════════════════════════════════════════════════ --}}
-        <div class="chart-tabs">
+        @if($isReadonly)
+    <div style="background:#fef9c3;border-bottom:2px solid #f59e0b;padding:10px 24px;display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:600;color:#92400e;">
+        📂 Discharged Patient — Read Only &nbsp;·&nbsp;
+        <span style="font-weight:400;">This patient has been discharged. All clinical entries are locked. Forms are view-only.</span>
+    </div>
+    @endif
+
+    {{-- ════ TABS ═══════════════════════════════════════════════════════ --}}
+    <div class="chart-tabs">
             <button wire:click="setTab('profile')" class="chart-tab {{ $activeTab==='profile'   ? 'active':'' }}"><span class="tab-icon"><x-heroicon-o-document-text class="w-4 h-4" /></span> Patient Forms</button>
             <button wire:click="setTab('history')" class="chart-tab {{ $activeTab==='history'   ? 'active':'' }}"><span class="tab-icon"><x-heroicon-o-clock class="w-4 h-4" /></span> Visit History @if($pastCount > 0)<span class="tab-badge tab-badge-blue">{{ $pastCount }}</span>@endif</button>
             <button wire:click="setTab('orders')" class="chart-tab {{ $activeTab==='orders'    ? 'active':'' }}"><span class="tab-icon"><x-heroicon-o-clipboard-document-list class="w-4 h-4" /></span> Doctor's Orders @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif</button>
@@ -2576,10 +2584,12 @@
                 <h2 class="sec-title">Doctor's Orders</h2>
                 <div style="display:flex;gap:8px;align-items:center;">
                     <span style="font-size:.78rem;color:#6b7280;">{{ $allOrders->count() }} total · {{ $pendingCnt }} pending</span>
+                    @if(!$isReadonly)
                     <button wire:click="setTab('results')" type="button" class="btn-lab"><x-heroicon-o-beaker class="w-4 h-4 inline mr-1" /> Request Lab / Radiology</button>
                     <button wire:click="toggleWriteOrders" type="button" class="btn-write {{ $writingOrders ? 'is-cancel' : '' }}">
                         @if($writingOrders) <x-heroicon-o-x-mark class="w-4 h-4 inline mr-1" /> Cancel @else <x-heroicon-o-pencil-square class="w-4 h-4 inline mr-1" /> Write Orders @endif
                     </button>
+                    @endif
                 </div>
             </div>
 
@@ -2654,7 +2664,7 @@
                     </div>
                     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
                         <span class="status-badge status-{{ $order->status }}">{{ $order->status_label }}</span>
-                        @if($order->isPending())
+                        @if($order->isPending() && !$isReadonly)
                         @if($confirmDiscontinueId === $order->id)
                         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;margin-top:4px;">
                             <p style="font-size:.68rem;color:#dc2626;font-weight:600;">Discontinue this order?</p>
@@ -2896,8 +2906,9 @@
             <div class="sec-head">
                 <h2 class="sec-title">Lab &amp; Radiology</h2><span style="font-size:.78rem;color:#6b7280;">{{ $this->labRequestsCount + $this->radRequestsCount }} request(s) &nbsp;·&nbsp; <span style="color:#059669;font-weight:700;">{{ $totalResults }} result(s) ready</span></span>
             </div>
+            @if(!$isReadonly)
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px;">
-                <a href="{{ route('forms.lab-request', ['visit' => $visit->id]) }}" target="_blank" rel="noopener" class="doc-card"><span class="doc-card-icon"><x-heroicon-o-beaker class="w-5 h-5" /></span>
+                <a href="{{ route('forms.lab-request', ['visit' => $visit->id]) }}" target="_blank" rel="noopener" class="doc-card">
                     <div class="doc-card-body">
                         <p class="doc-card-label doc-card-label-green">LAB-001-1</p>
                         <p class="doc-card-title">New Lab Request</p>
@@ -2912,6 +2923,7 @@
                     </div><span class="doc-card-arrow">↗</span>
                 </a>
             </div>
+            @endif
             @php $labByRequest = $labResults->groupBy('request_id');
             $radByRequest = $radResults->groupBy('request_id'); @endphp
             @if($labByRequest->isNotEmpty())<div class="results-section">
@@ -2983,14 +2995,14 @@
 
             <div class="sec-head">
                 <h2 class="sec-title"><x-heroicon-o-document-chart-bar class="w-5 h-5 inline mr-2" />Ballard Maturity Score (Gestational Age Assessment)</h2>
-                @if($ballardExams->where('exam_number', 1)->isEmpty())
-                <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id]) }}"
-                    target="_blank"
-                    class="btn-primary"
-                    style="padding: 6px 14px; font-size: 0.75rem;">
-                    + Record 1st Exam
-                </a>
-                @endif
+                @if($ballardExams->where('exam_number', 1)->isEmpty() && !$isReadonly)
+            <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id]) }}"
+                target="_blank"
+                class="btn-primary"
+                style="padding: 6px 14px; font-size: 0.75rem;">
+                + Record 1st Exam
+            </a>
+            @endif
             </div>
 
             @if($ballardExams->isEmpty())
@@ -2998,11 +3010,13 @@
                 <div class="ph-icon"><x-heroicon-o-document-chart-bar class="w-8 h-8" /></div>
                 <p class="ph-title">No Ballard Score recorded yet</p>
                 <p class="ph-sub">Gestational age assessment not yet performed.</p>
+                @if(!$isReadonly)
                 <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id]) }}"
                     target="_blank"
                     style="margin-top: 12px; display: inline-block; background: #059669; color: #fff; padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">
                     + Record First Exam
                 </a>
+                @endif
             </div>
             @else
             @foreach($ballardExams as $exam)
@@ -3077,7 +3091,7 @@
             </div>
             @endforeach
 
-            @if($ballardExams->where('exam_number', 2)->isEmpty())
+            @if($ballardExams->where('exam_number', 2)->isEmpty() && !$isReadonly)
             <div style="margin-top: 12px; text-align: right;">
                 <a href="{{ \App\Filament\Doctor\Pages\BallardScore::getUrl(['visitId' => $visit->id, 'exam' => 2]) }}"
                     target="_blank"
