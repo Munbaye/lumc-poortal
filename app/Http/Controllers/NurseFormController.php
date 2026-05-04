@@ -72,4 +72,17 @@ class NurseFormController extends Controller
 
         return view('forms.breastfeeding-observation', compact('visit'));
     }
+
+    /**
+     * TPR Graphic Record printable view.
+     */
+    public function tprRecord(\App\Models\Visit $visit): \Illuminate\View\View
+    {
+        $vitals = \App\Models\Vital::where('visit_id', $visit->id)
+            ->orderBy('taken_at', 'asc')
+            ->get();
+ 
+        return view('forms.tpr-record', compact('visit', 'vitals'));
+    }
+
 }

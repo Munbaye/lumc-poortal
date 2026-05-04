@@ -2332,6 +2332,39 @@
                 @endif
             </div>
 
+            {{-- ── 7b. TPR Graphic Record ─────────────────────────── --}}
+            @php
+            $tprVitalCount = \App\Models\Vital::where('visit_id', $visit->id)->count();
+            @endphp
+            <div class="form-section">
+                <div class="form-section-header">
+                    <span class="form-section-label">🌡️ TPR Graphic Record</span>
+                    <div class="form-section-line"></div>
+                    <span class="form-section-badge"
+                        style="{{ $tprVitalCount > 0 ? 'background:#fee2e2;color:#991b1b;' : 'background:#f3f4f6;color:#6b7280;' }}">
+                        {{ $tprVitalCount > 0 ? $tprVitalCount . ' vital entr' . ($tprVitalCount === 1 ? 'y' : 'ies') : 'No vitals yet' }}
+                    </span>
+                    <a href="{{ route('forms.tpr-record', ['visit' => $visit->id]) }}"
+                        target="_blank"
+                        style="font-size:.72rem;font-weight:700;color:#991b1b;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#fee2e2;border:1px solid #fca5a5;padding:3px 10px;border-radius:5px;white-space:nowrap;margin-left:4px;">
+                        🖨️ Open / Print
+                    </a>
+                </div>
+                @if($tprVitalCount > 0)
+                <div class="form-iframe-wrap">
+                    <iframe src="{{ route('forms.tpr-record', ['visit' => $visit->id]) }}"
+                        title="TPR Graphic Record"
+                        style="width:100%;min-height:900px;border:none;display:block;"
+                        loading="lazy"></iframe>
+                </div>
+                @else
+                <div class="form-missing-card">
+                    <div class="form-missing-icon">🌡️</div>
+                    <p class="form-missing-text">No vital signs recorded yet. TPR chart will appear once vitals are entered by the nurse.</p>
+                </div>
+                @endif
+            </div>
+            
             {{-- ── 8. Discharge Summary ────────────────────────────────────── --}}
             @php
             $hasDischargeSummary = (bool) $visit->dischargeSummary;

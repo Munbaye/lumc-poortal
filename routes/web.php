@@ -160,6 +160,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/forms/ballard-score/{visit}', [ChartController::class, 'ballardScore'])
         ->name('forms.ballard-score');
 
+    Route::get('/forms/tpr-record/{visit}', [NurseFormController::class, 'tprRecord'])
+        ->name('forms.tpr-record');
+
     // ── Growth Chart Printable (WHO 0–24 months) ──────────────────────────────
     Route::get('/forms/growth-chart/{visit}', [ChartController::class, 'growthChart'])
         ->name('forms.growth-chart');
