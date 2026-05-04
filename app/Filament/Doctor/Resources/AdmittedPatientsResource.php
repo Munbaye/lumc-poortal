@@ -12,15 +12,14 @@ use Illuminate\Database\Eloquent\Builder;
 class AdmittedPatientsResource extends Resource
 {
     protected static ?string $model           = Visit::class;
-    protected static ?string $navigationIcon  = 'heroicon-o-building-office-2';
-    protected static ?string $navigationLabel = 'Admitted Patients';
-    protected static ?string $modelLabel      = 'Admitted Patient';
+    protected static ?string $navigationIcon  = 'heroicon-o-clipboard-document-list';
+    protected static ?string $navigationLabel = 'Patient List';
+    protected static ?string $modelLabel      = 'Patient Visit';
     protected static ?int    $navigationSort  = 2;
 
     /**
-     * Visibility rules:
-     *   Charity  → all doctors can see
-     *   Private  → only the assigned doctor
+     * Base query — no status filter here; tabs in ListAdmittedPatients handle that.
+     * Private patient guard is applied so doctors only see their own private patients.
      */
     public static function getEloquentQuery(): Builder
     {
@@ -29,7 +28,6 @@ class AdmittedPatientsResource extends Resource
         return Visit::query()
             ->with(['patient', 'medicalHistory.doctor', 'nicuAdmission'])
             ->whereNotNull('doctor_admitted_at')
-            ->where('status', 'admitted')
             ->where(function (Builder $q) use ($doctorId) {
                 $q->where('payment_class', 'Charity')
                 ->orWhereNull('payment_class')
@@ -44,11 +42,7 @@ class AdmittedPatientsResource extends Resource
     {
         return $table
             ->headerActions([])
-
-            ->query(static::getEloquentQuery())
             ->columns([
-
-                // Row number (visual only — not a DB column)
                 Tables\Columns\TextColumn::make('row_no')
                     ->label('No.')
                     ->rowIndex()
@@ -100,6 +94,16 @@ class AdmittedPatientsResource extends Resource
                     ->badge()
                     ->color(fn ($state) => $state === 'Private' ? 'gray' : 'success'),
 
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn ($state) => match($state) {
+                        'admitted'   => 'success',
+                        'discharged' => 'gray',
+                        default      => 'warning',
+                    })
+                    ->formatStateUsing(fn ($state) => ucfirst($state ?? '—')),
+
                 Tables\Columns\TextColumn::make('doctor_admitted_at')
                     ->label('Date Admitted')
                     ->dateTime('M j, Y H:i')
@@ -109,6 +113,14 @@ class AdmittedPatientsResource extends Resource
                             ? 'Clerk admitted ' . $record->clerk_admitted_at->timezone('Asia/Manila')->diffForHumans()
                             : 'Pending clerk admission'
                     ),
+
+                Tables\Columns\TextColumn::make('discharged_at')
+                    ->label('Discharged At')
+                    ->dateTime('M j, Y H:i')
+                    ->sortable()
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('nicuAdmission.birth_weight_grams')
                     ->label('Birth Weight')
                     ->formatStateUsing(fn ($state) => $state ? $state . ' g' : '—')
@@ -118,28 +130,65 @@ class AdmittedPatientsResource extends Resource
                     ->label('APGAR')
                     ->visible(fn ($record) => $record && $record->visit_type === 'NICU'),
             ])
-
-            ->emptyStateHeading(fn (\Livewire\Component $livewire) =>
-                $livewire->viewFilter === 'all'
-                    ? 'No patients found'
-                    : 'No admitted patients'
-            )
-
-            ->defaultSort('doctor_admitted_at', 'asc')
+            ->emptyStateHeading('No patients found')
+            ->defaultSort('doctor_admitted_at', 'desc')
             ->searchPlaceholder('Search by name or case no…')
-
-            // Added SelectFilter to switch between "Admitted Only" and "All Patients"
             ->filters([
-                \Filament\Tables\Filters\SelectFilter::make('viewFilter')
-                    ->label('Show')
-                    ->options([
-                        'admitted' => 'Admitted Only',
-                        'all'      => 'All Patients',
-                    ])
-                    ->default('admitted')
-                    ->query(fn (Builder $query, array $data) => $query), // query is handled in ListAdmittedPatients
-            ])
+                Tables\Filters\SelectFilter::make('sex')
+                    ->label('Sex')
+                    ->options(['Male' => 'Male', 'Female' => 'Female'])
+                    ->query(fn (Builder $query, array $data) =>
+                        filled($data['value'])
+                            ? $query->whereHas('patient', fn ($q) => $q->where('sex', $data['value']))
+                            : $query
+                    ),
 
+                Tables\Filters\Filter::make('date_range')
+                    ->label('Date Range')
+                    ->form([
+                        \Filament\Forms\Components\DatePicker::make('from')
+                            ->label('From')
+                            ->placeholder('Start date'),
+                        \Filament\Forms\Components\DatePicker::make('until')
+                            ->label('Until')
+                            ->placeholder('End date'),
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        return $query
+                            ->when(
+                                $data['from'],
+                                fn ($q) => $q->whereDate('doctor_admitted_at', '>=', $data['from'])
+                            )
+                            ->when(
+                                $data['until'],
+                                fn ($q) => $q->whereDate('doctor_admitted_at', '<=', $data['until'])
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if (!empty($data['from'])) {
+                            $indicators[] = \Filament\Tables\Filters\Indicator::make(
+                                'From: ' . \Carbon\Carbon::parse($data['from'])->format('M j, Y')
+                            )->removeField('from');
+                        }
+                        if (!empty($data['until'])) {
+                            $indicators[] = \Filament\Tables\Filters\Indicator::make(
+                                'Until: ' . \Carbon\Carbon::parse($data['until'])->format('M j, Y')
+                            )->removeField('until');
+                        }
+                        return $indicators;
+                    }),
+
+                Tables\Filters\SelectFilter::make('admitted_service')
+                    ->label('Service')
+                    ->options(fn () =>
+                        Visit::whereNotNull('admitted_service')
+                            ->distinct()
+                            ->pluck('admitted_service', 'admitted_service')
+                            ->toArray()
+                    )
+                    ->placeholder('All Services'),
+            ])
             ->actions([
                 Tables\Actions\Action::make('open_chart')
                     ->label('Open Chart')
@@ -168,7 +217,7 @@ class AdmittedPatientsResource extends Resource
     {
         try {
             $doctorId = auth()->id();
-            $count = Visit::whereNotNull('doctor_admitted_at')    // ← was clerk_admitted_at
+            $count = Visit::whereNotNull('doctor_admitted_at')
                 ->where('status', 'admitted')
                 ->where(function (Builder $q) use ($doctorId) {
                     $q->where('payment_class', 'Charity')

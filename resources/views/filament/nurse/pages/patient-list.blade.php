@@ -89,8 +89,7 @@
 .dash-clock { font-size:.68rem; color:rgba(255,255,255,.62); font-variant-numeric:tabular-nums; }
 
 /* ── Stat cards ────────────────────────────────────────────── */
-.stats-bar { display:grid; grid-template-columns:repeat(3,1fr); gap:13px; margin-bottom:22px; }
-
+.stats-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:13px; margin-bottom:22px; }
 .stat-card { border-radius:14px; padding:18px 20px; display:flex; align-items:center; gap:16px; border:1px solid; transition:box-shadow .18s,transform .18s; }
 html:not(.dark) .stat-card { background:#fff; border-color:#e5e7eb; box-shadow:0 1px 4px rgba(0,0,0,.05); }
 html.dark       .stat-card { background:#0f172a; border-color:#1e293b; }
@@ -256,6 +255,98 @@ html.dark       .empty-title { color:#f1f5f9; }
 html:not(.dark) .pag-wrap { border-top-color:#f3f4f6; }
 html.dark       .pag-wrap { border-top-color:#1e293b; }
 
+/* ── Filter button ─────────────────────────────────────────── */
+.btn-filter {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:9px 16px; border-radius:10px; font-size:.83rem; font-weight:600;
+    cursor:pointer; border:1.5px solid; white-space:nowrap;
+    transition:all .15s;
+}
+html:not(.dark) .btn-filter { background:#fff; border-color:#e5e7eb; color:#374151; }
+html.dark       .btn-filter { background:#0f172a; border-color:#1e293b; color:#e2e8f0; }
+html:not(.dark) .btn-filter:hover { border-color:var(--np); color:var(--np); }
+html.dark       .btn-filter:hover { border-color:var(--npa); color:#fda4af; }
+html:not(.dark) .btn-filter.is-active { border-color:var(--np); color:var(--np); background:var(--np-light); }
+html.dark       .btn-filter.is-active { border-color:var(--npa); color:#fda4af; background:#4c0519; }
+.btn-filter .f-count {
+    background:var(--np); color:#fff; font-size:.58rem; font-weight:800;
+    width:16px; height:16px; border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+html.dark .btn-filter .f-count { background:var(--npa); }
+
+/* ── Filter panel ──────────────────────────────────────────── */
+.filter-panel-wrap { position:relative; display:flex; justify-content:flex-end; }
+.filter-panel {
+    position:absolute; right:0; top:6px; z-index:100;
+    width:300px; background:#fff; border:1px solid #e5e7eb;
+    border-radius:12px; padding:18px 20px;
+    box-shadow:0 8px 32px rgba(0,0,0,.14);
+}
+html.dark .filter-panel { background:#0f172a; border-color:#1e293b; box-shadow:0 8px 32px rgba(0,0,0,.5); }
+.fp-head {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid #f3f4f6;
+}
+html.dark .fp-head { border-bottom-color:#1e293b; }
+.fp-head-title { font-size:.88rem; font-weight:700; color:#111827; }
+html.dark .fp-head-title { color:#f1f5f9; }
+.fp-reset { font-size:.78rem; color:var(--np); font-weight:600; background:none; border:none; cursor:pointer; padding:0; }
+html.dark .fp-reset { color:#fda4af; }
+.fp-field { margin-bottom:13px; }
+.fp-label {
+    display:block; font-size:.68rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:.07em; margin-bottom:4px;
+}
+html:not(.dark) .fp-label { color:#9ca3af; }
+html.dark       .fp-label { color:#475569; }
+.fp-sel, .fp-date {
+    width:100%; padding:8px 10px; border:1.5px solid;
+    border-radius:8px; font-size:.82rem; outline:none; box-sizing:border-box;
+    transition:border-color .15s;
+}
+html:not(.dark) .fp-sel, html:not(.dark) .fp-date { background:#fff; border-color:#e5e7eb; color:#111827; }
+html:not(.dark) .fp-sel:focus, html:not(.dark) .fp-date:focus { border-color:var(--np); }
+html.dark       .fp-sel, html.dark       .fp-date { background:#0f172a; border-color:#1e293b; color:#e2e8f0; }
+html.dark       .fp-sel:focus, html.dark       .fp-date:focus { border-color:var(--npa); }
+.fp-sel {
+    appearance:none; -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 9px center; background-size:11px; padding-right:26px;
+}
+.fp-date-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.fp-date-sub { font-size:.65rem; color:#9ca3af; margin-bottom:3px; }
+.fp-active-range {
+    font-size:.7rem; color:var(--np); font-weight:600;
+    margin-top:5px; background:var(--np-light);
+    border-radius:6px; padding:3px 8px; display:inline-block;
+}
+html.dark .fp-active-range { color:#fda4af; background:#4c0519; }
+
+/* ── Active filter badges ──────────────────────────────────── */
+.active-filter-bar {
+    display:flex; align-items:center; gap:6px;
+    flex-wrap:wrap; padding:8px 0 4px; font-size:.78rem;
+}
+.af-label { color:#6b7280; font-weight:600; white-space:nowrap; font-size:.75rem; }
+html.dark .af-label { color:#475569; }
+.af-badge {
+    display:inline-flex; align-items:center; gap:4px;
+    background:var(--np-light); color:var(--np-dark);
+    border:1px solid var(--np-mid); border-radius:9999px;
+    padding:2px 10px; font-size:.7rem; font-weight:700; white-space:nowrap;
+}
+html.dark .af-badge { background:#4c0519; color:#fda4af; border-color:#7f1d1d; }
+.af-badge button {
+    background:none; border:none; cursor:pointer; color:inherit;
+    font-size:.85rem; padding:0; margin-left:2px; line-height:1;
+}
+.af-clear-all {
+    background:none; border:none; color:#9ca3af; cursor:pointer;
+    font-size:.75rem; font-weight:600; margin-left:2px;
+}
+html.dark .af-clear-all { color:#475569; }
+
 @media(max-width:768px) {
     .stats-bar { grid-template-columns:1fr; }
     .dash-header { flex-direction:column; gap:12px; padding:16px; }
@@ -298,6 +389,14 @@ html.dark       .pag-wrap { border-top-color:#1e293b; }
         </div>
     </div>
     <div class="stat-card">
+        <div class="stat-icon" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;background:#f0fdf4;">🏁</div>
+        <div>
+            <div class="stat-label">Discharged</div>
+            <div class="stat-value">{{ $this->totalDischarged }}</div>
+            <div class="stat-sub">total discharged</div>
+        </div>
+    </div>
+    <div class="stat-card">
         <div class="stat-icon si-amber">📋</div>
         <div>
             <div class="stat-label">Pending Orders</div>
@@ -317,10 +416,14 @@ html.dark       .pag-wrap { border-top-color:#1e293b; }
 
 {{-- ══ FILTER BAR ══ --}}
 <div class="filter-bar">
-    <div class="view-toggle">
+<div class="view-toggle">
         <button wire:click="$set('viewFilter','admitted')" type="button"
                 class="vt-btn {{ $viewFilter === 'admitted' ? 'active' : '' }}">
             🏥 Admitted
+        </button>
+        <button wire:click="$set('viewFilter','discharged')" type="button"
+                class="vt-btn {{ $viewFilter === 'discharged' ? 'active' : '' }}">
+            🏁 Discharged
         </button>
         <button wire:click="$set('viewFilter','all')" type="button"
                 class="vt-btn {{ $viewFilter === 'all' ? 'active' : '' }}">
@@ -333,26 +436,98 @@ html.dark       .pag-wrap { border-top-color:#1e293b; }
                placeholder="Search by patient name or case number…"
                class="search-input">
     </div>
-    <div class="select-wrap">
-        <select wire:model.live="serviceFilter" class="filter-select">
-            <option value="">All Services</option>
-            @foreach($this->serviceOptions as $svc)
-            <option value="{{ $svc }}">{{ $svc }}</option>
-            @endforeach
-        </select>
-    </div>
-    @if($search || $serviceFilter)
-    <span class="filter-badge">
-        Filtered
-        @if($search) · "{{ $search }}" @endif
-        @if($serviceFilter) · {{ $serviceFilter }} @endif
-    </span>
-    <button wire:click="$set('search',''); $set('serviceFilter','')"
-            style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.8rem;">
+    <button wire:click="toggleFilters" type="button"
+            class="btn-filter {{ $showFilters ? 'is-active' : '' }}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/></svg>
+        Filters
+        @if($this->activeFilterCount > 0)
+        <span class="f-count">{{ $this->activeFilterCount }}</span>
+        @endif
+    </button>
+    @if($search)
+    <button wire:click="$set('search','')"
+            style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.78rem;font-weight:600;">
         ✕ Clear
     </button>
     @endif
 </div>
+
+{{-- ══ FILTER PANEL ══ --}}
+<div class="filter-panel-wrap">
+    @if($showFilters)
+    <div class="filter-panel">
+        <div class="fp-head">
+            <span class="fp-head-title">Filters</span>
+            <button type="button" wire:click="clearFilters" class="fp-reset">Reset</button>
+        </div>
+
+        <div class="fp-field">
+            <label class="fp-label">Sex</label>
+            <select wire:model.live="sexFilter" class="fp-sel">
+                <option value="">All</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+        </div>
+
+        <div class="fp-field">
+            <label class="fp-label">Service</label>
+            <select wire:model.live="serviceFilter" class="fp-sel">
+                <option value="">All Services</option>
+                @foreach($this->serviceOptions as $svc)
+                <option value="{{ $svc }}">{{ $svc }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="fp-field">
+            <label class="fp-label">Date Range (Registration)</label>
+            <div class="fp-date-row">
+                <div>
+                    <div class="fp-date-sub">From</div>
+                    <input type="date" wire:model.live="dateFrom" class="fp-date" placeholder="Start date">
+                </div>
+                <div>
+                    <div class="fp-date-sub">Until</div>
+                    <input type="date" wire:model.live="dateUntil" class="fp-date" placeholder="End date">
+                </div>
+            </div>
+            @if($dateFrom || $dateUntil)
+            <div class="fp-active-range">
+                📅
+                @if($dateFrom && $dateUntil)
+                    {{ \Carbon\Carbon::parse($dateFrom)->format('M j') }} – {{ \Carbon\Carbon::parse($dateUntil)->format('M j, Y') }}
+                @elseif($dateFrom)
+                    From {{ \Carbon\Carbon::parse($dateFrom)->format('M j, Y') }}
+                @else
+                    Until {{ \Carbon\Carbon::parse($dateUntil)->format('M j, Y') }}
+                @endif
+            </div>
+            @endif
+        </div>
+    </div>
+    @endif
+</div>
+
+{{-- ══ ACTIVE FILTERS ══ --}}
+@if($this->hasActiveFilters)
+<div class="active-filter-bar">
+    <span class="af-label">Active filters:</span>
+    @if($sexFilter)
+    <span class="af-badge">Sex: {{ $sexFilter }} <button wire:click="$set('sexFilter','')">×</button></span>
+    @endif
+    @if($serviceFilter)
+    <span class="af-badge">Service: {{ $serviceFilter }} <button wire:click="$set('serviceFilter','')">×</button></span>
+    @endif
+    @if($dateFrom)
+    <span class="af-badge">From: {{ \Carbon\Carbon::parse($dateFrom)->format('M j, Y') }} <button wire:click="$set('dateFrom','')">×</button></span>
+    @endif
+    @if($dateUntil)
+    <span class="af-badge">Until: {{ \Carbon\Carbon::parse($dateUntil)->format('M j, Y') }} <button wire:click="$set('dateUntil','')">×</button></span>
+    @endif
+    <button wire:click="clearFilters" class="af-clear-all">Clear all ×</button>
+</div>
+@endif
 
 {{-- ══ PATIENTS TABLE ══ --}}
 <div class="patients-table-wrap">
@@ -362,7 +537,7 @@ html.dark       .pag-wrap { border-top-color:#1e293b; }
             <tr>
                 <th style="width:32px;">#</th>
                 <th>Patient</th>
-                @if($viewFilter === 'all')
+                @if($viewFilter === 'all' || $viewFilter === 'discharged')
                     <th>Entry</th>
                     <th>Status</th>
                 @endif
@@ -372,7 +547,7 @@ html.dark       .pag-wrap { border-top-color:#1e293b; }
                 @if($viewFilter === 'admitted')
                     <th style="text-align:center;">Pending Orders</th>
                 @endif
-                <th>{{ $viewFilter === 'admitted' ? 'Admitted' : 'Registered' }}</th>
+                <th>{{ $viewFilter === 'admitted' ? 'Admitted' : ($viewFilter === 'discharged' ? 'Discharged' : 'Registered') }}</th>
                 <th style="width:120px;"></th>
             </tr>
         </thead>
@@ -404,7 +579,7 @@ html.dark       .pag-wrap { border-top-color:#1e293b; }
                         {{ $visit->patient->age_display }} · {{ $visit->patient->sex }}
                     </p>
                 </td>
-                @if($viewFilter === 'all')
+                @if($viewFilter === 'all' || $viewFilter === 'discharged')
                 <td>
                     <span class="{{ $visit->visit_type === 'ER' ? 'type-er' : 'type-opd' }}">
                         {{ $visit->visit_type === 'ER' ? '🚑 ER' : '📋 OPD' }}
@@ -454,6 +629,13 @@ html.dark       .pag-wrap { border-top-color:#1e293b; }
                                 <span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:9999px;font-weight:700;font-size:.68rem;">⏳ Pending Clerk</span>
                             </p>
                         @endif
+                    @elseif($viewFilter === 'discharged')
+                        @if($visit->discharged_at)
+                            <p class="adm-time">{{ $visit->discharged_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
+                            <p class="adm-ago">{{ $visit->discharged_at->diffForHumans() }}</p>
+                        @else
+                            <p style="color:#9ca3af;font-size:.78rem;">—</p>
+                        @endif
                     @else
                         <p class="adm-time">{{ $visit->registered_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
                         <p class="adm-ago">{{ $visit->registered_at->diffForHumans() }}</p>
@@ -474,14 +656,16 @@ html.dark       .pag-wrap { border-top-color:#1e293b; }
     <div class="empty-state">
         <div class="empty-icon-wrap">🏥</div>
         <p class="empty-title">
-            @if($search || $serviceFilter) No patients match your search
+            @if($search || $this->hasActiveFilters) No patients match your search or filters
             @elseif($viewFilter === 'admitted') No admitted patients
+            @elseif($viewFilter === 'discharged') No discharged patients
             @else No patients found
             @endif
         </p>
         <p class="empty-sub">
-            @if($search || $serviceFilter) Try adjusting your search or filter criteria.
-            @elseif($viewFilter === 'admitted') Switch to "All Patients" to see patients with other statuses.
+            @if($search || $this->hasActiveFilters) Try adjusting your filters or clearing them.
+            @elseif($viewFilter === 'admitted') Switch to "Discharged" or "All Patients" to see other patients.
+            @elseif($viewFilter === 'discharged') No patients have been discharged yet.
             @else No patient visits are recorded yet.
             @endif
         </p>

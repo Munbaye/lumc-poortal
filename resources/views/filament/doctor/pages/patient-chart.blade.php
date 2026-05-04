@@ -2139,9 +2139,9 @@
     <div class="chart-tabs">
             <button wire:click="setTab('profile')" class="chart-tab {{ $activeTab==='profile'   ? 'active':'' }}"><span class="tab-icon"><x-heroicon-o-document-text class="w-4 h-4" /></span> Patient Forms</button>
             <button wire:click="setTab('history')" class="chart-tab {{ $activeTab==='history'   ? 'active':'' }}"><span class="tab-icon"><x-heroicon-o-clock class="w-4 h-4" /></span> Visit History @if($pastCount > 0)<span class="tab-badge tab-badge-blue">{{ $pastCount }}</span>@endif</button>
+            @if(!$isReadonly)
             <button wire:click="setTab('orders')" class="chart-tab {{ $activeTab==='orders'    ? 'active':'' }}"><span class="tab-icon"><x-heroicon-o-clipboard-document-list class="w-4 h-4" /></span> Doctor's Orders @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif</button>
             <button wire:click="setTab('results')" class="chart-tab {{ $activeTab==='results'   ? 'active':'' }}"><span class="tab-icon"><x-heroicon-o-beaker class="w-4 h-4" /></span> Lab / Radiology @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif</button>
-
             @if($this->isNicu)
             <button wire:click="setTab('ballard')" class="chart-tab {{ $activeTab==='ballard' ? 'active':'' }}">
                 <span class="tab-icon"><x-heroicon-o-document-chart-bar class="w-4 h-4" /></span> Ballard Score
@@ -2149,6 +2149,7 @@
                 <span class="tab-badge tab-badge-green">✓</span>
                 @endif
             </button>
+            @endif
             @endif
         </div>
 
@@ -3110,7 +3111,7 @@
     @else
     <div style="text-align:center;padding:60px 20px;">
         <p style="color:#9ca3af;margin-bottom:10px;">Visit not found or not accessible.</p>
-        <a href="{{ \App\Filament\Doctor\Resources\AdmittedPatientsResource::getUrl('index') }}" style="color:#1d4ed8;font-size:.875rem;"><x-heroicon-o-chevron-left class="w-4 h-4 inline" /> Back to Admitted Patients</a>
+        <a href="{{ \App\Filament\Doctor\Resources\AdmittedPatientsResource::getUrl('index') }}" style="color:#1d4ed8;font-size:.875rem;"><x-heroicon-o-chevron-left class="w-4 h-4 inline" /> Back to Patient List</a>
     </div>
     @endif
 

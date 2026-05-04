@@ -74,7 +74,7 @@ class PatientChart extends Page
     {
         return [
             Action::make('back_to_admitted_patients')
-                ->label('Admitted Patients')
+                ->label('Patient List')
                 ->url(\App\Filament\Doctor\Resources\AdmittedPatientsResource::getUrl('index'))
                 ->color('gray')
                 ->icon('heroicon-o-arrow-left'),
