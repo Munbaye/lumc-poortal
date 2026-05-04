@@ -214,6 +214,13 @@ foreach($vitals ?? [] as $v){
         </span>
     </div>
 
+     <div>
+        <strong>BED NO:</strong>
+        <span style="display:inline-block; min-width:250px; border-bottom:1px solid black;">
+            {{ $visit->case_no ?? '' }}
+        </span>
+    </div>
+
     <div>
         <strong>Hospital Case No.:</strong>
         <span style="display:inline-block; min-width:250px; border-bottom:1px solid black;">
@@ -221,9 +228,10 @@ foreach($vitals ?? [] as $v){
         </span>
     </div>
 
+
 </div>
 
-<!-- DAYS -->
+{{-- <!-- DAYS -->
 <div style="margin-top:8px; font-size:9pt;">
 
     <div style="margin-bottom:4px;">
@@ -241,7 +249,7 @@ foreach($vitals ?? [] as $v){
         <span style="display:inline-block; width:40%; border-bottom:1px solid black;"></span>
     </div>
 
-</div>
+</div> --}}
 
 <!-- GRAPH -->
 {{-- <div class="graph-container">
@@ -282,86 +290,139 @@ foreach($vitals ?? [] as $v){
 <!-- GRAPH WITH HORIZONTAL LABELS -->
 <div style="margin-top:10px;">
 
-    <table style="width:100%; border-collapse:collapse;">
-        <tr>
+<table style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:7pt;">
 
-            <!-- LEFT LABELS (HORIZONTAL NA) -->
-            <td style="width:120px; border:1px solid black; vertical-align:top; padding:0;">
+    <!-- TOP HEADER -->
+    <tr>
+        <td style="border:1px solid black; width:120px; text-align:left; padding-left:4px;">
+            <b>Day of Month</b>
+        </td>
 
-                <!-- LABEL HEADER -->
-                <table style="width:100%; border-collapse:collapse;">
-                    <tr>
-                        <td style="border-bottom:1px solid black; text-align:center;">Resp</td>
-                        <td style="border-bottom:1px solid black; text-align:center;">Pulse</td>
-                        <td style="border-bottom:1px solid black; text-align:center;">Temp</td>
-                    </tr>
-                </table>
+        @for($d=1;$d<=31;$d++)
+            <td colspan="3" style="border:1px solid black;">{{ $d }}</td>
+        @endfor
+    </tr>
 
-                <!-- VALUES -->
-                <div style="padding:5px; font-size:7pt; line-height:10px; text-align:right;">
+    {{-- <tr>
+        <td style="border:1px solid black; text-align:left; padding-left:4px;">
+            <b>Time</b>
+        </td>
 
-                    <!-- TEMP -->
-                    <div>°C</div>
-                    <div>42</div>
-                    <div>41</div>
-                    <div>40</div>
-                    <div>39</div>
-                    <div>38</div>
-                    <div>37</div>
-                    <div>36</div>
-                    <div>35</div>
+        @for($d=1;$d<=31;$d++)
+            <td style="border:1px solid black;">7</td>
+            <td style="border:1px solid black;">11</td>
+            <td style="border:1px solid black;">3</td>
+        @endfor
+    </tr> --}}
 
-                    <br>
- <div style="padding:5px; font-size:7pt; line-height:10px; text-align:center;">
-                    <!-- PULSE -->
-                    <div>180</div>
-                    <div>160</div>
-                    <div>140</div>
-                    <div>120</div>
-                    <div>100</div>
-                    <div>80</div>
-                    <div>60</div>
+    <tr>
+        <td style="border:1px solid black; text-align:left; padding-left:4px;">
+            <b>No. of Days in Hospital</b>
+        </td>
 
-                    <br>
- <div style="padding:5px; font-size:7pt; line-height:10px; text-align:left;">
-                    <!-- RESP -->
-                    <div>50</div>
-                    <div>40</div>
-                    <div>30</div>
-                    <div>20</div>
-                    <div>10</div>
+        @for($d=1;$d<=31;$d++)
+            <td colspan="3" style="border:1px solid black;"></td>
+        @endfor
+    </tr>
 
-                </div>
-            </td>
+    <tr>
+        <td style="border:1px solid black; text-align:left; padding-left:4px;">
+            <b>Weight</b>
+        </td>
 
-            <!-- GRAPH GRID  -->
-            <td style="border:1px solid black;">
+        @for($d=1;$d<=31;$d++)
+            <td colspan="3" style="border:1px solid black;"></td>
+        @endfor
+    </tr>
 
-                <div style="
-                    height:300px; 
-                    background-image:
-                        linear-gradient(to right, #bbb 1px, transparent 1px),
-                        linear-gradient(to bottom, #bbb 1px, transparent 1px);
-                    background-size:15px 10px;
-                    position:relative;
-                ">
+    <!-- MAIN GRAPH -->
+    <tr>
 
-                    {{-- <!-- MID LINE -->
-                    <div style="
-                        position:absolute;
-                        top:50%;
-                        width:100%;
-                        border-top:2px solid black;
-                    "></div> --}}
+        <!-- LEFT SIDE LABELS -->
+        <td style="border:1px solid black; vertical-align:top; padding:4px;">
 
-                </div>
+            <div style="font-weight:bold; text-align:right;">Temp</div>
+            <div style="text-align:right;">
+            °C<br><br>
+            42<br><br>
+            <br><br>
+            41<br><br>
+            <br><br>
+            40<br><br>
+            <br><br>
+            39<br><br>
+            <br><br>
+            38<br><br>
+            <br><br>
+            37<br><br>
+            <br><br>
+            36<br><br>
+            <br><br>
+            35
 
-            </td>
+            <br><br>
+            <br><br>
+            </div>
 
-        </tr>
-    </table>
+            <div style="font-weight:bold; text-align:center;">Pulse</div>
+            <br><br>
+            <div style="text-align:center;">
+            180<br><br>
+            <br><br>
+            160<br><br>
+            <br><br>
+            140<br><br>
+            <br><br>
+            120<br><br>
+            <br><br>
+            100<br><br>
+            <br><br>
+            80<br><br>
+            <br><br>
+            60
+
+            <br><br>
+            <br><br>
+            </div>
+
+
+            <div style="font-weight:bold; text-align:left;">Resp</div>
+            <br><br>
+            <div style="text-align:left;">  
+            50<br><br>
+            <br><br>
+            40<br><br>
+            <br><br>
+            30<br><br>
+            <br><br>
+            20<br><br>
+            <br><br>
+            10
+
+        </td>
+        </div>
+
+        <!-- GRAPH GRID -->
+        <td colspan="93" style="border:1px solid black; padding:0;">
+
+            <div style="
+                height:1000px;
+                background-image:
+                    linear-gradient(to right, #bbb 1px, transparent 1px),
+                    linear-gradient(to bottom, #bbb 1px, transparent 1px);
+                background-size:14px 10px;
+            ">
+            </div>
+
+        </td>
+
+    </tr>
+
+</table>
 
 </div>
+
+
 
 <!-- URINE + STOOL -->
 <table style="margin-top:10px;">
