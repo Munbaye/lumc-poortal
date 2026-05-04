@@ -136,12 +136,23 @@ class PatientChart extends Page
     // ── Readonly mode (past / completed visits) ───────────────────────────────
 
     public function getIsReadonlyProperty(): bool
-    {
-        if (!$this->visit) return true;
-        return !($this->visit->status === 'admitted'
-            && $this->visit->clerk_admitted_at !== null
-            && $this->visit->discharged_at === null);
+{
+    if (!$this->visit) return true;
+
+    // Discharged is always readonly
+    if ($this->visit->discharged_at !== null || $this->visit->status === 'discharged') {
+        return true;
     }
+
+    // NICU patients may not have clerk_admitted_at — treat as editable if admitted
+    if ($this->visit->visit_type === 'NICU' && $this->visit->status === 'admitted') {
+        return false;
+    }
+
+    // Standard: must be fully clerk-admitted and not discharged
+    return !($this->visit->status === 'admitted'
+        && $this->visit->clerk_admitted_at !== null);
+}
 
     public function getIsNicuProperty(): bool
     {
