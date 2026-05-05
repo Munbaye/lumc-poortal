@@ -2266,6 +2266,37 @@
                 @endif
             </div>
 
+            {{-- ── Doctor's Order Compliance Sheet ──────────────── --}}
+            @php $docOrderCount = \App\Models\DoctorOrder::where('visit_id', $visit->id)->count(); @endphp
+            <div class="form-section">
+                <div class="form-section-header">
+                    <span class="form-section-label">📋 Doctor's Order Compliance Sheet</span>
+                    <div class="form-section-line"></div>
+                    <span class="form-section-badge"
+                        style="{{ $docOrderCount > 0 ? 'background:#e0f2fe;color:#0369a1;' : 'background:#f3f4f6;color:#6b7280;' }}">
+                        {{ $docOrderCount > 0 ? $docOrderCount . ' order' . ($docOrderCount === 1 ? '' : 's') : 'No orders yet' }}
+                    </span>
+                    <a href="{{ route('forms.doctors-order', ['visit' => $visit->id]) }}"
+                        target="_blank"
+                        style="font-size:.72rem;font-weight:700;color:#0369a1;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#e0f2fe;border:1px solid #7dd3fc;padding:3px 10px;border-radius:5px;white-space:nowrap;margin-left:4px;">
+                        🖨️ Open / Print
+                    </a>
+                </div>
+                @if($docOrderCount > 0)
+                <div class="form-iframe-wrap">
+                    <iframe src="{{ route('forms.doctors-order', ['visit' => $visit->id]) }}"
+                        title="Doctor's Order Compliance Sheet"
+                        style="width:100%;min-height:900px;border:none;display:block;"
+                        loading="lazy"></iframe>
+                </div>
+                @else
+                <div class="form-missing-card">
+                    <div class="form-missing-icon">📋</div>
+                    <p class="form-missing-text">No doctor's orders written yet for this visit.</p>
+                </div>
+                @endif
+            </div>
+
             {{-- ── 6. Vital Sign Monitoring Sheet (NUR-014) ───────────── --}}
             @php
             $vsCount = \App\Models\Vital::where('visit_id', $visit->id)->count();

@@ -176,4 +176,6 @@ Route::middleware(['auth'])->group(function () {
         ->name('forms.discharge-summary')
         ->middleware('auth');
 
+    Route::get('/forms/doctors-order/{visit}', [NurseFormController::class, 'doctorsOrder'])
+        ->name('forms.doctors-order');
 });

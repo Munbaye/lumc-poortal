@@ -85,4 +85,24 @@ class NurseFormController extends Controller
         return view('forms.tpr-record', compact('visit', 'vitals'));
     }
 
+    /**
+     * GET /forms/doctors-order/{visit}
+     *
+     * Renders the printable Doctor's Order Compliance Sheet
+     * populated with all DoctorOrder records for the given visit.
+     */
+    public function doctorsOrder(Visit $visit)
+    {
+        $visit->loadMissing(['patient']);
+
+        // Load orders newest-group-first, ordered within each group by position
+        $orders = \App\Models\DoctorsOrder::where('visit_id', $visit->id)
+            ->with(['doctor', 'completedBy'])
+            ->orderBy('order_date', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        return view('forms.doctors-order', compact('visit', 'orders'));
+    }
+
 }
