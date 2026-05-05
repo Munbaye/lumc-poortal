@@ -31,7 +31,7 @@ html.dark .sig-header h1 { color:#f1f5f9; }
 .sig-header p { font-size:.83rem; color:#6b7280; margin:.25rem 0 0; }
 html.dark .sig-header p { color:#94a3b8; }
 
-/* ── Main tabs (admin-only: My Sig / Staff Overview) ── */
+/* ── Main tabs ── */
 .sig-main-tabs {
     display:flex; gap:.5rem; margin-bottom:1.5rem;
     border-bottom:2px solid #e5e7eb; padding-bottom:0;
@@ -272,7 +272,7 @@ html.dark .sig-current-preview {
 }
 .sig-current-preview img { max-height:80px; max-width:100%; object-fit:contain; }
 
-/* ── Save / action button row (matches shared blade) ── */
+/* ── Save / action button row ── */
 .sig-action-row {
     display: flex;
     align-items: center;
@@ -326,33 +326,21 @@ html.dark .sig-alert-error   { background:#450a0a; border-color:#7f1d1d; color:#
 .sig-alert svg { width:16px; height:16px; flex-shrink:0; }
 
 /* ══════════════════════════════════════════════════════════
-   STAFF OVERVIEW STYLES (admin-only tab)
+   STAFF OVERVIEW STYLES
 ══════════════════════════════════════════════════════════ */
-
-/* Make staff tab visually match My Signature tab height */
 .sig-staff-content {
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
     min-height: 980px;
 }
-
-/* Force the main staff panel to stretch */
 .sig-staff-content .sig-panel {
     flex: 1;
     display: flex;
     flex-direction: column;
 }
-
-/* Make table section fill remaining space */
-.sig-staff-content .sig-panel > div:last-child {
-    flex: 1;
-}
-
-/* Optional cleaner empty lower spacing */
-.sig-staff-table {
-    height: 100%;
-}
+.sig-staff-content .sig-panel > div:last-child { flex: 1; }
+.sig-staff-table { height: 100%; }
 
 .sig-page {
     width: 100%;
@@ -360,30 +348,16 @@ html.dark .sig-alert-error   { background:#450a0a; border-color:#7f1d1d; color:#
     margin: 0 auto;
     padding: 1.5rem 1rem 4rem;
 }
-
-/* Force BOTH tabs to use identical width */
-.sig-page > div[x-show] {
-    width: 100%;
-}
-
-/* Staff tab should fully stretch like My Signature */
+.sig-page > div[x-show] { width: 100%; }
 .sig-staff-content {
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
 }
-
-/* Force cards/panels inside staff tab to full width */
 .sig-staff-content .sig-panel,
-.sig-staff-content .sig-overview-stats {
-    width: 100%;
-}
-
-/* Prevent table wrapper from shrinking layout */
-.sig-staff-content .sig-panel > div[style*="overflow-x:auto"] {
-    width: 100%;
-}
+.sig-staff-content .sig-overview-stats { width: 100%; }
+.sig-staff-content .sig-panel > div[style*="overflow-x:auto"] { width: 100%; }
 
 .sig-overview-stats {
     display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:1.25rem;
@@ -436,6 +410,102 @@ html.dark .sig-staff-table-header { border-color:#334155; }
 .sig-staff-table-header .title { font-size:.875rem; font-weight:700; color:#374151; }
 html.dark .sig-staff-table-header .title { color:#e2e8f0; }
 .sig-staff-table-header .total { font-size:.75rem; color:#9ca3af; margin-left:auto; }
+
+/* ── View Signature button ── */
+.sig-view-btn {
+    display:inline-flex; align-items:center; gap:.35rem;
+    padding:.3rem .75rem; border-radius:.5rem;
+    font-size:.75rem; font-weight:600;
+    border:1.5px solid var(--sig-accent30);
+    background: var(--sig-accent10);
+    color:var(--sig-accent);
+    cursor:pointer; transition: all .15s;
+}
+.sig-view-btn:hover {
+    background: var(--sig-accent);
+    color: #fff;
+    border-color: var(--sig-accent);
+}
+.sig-view-btn svg { width:13px; height:13px; flex-shrink:0; }
+
+/* ── Signature viewer modal ── */
+.sig-modal-backdrop {
+    position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,.55);
+    display:flex; align-items:center; justify-content:center;
+    padding:1rem;
+    backdrop-filter: blur(3px);
+}
+.sig-modal {
+    background:#fff; border-radius:1.25rem;
+    box-shadow:0 20px 60px rgba(0,0,0,.25);
+    width:100%; max-width:520px;
+    overflow:hidden;
+    animation: sig-modal-in .18s ease;
+}
+html.dark .sig-modal { background:#1e293b; }
+@keyframes sig-modal-in {
+    from { opacity:0; transform:scale(.95) translateY(8px); }
+    to   { opacity:1; transform:scale(1)  translateY(0); }
+}
+.sig-modal-header {
+    display:flex; align-items:flex-start; justify-content:space-between;
+    padding:1.25rem 1.5rem 1rem;
+    border-bottom:1px solid #f3f4f6;
+}
+html.dark .sig-modal-header { border-color:#334155; }
+.sig-modal-header-info {}
+.sig-modal-title {
+    font-size:1rem; font-weight:700; color:#111827; margin:0 0 .15rem;
+}
+html.dark .sig-modal-title { color:#f1f5f9; }
+.sig-modal-subtitle {
+    font-size:.78rem; color:#6b7280; margin:0;
+    display:flex; align-items:center; gap:.4rem;
+}
+html.dark .sig-modal-subtitle { color:#94a3b8; }
+.sig-modal-close {
+    width:32px; height:32px; border-radius:50%;
+    border:none; background:#f3f4f6; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:#6b7280; flex-shrink:0; margin-top:-.1rem;
+    transition: background .15s, color .15s;
+}
+html.dark .sig-modal-close { background:#334155; color:#94a3b8; }
+.sig-modal-close:hover { background:#e5e7eb; color:#374151; }
+html.dark .sig-modal-close:hover { background:#475569; color:#e2e8f0; }
+.sig-modal-close svg { width:15px; height:15px; }
+.sig-modal-body {
+    padding:1.5rem;
+}
+.sig-modal-preview {
+    border-radius:.875rem; overflow:hidden;
+    background: repeating-conic-gradient(#f0f0f0 0% 25%, #fff 0% 50%) 0 0 / 16px 16px;
+    border:1px solid #e5e7eb;
+    display:flex; align-items:center; justify-content:center;
+    min-height:160px; padding:1.5rem;
+}
+html.dark .sig-modal-preview {
+    background: repeating-conic-gradient(#0f172a 0% 25%, #1e293b 0% 50%) 0 0 / 16px 16px;
+    border-color:#334155;
+}
+.sig-modal-preview img {
+    max-width:100%; max-height:180px; object-fit:contain;
+}
+.sig-modal-footer {
+    padding:.75rem 1.5rem 1.25rem;
+    display:flex; justify-content:flex-end;
+}
+.sig-modal-dismiss {
+    display:inline-flex; align-items:center; gap:.4rem;
+    padding:.5rem 1.1rem; border-radius:.6rem;
+    font-size:.83rem; font-weight:600;
+    border:1.5px solid #e5e7eb; background:transparent;
+    color:#6b7280; cursor:pointer; transition: all .15s;
+}
+html.dark .sig-modal-dismiss { border-color:#475569; color:#94a3b8; }
+.sig-modal-dismiss:hover { background:#f9fafb; color:#374151; border-color:#9ca3af; }
+html.dark .sig-modal-dismiss:hover { background:#334155; color:#e2e8f0; }
 </style>
 @endpush
 
@@ -468,7 +538,7 @@ html.dark .sig-staff-table-header .title { color:#e2e8f0; }
         </div>
     </div>
 
-    {{-- Main tabs (admin-only) --}}
+    {{-- Main tabs --}}
     <div class="sig-main-tabs">
         <button class="sig-main-tab" :class="{active: mainTab==='mine'}" @click="switchMainTab('mine')">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
@@ -486,7 +556,6 @@ html.dark .sig-staff-table-header .title { color:#e2e8f0; }
     ══════════════════════════════════════════════════════════ --}}
     <div x-show="mainTab==='mine'" x-cloak>
 
-        {{-- Current signature status --}}
         <div class="sig-current-card">
             <div class="sig-current-header">
                 <div class="sig-status-dot {{ $currentSignature ? 'has' : 'none' }}"></div>
@@ -504,7 +573,6 @@ html.dark .sig-staff-table-header .title { color:#e2e8f0; }
             @endif
         </div>
 
-        {{-- Draw / Upload sub-tabs --}}
         <div class="sig-tabs">
             <button class="sig-tab" :class="{active: activeTab==='draw'}" @click="switchTab('draw')">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -520,13 +588,11 @@ html.dark .sig-staff-table-header .title { color:#e2e8f0; }
             </button>
         </div>
 
-        {{-- Main panel --}}
         <div class="sig-panel">
             <div class="sig-panel-body">
 
                 <div class="sig-zone" id="sig-zone">
 
-                    {{-- DRAW: canvas --}}
                     <div class="sig-canvas-wrap" :class="{'has-strokes': hasStrokes}"
                          x-show="activeTab==='draw'" id="canvas-wrap">
                         <canvas id="sig-canvas"></canvas>
@@ -538,7 +604,6 @@ html.dark .sig-staff-table-header .title { color:#e2e8f0; }
                         </div>
                     </div>
 
-                    {{-- UPLOAD: drop zone --}}
                     <div class="sig-upload-zone"
                          :class="{dragover: dragging}"
                          x-show="activeTab==='upload' && !uploadOriginal && !processing"
@@ -555,14 +620,12 @@ html.dark .sig-staff-table-header .title { color:#e2e8f0; }
                     <input type="file" x-ref="fileInput" accept="image/*" style="display:none"
                            @change="handleFileSelect($event)">
 
-                    {{-- UPLOAD: processing overlay --}}
                     <div class="sig-processing-overlay"
                          x-show="activeTab==='upload' && processing">
                         <div class="sig-spinner"></div>
                         <div class="sig-processing-text" x-text="processingMsg"></div>
                     </div>
 
-                    {{-- UPLOAD: before/after preview --}}
                     <div class="sig-preview-grid"
                          x-show="activeTab==='upload' && uploadOriginal && !processing">
                         <div class="sig-preview-cell">
@@ -584,7 +647,6 @@ html.dark .sig-staff-table-header .title { color:#e2e8f0; }
 
                 </div>{{-- /.sig-zone --}}
 
-                {{-- Draw controls --}}
                 <div class="sig-controls-row" x-show="activeTab==='draw'">
                     <div class="sig-pen-sizes">
                         <span>Pen size</span>
@@ -606,7 +668,6 @@ html.dark .sig-staff-table-header .title { color:#e2e8f0; }
                     </button>
                 </div>
 
-                {{-- Upload controls --}}
                 <div class="sig-controls-row" x-show="activeTab==='upload' && uploadOriginal && !processing">
                     <span style="font-size:.78rem;color:#9ca3af;">
                         Background detected &amp; removed automatically
@@ -619,7 +680,6 @@ html.dark .sig-staff-table-header .title { color:#e2e8f0; }
                     </button>
                 </div>
 
-                {{-- Draw preview thumbnail --}}
                 <div class="sig-draw-preview" x-show="activeTab==='draw' && drawPreview">
                     <p>Preview — transparent background:</p>
                     <div class="sig-thumb-wrap">
@@ -627,7 +687,6 @@ html.dark .sig-staff-table-header .title { color:#e2e8f0; }
                     </div>
                 </div>
 
-                {{-- Info note --}}
                 <div class="sig-note">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -641,7 +700,6 @@ html.dark .sig-staff-table-header .title { color:#e2e8f0; }
             </div>
         </div>
 
-        {{-- Save / Cancel button row — compact, right-aligned (matches shared blade) --}}
         <div class="sig-action-row">
             <button class="sig-cancel-btn"
                     @click="activeTab==='draw' ? clearCanvas() : resetUpload()"
@@ -701,6 +759,7 @@ html.dark .sig-staff-table-header .title { color:#e2e8f0; }
                             <th>Panel / Role</th>
                             <th>Specialty</th>
                             <th>Signature Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -722,9 +781,25 @@ html.dark .sig-staff-table-header .title { color:#e2e8f0; }
                                 </span>
                                 @endif
                             </td>
+                            <td>
+                                @if($staff['has_sig'])
+                                {{-- Pass the staff id; Alpine will look up the signature from the encoded map --}}
+                                <button
+                                    class="sig-view-btn"
+                                    @click="openModal({{ $staff['id'] }})">
+                                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                    View Signature
+                                </button>
+                                @else
+                                <span style="font-size:.75rem;color:#d1d5db;">—</span>
+                                @endif
+                            </td>
                         </tr>
                         @empty
-                        <tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:2rem;">No staff found.</td></tr>
+                        <tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:2rem;">No staff found.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -733,12 +808,69 @@ html.dark .sig-staff-table-header .title { color:#e2e8f0; }
 
     </div>{{-- /mainTab staff --}}
 
+    {{-- ══════════════════════════════════════════════════════
+         SIGNATURE VIEWER MODAL
+    ══════════════════════════════════════════════════════════ --}}
+    <div class="sig-modal-backdrop"
+         x-show="modalOpen"
+         x-cloak
+         @click.self="closeModal()"
+         x-transition:enter="transition ease-out duration-150"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-100"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+
+        <div class="sig-modal" @click.stop>
+            <div class="sig-modal-header">
+                <div class="sig-modal-header-info">
+                    <p class="sig-modal-title" x-text="modalName"></p>
+                    <p class="sig-modal-subtitle">
+                        <span x-text="modalPanel"
+                              style="display:inline-block;padding:.1rem .45rem;border-radius:.3rem;font-size:.68rem;font-weight:700;text-transform:uppercase;background:var(--sig-accent10);color:var(--sig-accent);"></span>
+                        <span x-show="modalSpecialty" x-text="'· ' + modalSpecialty"></span>
+                    </p>
+                </div>
+                <button class="sig-modal-close" @click="closeModal()">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="sig-modal-body">
+                <div class="sig-modal-preview">
+                    <img :src="modalSrc" :alt="'Signature of ' + modalName">
+                </div>
+            </div>
+            <div class="sig-modal-footer">
+                <button class="sig-modal-dismiss" @click="closeModal()">Close</button>
+            </div>
+        </div>
+
+    </div>
+
 </div>
 
 @push('scripts')
 <script>
+// Encode the signatures server-side into a JS-safe map: { id: {name, panel, specialty, src} }
+const staffSigMap = {
+    @foreach($staffSignatures as $staff)
+    @if($staff['has_sig'])
+    {{ $staff['id'] }}: {
+        name:      @js($staff['name']),
+        panel:     @js($staff['panel']),
+        specialty: @js($staff['specialty'] ?? ''),
+        src:       @js(\App\Models\User::find($staff['id'])?->signature ?? ''),
+    },
+    @endif
+    @endforeach
+};
+
 function signaturePage() {
     return {
+        /* ── main state ── */
         mainTab:         'mine',
         activeTab:       'draw',
         hasStrokes:      false,
@@ -754,10 +886,40 @@ function signaturePage() {
         uploadProcessed: null,
         saving:          false,
 
+        /* ── modal state ── */
+        modalOpen:    false,
+        modalSrc:     '',
+        modalName:    '',
+        modalPanel:   '',
+        modalSpecialty: '',
+
         init() {
             this.$nextTick(() => this.initCanvas());
         },
 
+        /* ── modal helpers ── */
+        openModal(id) {
+            const entry = staffSigMap[id];
+            if (!entry) return;
+            this.modalSrc       = entry.src;
+            this.modalName      = entry.name;
+            this.modalPanel     = entry.panel;
+            this.modalSpecialty = entry.specialty;
+            this.modalOpen      = true;
+        },
+
+        closeModal() {
+            this.modalOpen = false;
+            // slight delay before clearing so the fade-out is clean
+            setTimeout(() => {
+                this.modalSrc = '';
+                this.modalName = '';
+                this.modalPanel = '';
+                this.modalSpecialty = '';
+            }, 150);
+        },
+
+        /* ── tab helpers ── */
         switchMainTab(tab) {
             this.mainTab = tab;
             if (tab === 'mine' && this.activeTab === 'draw') {
