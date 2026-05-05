@@ -1815,11 +1815,6 @@ use App\Helpers\WHOGrowthChart;
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $vsCount > 0 ? 'background:#dbeafe;color:#1e40af;' : 'background:#f3f4f6;color:#6b7280;' }}">
                     {{ $vsCount > 0 ? $vsCount . ' entr' . ($vsCount === 1 ? 'y' : 'ies') : 'No entries yet' }}
                 </span>
-                <a href="{{ route('forms.vital-sign-monitoring-sheet', ['visit' => $visit->id]) }}"
-                   target="_blank"
-                   style="font-size:.72rem;font-weight:700;color:#2563eb;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#eff6ff;border:1px solid #bfdbfe;padding:3px 10px;border-radius:5px;">
-                    Open / Print
-                </a>
             </div>
             <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
                 <iframe src="{{ route('forms.vital-sign-monitoring-sheet', ['visit' => $visit->id]) }}"
@@ -1838,11 +1833,6 @@ use App\Helpers\WHOGrowthChart;
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $ivCnt > 0 ? 'background:#ccfbf1;color:#0f766e;' : 'background:#f3f4f6;color:#6b7280;' }}">
                     {{ $ivCnt > 0 ? $ivCnt . ' entr' . ($ivCnt === 1 ? 'y' : 'ies') : 'No entries yet' }}
                 </span>
-                <a href="{{ route('forms.iv-bt-sheet', ['visit' => $visit->id]) }}"
-                   target="_blank"
-                   style="font-size:.72rem;font-weight:700;color:#0f766e;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#f0fdfa;border:1px solid #99f6e4;padding:3px 10px;border-radius:5px;">
-                    Open / Print
-                </a>
             </div>
             <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
                 <iframe src="{{ route('forms.iv-bt-sheet', ['visit' => $visit->id]) }}"
@@ -1861,11 +1851,6 @@ use App\Helpers\WHOGrowthChart;
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $notesCount > 0 ? 'background:#ede9fe;color:#5b21b6;' : 'background:#f3f4f6;color:#6b7280;' }}">
                     {{ $notesCount > 0 ? $notesCount . ' note' . ($notesCount === 1 ? '' : 's') : 'No notes yet' }}
                 </span>
-                <a href="{{ route('forms.nurses-notes', ['visit' => $visit->id]) }}"
-                   target="_blank"
-                   style="font-size:.72rem;font-weight:700;color:#5b21b6;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#faf5ff;border:1px solid #ddd6fe;padding:3px 10px;border-radius:5px;">
-                    Open / Print
-                </a>
             </div>
             <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
                 <iframe src="{{ route('forms.nurses-notes', ['visit' => $visit->id]) }}"
@@ -1884,11 +1869,6 @@ use App\Helpers\WHOGrowthChart;
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $marCount > 0 ? 'background:#fff1f2;color:#be123c;' : 'background:#f3f4f6;color:#6b7280;' }}">
                     {{ $marCount > 0 ? $marCount . ' medication' . ($marCount === 1 ? '' : 's') : 'No entries yet' }}
                 </span>
-                <a href="{{ route('forms.medication-records', ['visit' => $visit->id]) }}"
-                   target="_blank"
-                   style="font-size:.72rem;font-weight:700;color:#be123c;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#fff1f2;border:1px solid #fecdd3;padding:3px 10px;border-radius:5px;white-space:nowrap;">
-                    Open / Print
-                </a>
             </div>
             @if($marCount > 0)
             <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
@@ -1904,29 +1884,6 @@ use App\Helpers\WHOGrowthChart;
             @endif
         </div>
 
-        {{-- 9b. TPR Graphic Record --}}
-        <div style="margin-bottom:32px;">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">🌡️ TPR Graphic Record</span>
-                <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
-                @php $tprVitCnt = $this->vitalsCount; @endphp
-                <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $tprVitCnt > 0 ? 'background:#fee2e2;color:#991b1b;' : 'background:#f3f4f6;color:#6b7280;' }}">
-                    {{ $tprVitCnt > 0 ? $tprVitCnt . ' vital entr' . ($tprVitCnt === 1 ? 'y' : 'ies') : 'No vitals yet' }}
-                </span>
-                <a href="{{ route('forms.tpr-record', ['visit' => $visit->id]) }}"
-                   target="_blank"
-                   style="font-size:.72rem;font-weight:700;color:#991b1b;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#fee2e2;border:1px solid #fca5a5;padding:3px 10px;border-radius:5px;white-space:nowrap;">
-                    🖨️ Open / Print
-                </a>
-            </div>
-            <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
-                <iframe src="{{ route('forms.tpr-record', ['visit' => $visit->id]) }}"
-                    title="TPR Graphic Record"
-                    style="width:100%;min-height:900px;border:none;display:block;"
-                    loading="lazy"></iframe>
-            </div>
-        </div>
-        
         {{-- 10. Breastfeeding Observation Job Aid (NUR-044-0) — NICU only --}}
         @if($visit->visit_type === 'NICU')
         <div style="margin-bottom:32px;">
@@ -1937,11 +1894,6 @@ use App\Helpers\WHOGrowthChart;
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $bfCount > 0 ? 'background:#dcfce7;color:#166534;' : 'background:#f3f4f6;color:#6b7280;' }}">
                     {{ $bfCount > 0 ? $bfCount . ' observation' . ($bfCount === 1 ? '' : 's') : 'No observations yet' }}
                 </span>
-                <a href="{{ route('forms.breastfeeding-observation', ['visit' => $visit->id]) }}"
-                   target="_blank"
-                   style="font-size:.72rem;font-weight:700;color:#166534;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;padding:3px 10px;border-radius:5px;white-space:nowrap;">
-                    Open / Print
-                </a>
             </div>
             @if($bfCount > 0)
             <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
@@ -1968,11 +1920,6 @@ use App\Helpers\WHOGrowthChart;
                     {{ $growthTotal > 0 ? $growthTotal . ' measurement' . ($growthTotal === 1 ? '' : 's') : 'No measurements yet' }}
                 </span>
                 @if($growthTotal > 0)
-                <a href="{{ route('forms.growth-chart', ['visit' => $visitId]) }}"
-                   target="_blank"
-                   style="font-size:.72rem;font-weight:700;color:#5b21b6;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#ede9fe;border:1px solid #ddd6fe;padding:3px 10px;border-radius:5px;white-space:nowrap;">
-                    Open / Print
-                </a>
                 @endif
             </div>
             @if($growthTotal > 0)
@@ -2000,11 +1947,6 @@ use App\Helpers\WHOGrowthChart;
                     {{ $ballardExamsNurse->isNotEmpty() ? $ballardExamsNurse->count() . ' exam' . ($ballardExamsNurse->count() === 1 ? '' : 's') . ' recorded' : 'Not yet assessed' }}
                 </span>
                 @if($ballardExamsNurse->isNotEmpty())
-                <a href="{{ route('forms.ballard-score', ['visit' => $visit->id]) }}"
-                   target="_blank"
-                   style="font-size:.72rem;font-weight:700;color:#065f46;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#d1fae5;border:1px solid #6ee7b7;padding:3px 10px;border-radius:5px;white-space:nowrap;">
-                    Open / Print
-                </a>
                 @endif
             </div>
             @if($ballardExamsNurse->isNotEmpty())
@@ -2021,47 +1963,6 @@ use App\Helpers\WHOGrowthChart;
             @endif
         </div>
         @endif
-
-        {{-- 13. Discharge Summary --}}
-        @php $hasDischargeSummary = (bool) $visit->dischargeSummary; @endphp
-        <div style="margin-bottom:32px;">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap;">📋 Discharge Summary</span>
-                <div style="flex:1;border-top:1px solid #e5e7eb;"></div>
-                @if($visit->status === 'discharged')
-                    <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $hasDischargeSummary ? 'background:#d1fae5;color:#065f46;' : 'background:#fef3c7;color:#92400e;' }}">
-                        {{ $hasDischargeSummary ? 'Completed' : 'Not yet completed' }}
-                    </span>
-                @else
-                    <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;background:#f3f4f6;color:#6b7280;">
-                        Patient not yet discharged
-                    </span>
-                @endif
-                @if($hasDischargeSummary)
-                <a href="{{ route('forms.discharge-summary', ['visit' => $visit->id]) }}"
-                   target="_blank"
-                   style="font-size:.72rem;font-weight:700;color:#059669;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;padding:3px 10px;border-radius:5px;white-space:nowrap;">
-                    🖨️ Open / Print
-                </a>
-                @endif
-            </div>
-            @if($hasDischargeSummary)
-            <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
-                <iframe src="{{ route('forms.discharge-summary', ['visit' => $visit->id]) }}"
-                    title="Discharge Summary"
-                    style="width:100%;min-height:1100px;border:none;display:block;"
-                    loading="lazy"></iframe>
-            </div>
-            @elseif($visit->status === 'discharged')
-            <div style="background:#fff;border:1.5px dashed #e5e7eb;border-radius:8px;padding:24px;text-align:center;">
-                <p style="font-size:.82rem;color:#9ca3af;">Discharge Summary has not been completed yet.</p>
-            </div>
-            @else
-            <div style="background:#fff;border:1.5px dashed #e5e7eb;border-radius:8px;padding:24px;text-align:center;">
-                <p style="font-size:.82rem;color:#9ca3af;">Discharge Summary will be available once the patient is discharged.</p>
-            </div>
-            @endif
-        </div>
 
         {{-- ══ MAR TAB CONTENT ══════════════════════════════════════════ --}}
         @elseif($activeTab === 'mar')

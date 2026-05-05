@@ -2,10 +2,6 @@
 
 @php
     $nurse = auth()->user();
-    $userInitials = strtoupper(
-        substr($nurse->first_name ?? $nurse->name ?? 'N', 0, 1) .
-        substr($nurse->last_name ?? '', 0, 1)
-    );
 @endphp
 
 <style>
@@ -67,22 +63,9 @@
 .dash-right {
     position: relative; z-index: 1;
     display: flex; flex-direction: column;
-    align-items: flex-end; gap: 7px; flex-shrink: 0;
+    align-items: flex-end; gap: 5px; flex-shrink: 0;
 }
-.user-chip {
-    display: flex; align-items: center; gap: 8px;
-    background: rgba(255,255,255,.15);
-    border: 1px solid rgba(255,255,255,.3);
-    border-radius: 9999px; padding: 5px 12px 5px 6px;
-    backdrop-filter: blur(4px);
-}
-.user-avatar {
-    width: 26px; height: 26px; border-radius: 50%;
-    background: #fff; color: var(--np);
-    font-size: .65rem; font-weight: 800;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.user-name  { font-size:.78rem; font-weight:600; color:#fff; }
+.dash-nurse-name { font-size:.9rem; font-weight:700; color:#fff; }
 .dash-clock { font-size:.68rem; color:rgba(255,255,255,.62); font-variant-numeric:tabular-nums; }
 
 /* ── Stat cards ────────────────────────────────────────────── */
@@ -139,20 +122,6 @@ html:not(.dark) .search-input::placeholder { color:#9ca3af; }
 html.dark       .search-input { background:#0f172a; border-color:#1e293b; color:#e2e8f0; }
 html.dark       .search-input:focus { border-color:var(--npa); box-shadow:0 0 0 3px rgba(244,63,94,.15); }
 html.dark       .search-input::placeholder { color:#334155; }
-
-.select-wrap { min-width:160px; }
-.filter-select {
-    width:100%; padding:9px 32px 9px 14px;
-    border:1.5px solid; border-radius:10px; font-size:.83rem; outline:none; cursor:pointer;
-    appearance:none; -webkit-appearance:none;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat:no-repeat; background-position:right 12px center; background-size:12px;
-    transition:border-color .15s;
-}
-html:not(.dark) .filter-select { background-color:#fff; border-color:#e5e7eb; color:#111827; }
-html:not(.dark) .filter-select:focus { border-color:var(--np); box-shadow:0 0 0 3px var(--np-sh); }
-html.dark       .filter-select { background-color:#0f172a; border-color:#1e293b; color:#e2e8f0; }
-html.dark       .filter-select:focus { border-color:var(--npa); }
 
 .filter-badge { font-size:.72rem; padding:3px 10px; border-radius:9999px; font-weight:700; white-space:nowrap; }
 html:not(.dark) .filter-badge { background:var(--np-light); color:var(--np-dark); }
@@ -337,10 +306,7 @@ html.dark .pending-clerk-badge { background:#1c1400; color:#fde047; }
         </p>
     </div>
     <div class="dash-right">
-        <div class="user-chip">
-            <div class="user-avatar">{{ $userInitials }}</div>
-            <span class="user-name">{{ $nurse->name ?? 'Nurse' }}</span>
-        </div>
+        <span class="dash-nurse-name">{{ $nurse->name ?? 'Nurse' }}</span>
         <span class="dash-clock" id="nurse-clock">{{ now()->timezone('Asia/Manila')->format('D, M j · H:i') }}</span>
     </div>
     {{-- Decorative background icon --}}
