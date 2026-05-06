@@ -35,8 +35,16 @@
     }
 
     @media print {
-        body { background: #fff; padding: 0; }
-        .paper { width: 100%; padding: 0; box-shadow: none; }
+        html, body { margin: 0; padding: 0; background: #fff; }
+        .paper { 
+            width: 100%; 
+            padding: 0; 
+            margin: 0;
+            box-shadow: none; 
+            page-break-inside: avoid;
+            break-inside: avoid;
+            overflow: hidden;
+        }
         .no-print { display: none !important; }
     }
 

@@ -10,15 +10,32 @@
         body { font-family: 'Times New Roman', Times, serif; font-size: 9pt; color: #000; background: #c9c9c9; }
         @media screen {
             body { padding: 52px 0 40px; }
-            .paper { width: 13in; min-height: 8.5in; margin: 0 auto; background: #fff;
+            .paper { width: 13in; min-height: 8.5in; margin: 0 auto 40px; background: #fff;
                      box-shadow: 0 4px 28px rgba(0,0,0,.28); padding: 0.4in 0.45in; }
         }
         @media print {
-            body { background: #fff; padding: 0; }
-            .paper { width: 100%; padding: 0; box-shadow: none; }
-            .no-print { display: none !important; }
+            html, body { margin: 0; padding: 0; background: #fff; }
+            .toolbar, .no-print { display: none !important; }
+            .paper {
+                display: block;
+                width: 100%;
+                min-height: 0;
+                padding: 0;
+                margin: 0;
+                box-shadow: none;
+                page-break-before: always;
+                page-break-after: always;
+                page-break-inside: avoid;
+                break-before: page;
+                break-after: page;
+                break-inside: avoid;
+                overflow: hidden;
+            }
+            .paper:first-of-type {
+                page-break-before: auto;
+                break-before: auto;
+            }
         }
-
         /* ── Toolbar ── */
         .toolbar { position:fixed; top:0; left:0; right:0; height:46px; background:#1e3a5f; color:#fff;
                    font-family:'Segoe UI',system-ui,sans-serif; font-size:12px; display:flex; align-items:center;
@@ -111,9 +128,13 @@
     $isFemale    = $sex === 'female';
     $civilStatus = strtolower($patient->civil_status ?? '');
 
-    // Pad rows to at least 8 medication groups
-    $totalMeds   = max(8, $entries->count());
-    $blankNeeded = $totalMeds - $entries->count();
+    $perPage    = 6;
+    $chunks     = $entries->chunk($perPage);
+    $totalPages = max(1, $chunks->count());
+    if ($chunks->isEmpty()) {
+        $chunks     = collect([collect([])]);
+        $totalPages = 1;
+    }
 @endphp
 
 <div class="toolbar no-print">
@@ -124,7 +145,14 @@
     <button class="btn-print" onclick="window.print()"><svg xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6v-7z" /></svg>Print / Save as PDF</button>
 </div>
 
+@foreach($chunks as $pageIdx => $chunk)
+@php $blankNeeded = max(0, $perPage - $chunk->count()); @endphp
 <div class="paper">
+
+    <div class="no-print" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:6px;border-bottom:2px dashed #d1d5db;">
+        <span style="font-family:'Segoe UI',sans-serif;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Page {{ $pageIdx + 1 }} of {{ $totalPages }}</span>
+        <span style="font-family:'Segoe UI',sans-serif;font-size:10px;color:#9ca3af;">Medication Records &nbsp;·&nbsp; NUR-011</span>
+    </div>
 
     <div class="header">
         @if(file_exists(public_path('images/province-logo.png')))
@@ -217,7 +245,7 @@
         <tbody>
 
             {{-- ── Real medication rows ── --}}
-            @foreach($entries as $entry)
+            @foreach($chunk as $entry)
             @foreach(['7-3', '3-11', '11-7'] as $shiftIdx => $shift)
             @php
                 $isFirst    = $shiftIdx === 0;
@@ -265,5 +293,6 @@
     </table>
 
 </div>
+@endforeach
 </body>
 </html>

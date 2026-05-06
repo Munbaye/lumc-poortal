@@ -10,12 +10,30 @@
         body { font-family: 'Times New Roman', Times, serif; font-size: 9pt; color: #000; background: #c9c9c9; }
         @media screen {
             body { padding: 52px 0 40px; }
-            .paper { width: 8.5in; min-height: 13in; margin: 0 auto; background: #fff; box-shadow: 0 4px 28px rgba(0,0,0,.28); padding: 0.45in 0.55in; }
+            .paper { width: 8.5in; min-height: 13in; margin: 0 auto 40px; background: #fff; box-shadow: 0 4px 28px rgba(0,0,0,.28); padding: 0.45in 0.55in; }
         }
         @media print {
-            body { background: #fff; padding: 0; }
-            .paper { width: 100%; padding: 0; box-shadow: none; }
-            .no-print { display: none !important; }
+            html, body { margin: 0; padding: 0; background: #fff; }
+            .toolbar, .no-print { display: none !important; }
+            .paper {
+                display: block;
+                width: 100%;
+                min-height: 0;
+                padding: 0;
+                margin: 0;
+                box-shadow: none;
+                page-break-before: always;
+                page-break-after: always;
+                page-break-inside: avoid;
+                break-before: page;
+                break-after: page;
+                break-inside: avoid;
+                overflow: hidden;
+            }
+            .paper:first-of-type {
+                page-break-before: auto;
+                break-before: auto;
+            }
         }
 
         /* ── Toolbar ── */
@@ -78,9 +96,14 @@
                     ->orderBy('taken_at', 'asc')
                     ->get();
 
-    // How many blank rows to pad to at least 26 total rows
-    $totalRows   = max(26, $vitals->count());
-    $blankNeeded = $totalRows - $vitals->count();
+    $perPage    = 8;
+    $fillTo     = 18;
+    $chunks     = $vitals->chunk($perPage);
+    $totalPages = max(1, $chunks->count());
+    if ($chunks->isEmpty()) {
+        $chunks     = collect([collect([])]);
+        $totalPages = 1;
+    }
 @endphp
 
 <div class="toolbar no-print">
@@ -91,7 +114,14 @@
     <button class="btn-print" onclick="window.print()"><svg xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6v-7z" /></svg>Print / Save as PDF</button>
 </div>
 
+@foreach($chunks as $pageIdx => $chunk)
+@php $blankNeeded = max(0, $fillTo - $chunk->count()); @endphp
 <div class="paper">
+
+    <div class="no-print" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:6px;border-bottom:2px dashed #d1d5db;">
+        <span style="font-family:'Segoe UI',sans-serif;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Page {{ $pageIdx + 1 }} of {{ $totalPages }}</span>
+        <span style="font-family:'Segoe UI',sans-serif;font-size:10px;color:#9ca3af;">Vital Sign Monitoring Sheet &nbsp;·&nbsp; NUR-014</span>
+    </div>
 
     <div class="header">
         @if(file_exists(public_path('images/province-logo.png')))
@@ -156,7 +186,7 @@
         <tbody>
 
             {{-- ── Real data rows ── --}}
-            @foreach($vitals as $v)
+            @foreach($chunk as $v)
             @php
                 $abnO2   = $v->o2_saturation    !== null && $v->o2_saturation < 95;
                 $abnPR   = $v->pulse_rate        !== null && ($v->pulse_rate < 60 || $v->pulse_rate > 100);
@@ -234,5 +264,6 @@
     </table>
 
 </div>
+@endforeach
 </body>
 </html>

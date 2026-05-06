@@ -22,8 +22,16 @@
             .paper { width: 8.5in; min-height: 13in; margin: 0 auto; background: #fff; box-shadow: 0 4px 28px rgba(0,0,0,.28); padding: 0.5in 0.6in; }
         }
         @media print {
-            body { background: #fff; padding: 0; }
-            .paper { width: 100%; padding: 0; box-shadow: none; }
+            html, body { margin: 0; padding: 0; background: #fff; }
+            .paper { 
+                width: 100%; 
+                padding: 0; 
+                margin: 0;
+                box-shadow: none; 
+                page-break-inside: avoid;
+                break-inside: avoid;
+                overflow: hidden;
+            }
             .no-print { display: none !important; }
             .circle-btn { display: none !important; }
             .circled { border: 2px solid #000 !important; border-radius: 50% !important; background: transparent !important; color: #000 !important; }

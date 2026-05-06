@@ -6,16 +6,41 @@
 <style>
 @page { size: 8.5in 13in portrait; margin: 0.45in 0.55in; }
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: 'Times New Roman', serif; font-size: 9pt; background:#c9c9c9; }
+body { font-family: 'Times New Roman', serif; font-size: 9pt; color:#000; background:#c9c9c9; }
 
 @media screen {
-    body { padding:50px 0; }
-    .paper { width:8.5in; min-height:13in; margin:auto; background:#fff; padding:0.45in 0.55in; box-shadow:0 4px 20px rgba(0,0,0,.3); }
+    body { padding:52px 0 40px; }
+    .paper { 
+        width:8.5in; 
+        min-height:13in; 
+        margin:0 auto 40px; 
+        background:#fff; 
+        padding:0.45in 0.55in; 
+        box-shadow:0 4px 28px rgba(0,0,0,.28); 
+    }
 }
 @media print {
-    body { background:#fff; }
-    .paper { width:100%; box-shadow:none; padding:0; }
-    .no-print { display:none; }
+    html, body { margin:0; padding:0; background:#fff; }
+    .toolbar, .no-print { display:none !important; }
+    .paper {
+        display:block;
+        width:100%;
+        min-height:0;
+        padding:0;
+        margin:0;
+        box-shadow:none;
+        page-break-before:always;
+        page-break-after:always;
+        page-break-inside:avoid;
+        break-before:page;
+        break-after:page;
+        break-inside:avoid;
+        overflow:hidden;
+    }
+    .paper:first-of-type {
+        page-break-before:auto;
+        break-before:auto;
+    }
 }
 
 /* ── Toolbar ── */
@@ -90,8 +115,17 @@ body { font-family: 'Times New Roman', serif; font-size: 9pt; background:#c9c9c9
         'requested'      => 'R',
         'endorsed'       => 'E',
         'administrative' => 'A',
-        default          => '',   // pending → blank
+        default          => '',
     };
+
+    $perPage    = 20;
+    $fillTo     = 24;
+    $chunks     = $orders->chunk($perPage);
+    $totalPages = max(1, $chunks->count());
+    if ($chunks->isEmpty()) {
+        $chunks     = collect([collect([])]);
+        $totalPages = 1;
+    }
 @endphp
 
 <div class="toolbar no-print">
@@ -102,7 +136,14 @@ body { font-family: 'Times New Roman', serif; font-size: 9pt; background:#c9c9c9
     <button class="btn-print" onclick="window.print()"><svg xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6v-7z" /></svg>Print / Save as PDF</button>
 </div>
 
+@foreach($chunks as $pageIdx => $chunk)
+@php $blankNeeded = max(0, $fillTo - $chunk->count()); @endphp
 <div class="paper">
+
+<div class="no-print" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:6px;border-bottom:2px dashed #d1d5db;">
+    <span style="font-family:'Segoe UI',sans-serif;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Page {{ $pageIdx + 1 }} of {{ $totalPages }}</span>
+    <span style="font-family:'Segoe UI',sans-serif;font-size:10px;color:#9ca3af;">Doctor's Order Compliance Sheet</span>
+</div>
 
 {{-- ══ HEADER ══ --}}
 <div class="header">
@@ -192,7 +233,7 @@ body { font-family: 'Times New Roman', serif; font-size: 9pt; background:#c9c9c9
 </thead>
 <tbody>
 
-@forelse($orders as $order)
+@foreach($chunk as $order)
 <tr>
     <td>
         {{ \Carbon\Carbon::parse($order->order_date)
@@ -215,11 +256,9 @@ body { font-family: 'Times New Roman', serif; font-size: 9pt; background:#c9c9c9
         @endif
     </td>
 </tr>
-@empty
-@endforelse
+@endforeach
 
-@php $fillerCount = max(0, 28 - $orders->count()); @endphp
-@for($i = 0; $i < $fillerCount; $i++)
+@for($i = 0; $i < $blankNeeded; $i++)
 <tr class="blank-row"><td></td><td></td><td></td><td></td></tr>
 @endfor
 
@@ -227,5 +266,7 @@ body { font-family: 'Times New Roman', serif; font-size: 9pt; background:#c9c9c9
 </table>
 
 </div>{{-- /.paper --}}
+@endforeach
+
 </body>
 </html>
