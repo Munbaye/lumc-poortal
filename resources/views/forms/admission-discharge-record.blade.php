@@ -14,9 +14,15 @@
         @media print{body{background:#fff;padding:0;}.paper{width:100%;padding:0;box-shadow:none;}.no-print{display:none !important;}[contenteditable]{outline:none !important;background:transparent !important;}input{border-color:#000 !important;background:transparent !important;outline:none !important;}}
 
         .toolbar{position:fixed;top:0;left:0;right:0;height:46px;background:#1e3a5f;color:#fff;font-family:'Segoe UI',system-ui,sans-serif;font-size:12px;display:flex;align-items:center;padding:0 22px;gap:14px;z-index:9999;box-shadow:0 2px 10px rgba(0,0,0,.35);}
-        .toolbar .lbl{font-size:13px;font-weight:700;}.toolbar .tag{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:3px;padding:2px 9px;font-size:10px;text-transform:uppercase;}.toolbar .spacer{flex:1;}
-        .btn-print{background:#fff;color:#1e3a5f;border:none;padding:6px 18px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;}.btn-print:hover{background:#dbeafe;}
-        .btn-save{background:#059669;color:#fff;border:none;padding:6px 22px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;}.btn-save:hover{background:#047857;}.btn-save:disabled{opacity:.6;cursor:not-allowed;}
+        .toolbar .lbl{font-size:13px;font-weight:700;}
+        .toolbar .tag{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:3px;padding:2px 9px;font-size:10px;text-transform:uppercase;}
+        .toolbar .spacer{flex:1;}
+        .toolbar .pt-info{font-size:11px;color:rgba(255,255,255,.8);}
+        .btn-print{background:#fff;color:#1e3a5f;border:none;padding:6px 16px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;}
+.btn-print:hover{background:#dbeafe;}
+        .btn-save{background:#059669;color:#fff;border:none;padding:6px 22px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+        .btn-save:hover{background:#047857;}
+        .btn-save:disabled{opacity:.6;cursor:not-allowed;}
 
         body.readonly-mode [contenteditable]{ pointer-events:none; cursor:default; }
         body.readonly-mode input,body.readonly-mode select,body.readonly-mode textarea{ pointer-events:none; cursor:default; }
@@ -46,7 +52,7 @@
         #toast{position:fixed;bottom:22px;right:22px;background:#059669;color:#fff;padding:12px 22px;border-radius:8px;font-family:'Segoe UI',sans-serif;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.25);display:none;z-index:99999;}
         #toast.error{background:#dc2626;}
 
-/* ── Physician signature block ── */
+        /* ── Physician signature block ── */
         .physician-sig-block {
             text-align: center;
             margin-top: 10px;
@@ -83,7 +89,6 @@
             color: #555;
             display: block;
         }
-
     </style>
 </head>
 <body class="{{ request()->boolean('readonly') ? 'readonly-mode' : '' }}">
@@ -109,8 +114,8 @@
     $patNameFormatted = ($rawName === ',' || $rawName === ', ') ? '' : $rawName;
 
     $cleanAddr = function (?string $v): string {
-    if (!$v || trim($v) === '' || trim($v) === 'PENDING_CLERK_REGISTRATION') return '';
-    return $v;
+        if (!$v || trim($v) === '' || trim($v) === 'PENDING_CLERK_REGISTRATION') return '';
+        return $v;
     };
     $rawAddr = $isProvisional ? '' : $cleanAddr($patient->address ?? '');
     $addr    = collect([
@@ -124,19 +129,19 @@
     $bdateRaw   = $first($adm?->birthdate, $er?->birthdate, $patient->birthday);
     $bdateInput = $bdateRaw ? \Carbon\Carbon::parse($bdateRaw)->format('Y-m-d') : '';
     $age        = $first($adm?->age,                  $er?->age,                  $patient->current_age ?? $patient->age ?? '');
-    $birthplace = $first($adm?->birthplace,                                       $patient->birthplace ?? '');
-    $nat        = $first($adm?->nationality,          $er?->nationality,          $patient->nationality ?? 'Filipino');
-    $religion   = $first($adm?->religion,                                         $patient->religion ?? '');
-    $occ        = $first($adm?->occupation,                                       $patient->occupation ?? '');
-    $empName    = $first($adm?->employer_name,        $er?->employer_name,        $patient->employer_name ?? '');
-    $empAddr    = $first($adm?->employer_address,                                 $patient->employer_address ?? '');
-    $empTel     = $first($adm?->employer_phone,       $er?->employer_phone,       $patient->employer_phone ?? '');
-    $dadName    = $first($adm?->father_name,                                      $patient->father_full_name ?? $patient->father_name ?? '');
-    $dadAddr    = $first($adm?->father_address,                                   $patient->father_address ?? '');
-    $dadTel     = $first($adm?->father_phone,                                     $patient->father_phone ?? '');
-    $momName    = $first($adm?->mother_maiden_name,                               $patient->mother_maiden_name ?? $patient->mother_name ?? '');
-    $momAddr    = $first($adm?->mother_address,                                   $patient->mother_address ?? '');
-    $momTel     = $first($adm?->mother_phone,                                     $patient->mother_phone ?? '');
+    $birthplace = $first($adm?->birthplace,                                        $patient->birthplace ?? '');
+    $nat        = $first($adm?->nationality,          $er?->nationality,           $patient->nationality ?? 'Filipino');
+    $religion   = $first($adm?->religion,                                          $patient->religion ?? '');
+    $occ        = $first($adm?->occupation,                                        $patient->occupation ?? '');
+    $empName    = $first($adm?->employer_name,        $er?->employer_name,         $patient->employer_name ?? '');
+    $empAddr    = $first($adm?->employer_address,                                  $patient->employer_address ?? '');
+    $empTel     = $first($adm?->employer_phone,       $er?->employer_phone,        $patient->employer_phone ?? '');
+    $dadName    = $first($adm?->father_name,                                       $patient->father_full_name ?? $patient->father_name ?? '');
+    $dadAddr    = $first($adm?->father_address,                                    $patient->father_address ?? '');
+    $dadTel     = $first($adm?->father_phone,                                      $patient->father_phone ?? '');
+    $momName    = $first($adm?->mother_maiden_name,                                $patient->mother_maiden_name ?? $patient->mother_name ?? '');
+    $momAddr    = $first($adm?->mother_address,                                    $patient->mother_address ?? '');
+    $momTel     = $first($adm?->mother_phone,                                      $patient->mother_phone ?? '');
 
     $doctorAdmittedAt = $visit->doctor_admitted_at;
     $admDateDefault   = $doctorAdmittedAt?->toDateString() ?? now()->toDateString();
@@ -153,7 +158,7 @@
     $alert     = $adm?->alert ?? '';
     $allergicTo= $first($adm?->allergic_to, $er?->allergies, $history?->drug_allergies ?? '');
     $healthIns = $adm?->health_insurance_name ?? '';
-    $philId    = $first($adm?->philhealth_id,  $patient->philhealth_id ?? '');
+    $philHealthId   = $first($adm?->philhealth_id,  $patient->philhealth_id ?? '');
     $philType  = $first($adm?->philhealth_type, $patient->philhealth_type ?? '');
     $dataFurnBy  = $adm?->data_furnished_by ?? '';
     $dataFurnAdd = $adm?->data_furnished_address ?? '';
@@ -165,10 +170,9 @@
     $disp      = $first($adm?->disposition, $visit->disposition ?? '');
     $results   = $adm?->results ?? '';
 
-    // ── Physician (printed name + signature) ──────────────────────────────
+    // ── Physician (printed name + signature) ──
     $physicianUser = $history?->doctor ?? null;
 
-    // Fallback: match by name if relationship null
     if (!$physicianUser) {
         $rawDoc = $history?->doctor_id
             ? \App\Models\User::find($history->doctor_id,
@@ -181,9 +185,6 @@
     if ($physicianUser) {
         $pName     = $physicianUser->full_name ?: $physicianUser->name;
         $physician = 'Dr. ' . $pName;
-        if ($physicianUser->specialty ?? null) {
-            // keep specialty out of printed name line
-        }
     }
 
     $physicianSignature   = $physicianUser?->signature ?? null;
@@ -194,17 +195,16 @@
 
 <div id="toast"></div>
 
-@unless($readonly)
 <div class="toolbar no-print">
-    <span class="lbl">Admission and Discharge Record (ADM-001)</span>
-    <span class="tag" style="background:rgba(16,185,129,.25);">{{ $patient->case_no }}</span>
-    <span class="tag">{{ $patient->full_name }}</span>
+    <span class="lbl">Admission and Discharge Record</span>
+    <span class="tag">ADM-001</span>
+    <span class="pt-info">{{ $patient->full_name }} &nbsp;·&nbsp; {{ $patient->case_no }}</span>
     <span class="spacer"></span>
-    <button class="btn-print" onclick="window.print()">
-    <x-heroicon-o-printer style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:5px;" />Print</button>
-    <button id="btnSave" class="btn-save" onclick="saveAndContinue()"><x-heroicon-o-arrow-down-tray style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:5px;" />Save &amp; Continue</button>
+    <button class="btn-print" onclick="window.print()"><svg xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6v-7z" /></svg>Print / Save as PDF</button>
+    @unless($readonly)
+    <button id="btnSave" class="btn-save" onclick="saveAndContinue()">Save &amp; Continue</button>
+    @endunless
 </div>
-@endunless
 
 <div class="paper">
 <div class="page-title">Admission and Discharge Record</div>
@@ -333,7 +333,7 @@
             <div class="L">Health Insurance Name:</div>
             <div id="f_healthins" class="fb fb2" contenteditable="{{ $ce }}" spellcheck="false">{{ $healthIns }}</div>
             <div class="L" style="margin-top:5px;">PhilHealth ID No.</div>
-            <div id="f_philid" class="fb" contenteditable="{{ $ce }}" spellcheck="false">{{ $philId }}</div>
+            <div id="f_philid" class="fb" contenteditable="{{ $ce }}" spellcheck="false">{{ $philHealthId }}</div>
         </td>
         <td colspan="2" style="vertical-align:top;">
             <div class="L" style="text-decoration:underline;">PhilHealth Type</div>
@@ -420,12 +420,7 @@
         <td colspan="3" style="vertical-align:top;">
             <div class="L">Attending Physician</div>
             <div id="f_physician2" class="fb" contenteditable="{{ $ce }}" spellcheck="false">{{ $physician }}</div>
-
-            {{-- ── Physician Signature Block ──
-                 Physician does not fill this form via the system.
-                 Signature area is left blank for manual signing on print.
-            --}}
-                <div class="physician-sig-block">
+            <div class="physician-sig-block">
                 <div class="sig-img-area">
                     @if($physicianSignature)
                         <img src="{{ $physicianSignature }}"
@@ -437,7 +432,6 @@
                 </span>
                 <div class="sig-rule"></div>
                 <span class="sig-label">Signature over Printed Name</span>
-            </div>
             </div>
         </td>
     </tr>
@@ -472,7 +466,7 @@ function calcAge(val) {
     if (age >= 0 && age <= 120) document.getElementById('f_age').value = age;
 }
 function collectData() {
-    const g   = id => document.getElementById(id);
+    const g    = id => document.getElementById(id);
     const ctxt = id => { const el = g(id); if (!el) return ''; return (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') ? el.value : el.innerText.trim(); };
     const isOn = id => g(id) ? g(id).classList.contains('on') : false;
     const csMap    = {sq_cs_s:'Single',sq_cs_m:'Married',sq_cs_sep:'Separated',sq_cs_w:'Widowed'};
@@ -516,20 +510,20 @@ async function saveAndContinue() {
         });
         const json = await res.json();
         if (json.success) {
-            showToast('✔ Admission Record saved — advancing…');
-            btn.textContent = '✔ Saved';
+            showToast('✓ Admission Record saved — advancing…');
+            btn.textContent = '✓ Saved';
             @if($isNicu ?? false)
-            setTimeout(() => { window.location.href = '{{ $consentUrl }}'; }, 1200);
+            setTimeout(() => { window.location.href = '{{ $consentUrl ?? "#" }}'; }, 1200);
             @else
             window.parent.postMessage({ type: 'admSaved', paymentClass: json.payment_class ?? 'Charity' }, '*');
             @endif
         } else {
-            showToast('⚠ Save failed: ' + (json.message ?? 'Unknown error'), true);
-            btn.disabled = false; btn.textContent = '💾 Save & Continue →';
+            showToast('Save failed: ' + (json.message ?? 'Unknown error'), true);
+            btn.disabled = false; btn.textContent = 'Save & Continue';
         }
     } catch (e) {
-        showToast('⚠ Network error — check connection.', true);
-        btn.disabled = false; btn.textContent = '💾 Save & Continue →';
+        showToast('Network error — check connection.', true);
+        btn.disabled = false; btn.textContent = 'Save & Continue';
     }
 }
 function showToast(msg, isError) {

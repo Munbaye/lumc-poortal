@@ -10,16 +10,20 @@
         *{margin:0;padding:0;box-sizing:border-box;}
         body{font-family:Arial,Helvetica,sans-serif;font-size:9pt;color:#000;background:#c9c9c9;}
         @media screen{body{padding:52px 0 40px;}.paper{width:8.5in;min-height:13in;margin:0 auto;background:#fff;box-shadow:0 4px 28px rgba(0,0,0,.28);padding:0.5in;}}
-        /* No top padding when toolbar is hidden */
         body.readonly-mode{padding-top:12px !important;}
         @media print{body{background:#fff;padding:0;}.paper{width:100%;padding:0;box-shadow:none;}.no-print{display:none !important;}[contenteditable]{outline:none !important;background:transparent !important;}input[type="date"],input[type="number"],input[type="text"],input[type="tel"],input[type="time"]{border-color:#000 !important;background:transparent !important;outline:none !important;}}
 
         .toolbar{position:fixed;top:0;left:0;right:0;height:46px;background:#1e3a5f;color:#fff;font-family:'Segoe UI',system-ui,sans-serif;font-size:12px;display:flex;align-items:center;padding:0 22px;gap:14px;z-index:9999;box-shadow:0 2px 10px rgba(0,0,0,.35);}
-        .toolbar .lbl{font-size:13px;font-weight:700;}.toolbar .tag{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:3px;padding:2px 9px;font-size:10px;text-transform:uppercase;}.toolbar .spacer{flex:1;}
-        .btn-print{background:#fff;color:#1e3a5f;border:none;padding:6px 18px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;}.btn-print:hover{background:#dbeafe;}
-        .btn-save{background:#059669;color:#fff;border:none;padding:6px 22px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;}.btn-save:hover{background:#047857;}.btn-save:disabled{opacity:.6;cursor:not-allowed;}
+        .toolbar .lbl{font-size:13px;font-weight:700;}
+        .toolbar .tag{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:3px;padding:2px 9px;font-size:10px;text-transform:uppercase;}
+        .toolbar .spacer{flex:1;}
+        .toolbar .pt-info{font-size:11px;color:rgba(255,255,255,.8);}
+        .btn-print{background:#fff;color:#1e3a5f;border:none;padding:6px 16px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;}
+.btn-print:hover{background:#dbeafe;}
+        .btn-save{background:#059669;color:#fff;border:none;padding:6px 22px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+        .btn-save:hover{background:#047857;}
+        .btn-save:disabled{opacity:.6;cursor:not-allowed;}
 
-        /* Readonly: lock all interactivity */
         body.readonly-mode [contenteditable]{ pointer-events:none; cursor:default; }
         body.readonly-mode input,body.readonly-mode select,body.readonly-mode textarea{ pointer-events:none; cursor:default; }
         body.readonly-mode .sq{ pointer-events:none; cursor:default; }
@@ -54,8 +58,8 @@
 <body class="{{ request()->boolean('readonly') ? 'readonly-mode' : '' }}">
 @php
     $readonly = request()->boolean('readonly');
-    $ce       = $readonly ? 'false' : 'true'; // shorthand for contenteditable attr
-    $ro       = $readonly ? 'readonly' : '';   // shorthand for input readonly attr
+    $ce       = $readonly ? 'false' : 'true';
+    $ro       = $readonly ? 'readonly' : '';
 
     $er      = $erRecord ?? null;
     $patient = $visit->patient;
@@ -69,7 +73,6 @@
 
     $docUser = $history?->doctor;
 
-    // Direct fetch to guarantee signature column is loaded
     $docFresh     = $docUser?->id
         ? \App\Models\User::find($docUser->id, ['id','name','first_name','last_name','middle_name','signature'])
         : null;
@@ -150,18 +153,16 @@ const DOCTOR_ADM_TIME = '{{ $doctorAdmTimeStr }}';
 
 <div id="toast"></div>
 
-{{-- Toolbar: completely absent in readonly mode --}}
-@unless($readonly)
 <div class="toolbar no-print">
-    <span class="lbl">Emergency Room Record (ER-001)</span>
-    <span class="tag" style="background:rgba(16,185,129,.25);">{{ $patient->case_no }}</span>
-    <span class="tag">{{ $patient->full_name }}</span>
+    <span class="lbl">Emergency Room Record</span>
+    <span class="tag">ER-001</span>
+    <span class="pt-info">{{ $patient->full_name }} &nbsp;·&nbsp; {{ $patient->case_no }}</span>
     <span class="spacer"></span>
-    <button class="btn-print" onclick="window.print()">
-    <x-heroicon-o-printer style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:5px;" />Print</button>
-    <button id="btnSave" class="btn-save" onclick="saveAndContinue()"><x-heroicon-o-arrow-down-tray style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:5px;" />Save &amp; Continue</button>
+    <button class="btn-print" onclick="window.print()"><svg xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6v-7z" /></svg>Print / Save as PDF</button>
+    @unless($readonly)
+    <button id="btnSave" class="btn-save" onclick="saveAndContinue()">Save &amp; Continue</button>
+    @endunless
 </div>
-@endunless
 
 <div class="paper">
 <table class="ft">
@@ -187,7 +188,7 @@ const DOCTOR_ADM_TIME = '{{ $doctorAdmTimeStr }}';
         <td colspan="2" style="text-align:center;padding:8px 10px;">
             <span class="L">Case</span>&nbsp;&nbsp;
             <label class="cb"><span id="sq_er"   class="sq {{ $caseType==='ER'?'on':'' }}"   @unless($readonly)onclick="toggleSq(this,'sq_er','sq_noer')"@endunless></span> ER</label>
-            <label class="cb"><span id="sq_noer" class="sq {{ $caseType!=='ER'?'on':'' }}"  @unless($readonly)onclick="toggleSq(this,'sq_noer','sq_er')"@endunless></span> Non-ER</label>
+            <label class="cb"><span id="sq_noer" class="sq {{ $caseType!=='ER'?'on':'' }}"   @unless($readonly)onclick="toggleSq(this,'sq_noer','sq_er')"@endunless></span> Non-ER</label>
         </td>
         <td colspan="3">
             <div class="L">Medico-Legal</div>
@@ -375,13 +376,11 @@ const DOCTOR_ADM_TIME = '{{ $doctorAdmTimeStr }}';
 </table>
 
 <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:18px;padding:0 8px;">
-    {{-- Nurse — blank line only; manual signing on printed copy --}}
     <div style="text-align:center;width:42%;">
         <div style="border-top:1.5px solid #000;padding-top:4px;">
             <div class="L">Nurse's Name (Printed) and <u>Signature</u></div>
         </div>
     </div>
-    {{-- Doctor — digital signature if available --}}
     <div style="text-align:center;width:42%;">
         <div style="min-height:55px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:4px;">
             @if($docSignature)
@@ -400,7 +399,6 @@ const DOCTOR_ADM_TIME = '{{ $doctorAdmTimeStr }}';
 
 </div>{{-- /.paper --}}
 
-{{-- JS only loaded in editable mode --}}
 @unless($readonly)
 <script>
 function toggleSq(el, idA, idB) {
@@ -436,7 +434,7 @@ function calcAgeFromBdate(val) {
     if (age >= 0 && age <= 120) document.getElementById('f_age').value = age;
 }
 function collectData() {
-    const g   = id => document.getElementById(id);
+    const g    = id => document.getElementById(id);
     const ctxt = id => { const el = g(id); if (!el) return ''; return (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') ? el.value : el.innerText.trim(); };
     const isOn = id => g(id) ? g(id).classList.contains('on') : false;
     const bbMap   = {sq_bb_self:'Self',sq_bb_family:'Family',sq_bb_rel:'Relatives',sq_bb_friend:'Friend',sq_bb_unknown:'Unknown',sq_bb_police:'Police',sq_bb_neighbor:'Neighbor',sq_bb_amb:'Ambulance',sq_bb_other:'Other'};
@@ -485,12 +483,12 @@ async function saveAndContinue() {
             btn.textContent = '✔ Saved';
             window.parent.postMessage({ type: 'erSaved' }, '*');
         } else {
-            showToast('⚠ Save failed: ' + (json.message ?? 'Unknown error'), true);
-            btn.disabled = false; btn.textContent = '💾 Save & Continue →';
+            showToast('Save failed: ' + (json.message ?? 'Unknown error'), true);
+            btn.disabled = false; btn.textContent = 'Save & Continue';
         }
     } catch (e) {
-        showToast('⚠ Network error — check connection.', true);
-        btn.disabled = false; btn.textContent = '💾 Save & Continue →';
+        showToast('Network error — check connection.', true);
+        btn.disabled = false; btn.textContent = 'Save & Continue';
     }
 }
 function showToast(msg, isError) {

@@ -72,7 +72,7 @@
             </div>
             @else
             <div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:10px 16px;margin-bottom:20px;font-size:.83rem;">
-                <span style="color:#854d0e;">⚠️ No vital signs recorded for this visit.</span>
+                <span style="color:#854d0e;"><x-heroicon-o-exclamation-triangle class="w-4 h-4 inline" /> No vital signs recorded for this visit.</span>
             </div>
             @endif
 
@@ -177,14 +177,14 @@
                     <button wire:click="$set('willAdmit',false)" type="button"
                         style="padding:16px;border-radius:8px;cursor:pointer;text-align:center;border:2px solid {{ $willAdmit===false?'#dc2626':'#e5e7eb' }};background:{{ $willAdmit===false?'#fef2f2':'#fff' }};color:{{ $willAdmit===false?'#dc2626':'#374151' }};"
                         class="{{ $willAdmit!==false?'dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300':'' }}">
-                        <div style="font-size:1.8rem;margin-bottom:6px;">🏠</div>
+                        <div style="font-size:1.8rem;margin-bottom:6px;"><x-heroicon-o-home class="w-4 h-4" /></div>
                         <div style="font-weight:700;font-size:.9rem;">NOT Admitting</div>
                         <div style="font-size:.72rem;opacity:.7;margin-top:2px;">Discharge / Refer / HAMA / Expired</div>
                     </button>
                     <button wire:click="$set('willAdmit',true)" type="button"
                         style="padding:16px;border-radius:8px;cursor:pointer;text-align:center;border:2px solid {{ $willAdmit===true?'#059669':'#e5e7eb' }};background:{{ $willAdmit===true?'#f0fdf4':'#fff' }};color:{{ $willAdmit===true?'#065f46':'#374151' }};"
                         class="{{ $willAdmit!==true?'dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300':'' }}">
-                        <div style="font-size:1.8rem;margin-bottom:6px;">🏥</div>
+                        <div style="font-size:1.8rem;margin-bottom:6px;"><x-heroicon-o-building-office-2 class="w-4 h-4" /></div>
                         <div style="font-weight:700;font-size:.9rem;">ADMIT to Ward</div>
                         <div style="font-size:.72rem;opacity:.7;margin-top:2px;">Clerk completes admission details</div>
                     </button>
@@ -194,7 +194,7 @@
                 <div style="border-top:1px solid #f3f4f6;padding-top:14px;" class="dark:border-gray-700">
                     <p style="font-size:.71rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;" class="text-gray-500 dark:text-gray-400">Select outcome</p>
                     <div style="display:flex;flex-wrap:wrap;gap:8px;">
-                        @foreach([['Discharged','🏠','Treated, sent home'],['Referred','🔄','Referred elsewhere'],['HAMA','⚠️','Left against medical advice'],['Expired','✝','Deceased at facility']] as [$val,$icon,$desc])
+                        @foreach([['Discharged','<x-heroicon-o-home class="w-4 h-4" />','Treated, sent home'],['Referred','<x-heroicon-o-arrow-path class="w-4 h-4" />','Referred elsewhere'],['HAMA','<x-heroicon-o-exclamation-triangle class="w-4 h-4 inline" />','Left against medical advice'],['Expired','<x-heroicon-o-plus class="w-4 h-4" />','Deceased at facility']] as [$val,$icon,$desc])
                         <button wire:click="$set('outpatientDisposition','{{ $val }}')" type="button"
                             style="padding:10px 18px;border-radius:6px;cursor:pointer;font-weight:600;font-size:.83rem;border:2px solid {{ $outpatientDisposition===$val?'#374151':'#e5e7eb' }};background:{{ $outpatientDisposition===$val?'#111827':'#fff' }};color:{{ $outpatientDisposition===$val?'#fff':'#374151' }};"
                             class="{{ $outpatientDisposition!==$val?'dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300':'' }}">
@@ -223,22 +223,22 @@
                             @endforeach
                         </select>
                         @if(!$admittingService)
-                        <p style="font-size:.73rem;color:#d97706;margin-top:6px;">⚠️ Service type required before saving</p>
+                        <p style="font-size:.73rem;color:#d97706;margin-top:6px;"><x-heroicon-o-exclamation-triangle class="w-4 h-4 inline" /> Service type required before saving</p>
                         @else
-                        <p style="font-size:.73rem;color:#059669;margin-top:5px;font-weight:600;">✓ {{ $admittingService }} — clerk will assign the ward</p>
+                        <p style="font-size:.73rem;color:#059669;margin-top:5px;font-weight:600;"><x-heroicon-o-check class="w-4 h-4 inline" /> {{ $admittingService }} — clerk will assign the ward</p>
                         @endif
                     </div>
 
                     <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;" class="dark:bg-green-900/20 dark:border-green-700">
                         <p style="font-size:.82rem;font-weight:600;color:#065f46;margin:0;" class="dark:text-green-300">
-                            ✓ Clerk will complete ward assignment, PhilHealth details, and payment classification. Write your orders in Section 5 below.
+                            <x-heroicon-o-check class="w-4 h-4 inline" /> Clerk will complete ward assignment, PhilHealth details, and payment classification. Write your orders in Section 5 below.
                         </p>
                     </div>
                 </div>
                 @endif
 
                 @if($willAdmit === null)
-                <p style="font-size:.73rem;color:#d97706;margin-top:4px;">⚠️ Make a decision before saving.</p>
+                <p style="font-size:.73rem;color:#d97706;margin-top:4px;"><x-heroicon-o-exclamation-triangle class="w-4 h-4 inline" /> Make a decision before saving.</p>
                 @endif
             </div>
 
@@ -257,7 +257,7 @@
                 {{-- Big free-text box design (matches PatientChart) --}}
                 <div style="background:#f0fdf4;border:1.5px solid #34d399;border-radius:10px;padding:20px 22px;">
                     <div style="font-size:.85rem;font-weight:700;color:#065f46;margin-bottom:6px;">
-                        ✏️ New Doctor's Orders — {{ now()->timezone('Asia/Manila')->format('F j, Y · H:i') }}
+                        <x-heroicon-o-pencil-square class="w-4 h-4 inline" /> New Doctor's Orders — {{ now()->timezone('Asia/Manila')->format('F j, Y · H:i') }}
                     </div>
                     <p style="font-size:.76rem;color:#166534;margin-bottom:12px;">
                         Type one order per line. Press Enter for a new order. The whole block will be saved when you click "Save Assessment".
@@ -272,7 +272,7 @@
         </textarea>
 
                     <div style="font-size:.72rem;color:#166534;margin-top:6px;display:flex;align-items:center;gap:5px;">
-                        💡 Each line becomes a separate order the nurse can check off individually.
+                        <x-heroicon-o-light-bulb class="w-4 h-4" /> Each line becomes a separate order the nurse can check off individually.
                     </div>
                 </div>
             </div>
@@ -283,12 +283,12 @@
                 <button wire:click="save" wire:loading.attr="disabled" wire:loading.class="opacity-60" type="button"
                     style="background:#111827;color:#fff;border:none;padding:11px 34px;border-radius:6px;font-size:.88rem;font-weight:600;cursor:pointer;"
                     class="dark:bg-white dark:text-gray-900">
-                    <span wire:loading.remove wire:target="save">💾 Save Assessment</span>
+                    <span wire:loading.remove wire:target="save"><x-heroicon-o-archive-box-arrow-down class="w-4 h-4" /> Save Assessment</span>
                     <span wire:loading wire:target="save">Saving…</span>
                 </button>
                 <a href="/doctor/patient-queues" style="padding:11px 20px;border-radius:6px;font-size:.83rem;font-weight:500;text-decoration:none;border:1px solid #e5e7eb;color:#374151;" class="dark:border-gray-600 dark:text-gray-300">← Back to Queue</a>
-                @if($willAdmit === false && !$outpatientDisposition)<span style="font-size:.75rem;color:#dc2626;">⚠️ Select a specific outcome in Section 4</span>@endif
-                @if($willAdmit === true && !$admittingService)<span style="font-size:.75rem;color:#dc2626;">⚠️ Select a service type in Section 4</span>@endif
+                @if($willAdmit === false && !$outpatientDisposition)<span style="font-size:.75rem;color:#dc2626;"><x-heroicon-o-exclamation-triangle class="w-4 h-4 inline" /> Select a specific outcome in Section 4</span>@endif
+                @if($willAdmit === true && !$admittingService)<span style="font-size:.75rem;color:#dc2626;"><x-heroicon-o-exclamation-triangle class="w-4 h-4 inline" /> Select a service type in Section 4</span>@endif
             </div>
 
             @endif

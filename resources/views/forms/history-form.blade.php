@@ -65,13 +65,8 @@
         }
         .toolbar .hint { opacity: .5; font-size: 11px; }
         .toolbar .spacer { flex: 1; }
-        .btn-print {
-            background: #fff; color: #1e3a5f; border: none; padding: 6px 20px;
-            border-radius: 4px; font-size: 12px; font-weight: 700;
-            cursor: pointer; font-family: inherit;
-        }
-        .btn-print:hover { background: #dbeafe; }
-
+        .btn-print{background:#fff;color:#1e3a5f;border:none;padding:6px 16px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;}
+.btn-print:hover{background:#dbeafe;}
         /* ── HEADER ─────────────────────────────────────────────────── */
         .header {
             display: flex; align-items: center; gap: 12px;
@@ -274,13 +269,13 @@
     @endisset
     <span class="hint">Legal 8.5 × 14 in &nbsp;·&nbsp; Click any field to edit</span>
     <span class="spacer"></span>
-    <button class="btn-print" onclick="window.print()">🖨️&nbsp;&nbsp;Print / Save as PDF</button>
+    <button class="btn-print" onclick="window.print()"><svg xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6v-7z" /></svg>Print / Save as PDF</button>
 </div>
 
 <div class="paper">
 
     <div class="screen-tip no-print">
-        💡 <strong>Click any underlined field</strong> to edit before printing.
+        <strong>Tip:</strong> Click any underlined field to edit before printing.
     </div>
 
     {{-- HEADER --}}

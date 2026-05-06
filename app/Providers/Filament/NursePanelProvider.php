@@ -26,7 +26,8 @@ class NursePanelProvider extends PanelProvider
                     <img src="' . asset('images/lumc-logo.png') . '"
                          style="width:30px;height:30px;object-fit:contain;border-radius:50%;
                                 background:rgba(190,18,60,.12);padding:2px;flex-shrink:0;" alt="LUMC">
-                    <span class="lumc-brand-text" style="font-weight:800;font-size:.9rem;letter-spacing:.04em;
+                    <span class="lumc-brand-text"
+                          style="font-weight:800;font-size:.9rem;letter-spacing:.04em;
                                  white-space:nowrap;text-transform:uppercase;">LUMC-NURSE</span>
                 </div>
                 <style>
@@ -35,30 +36,6 @@ class NursePanelProvider extends PanelProvider
                 </style>'
             ))
             ->brandLogoHeight('auto')
-            ->renderHook(
-                'panels::sidebar.nav.start',
-                fn () => new \Illuminate\Support\HtmlString(
-                    auth()->check()
-                        ? '<div class="lumc-sidebar-user" style="padding:.875rem 1rem .75rem;margin-bottom:.5rem;">
-                               <div style="display:flex;align-items:center;gap:.75rem;">
-                                   <div style="width:42px;height:42px;border-radius:50%;flex-shrink:0;
-                                               background:#be123c;color:#fff;
-                                               display:flex;align-items:center;justify-content:center;
-                                               font-weight:800;font-size:1.05rem;
-                                               border:2px solid rgba(255,255,255,.3);">'
-                                       . strtoupper(substr(auth()->user()->name ?? 'N', 0, 1)) .
-                                   '</div>
-                                   <div style="min-width:0;">
-                                       <div class="lumc-user-name" style="font-weight:700;font-size:.875rem;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'
-                                           . e(auth()->user()->name ?? 'Nurse') .
-                                       '</div>
-                                       <div class="lumc-user-role" style="font-size:.72rem;margin-top:.15rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Nurse</div>
-                                   </div>
-                               </div>
-                           </div>'
-                        : ''
-                )
-            )
             ->sidebarCollapsibleOnDesktop(false)
             ->globalSearch(false)
             ->favicon(asset('images/lumc-logo.png'))

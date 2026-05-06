@@ -284,9 +284,9 @@
                 </div>
                 <div>
                     @if($isAdmitted)
-                    <span class="status-badge status-admitted">✅ ADMITTED</span>
+                    <span class="status-badge status-admitted"><x-heroicon-o-check-circle class="w-4 h-4" /> ADMITTED</span>
                     @else
-                    <span class="status-badge status-pending">⚠️ PENDING ADMISSION</span>
+                    <span class="status-badge status-pending">PENDING ADMISSION</span>
                     @endif
                 </div>
             </div>
@@ -512,7 +512,7 @@
                 <div class="admission-body">
                     @if($isAdmitted)
                     <div style="background: #d1fae5; padding: 16px; border-radius: 8px; text-align: center;">
-                        <p style="margin: 0; color: #065f46; font-weight: 600; font-size: 0.8rem;">✓ This baby has already been admitted to NICU</p>
+                        <p style="margin: 0; color: #065f46; font-weight: 600; font-size: 0.8rem;"><x-heroicon-o-check-circle class="w-4 h-4 inline" /> This baby has already been admitted to NICU</p>
                         <p style="margin: 5px 0 0 0; font-size: 0.75rem; color: #065f46;">Admitted on: {{ $visit->doctor_admitted_at ? \Carbon\Carbon::parse($visit->doctor_admitted_at)->format('M d, Y h:i A') : '—' }}</p>
                     </div>
                     @else

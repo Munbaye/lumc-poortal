@@ -167,7 +167,7 @@
     <span class="tag">FORM-DS-001</span>
     <span style="font-size:11px;color:rgba(255,255,255,.75);">{{ $patient->full_name }} &nbsp;·&nbsp; {{ $patient->case_no }}</span>
     <span class="spacer"></span>
-    <button class="btn-print" onclick="window.print()">🖨️&nbsp; Print / Save as PDF</button>
+    <button class="btn-print" onclick="window.print()"><x-heroicon-o-printer class="w-4 h-4" />&nbsp; Print / Save as PDF</button>
 </div>
 
 <div class="paper">

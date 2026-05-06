@@ -286,9 +286,9 @@
         <span class="ds-toolbar-info">{{ $patient->full_name }} &nbsp;·&nbsp; {{ $patient->case_no }}</span>
         <div class="ds-spacer"></div>
         @if($isFinal)
-            <span class="ds-status-pill ds-status-final">✓ Finalized</span>
+            <span class="ds-status-pill ds-status-final"><x-heroicon-o-check-circle class="w-3 h-3 inline" /> Finalized</span>
         @elseif($isDraft)
-            <span class="ds-status-pill ds-status-draft">✎ Draft Saved</span>
+            <span class="ds-status-pill ds-status-draft"><x-heroicon-o-pencil class="w-3 h-3 inline" /> Draft Saved</span>
         @else
             <span class="ds-status-pill ds-status-draft">New</span>
         @endif
@@ -296,12 +296,12 @@
 
     @if($isRO)
     <div class="ds-notice ds-notice-final">
-        <span>✓</span>
+        <span><x-heroicon-o-check class="w-4 h-4" /></span>
         <span>This discharge summary has been <strong>finalized</strong> and the patient has been marked as discharged. No further edits are allowed.</span>
     </div>
     @else
     <div class="ds-notice ds-notice-warn">
-        <span>⚠</span>
+        <span><x-heroicon-o-exclamation-triangle class="w-4 h-4 inline" /></span>
         <span>Clicking <strong>Finalize &amp; Discharge</strong> will mark this patient as <strong>discharged</strong> and lock this form. Use <strong>Save Draft</strong> to save progress without discharging.</span>
     </div>
     @endif
@@ -512,7 +512,7 @@
     {{-- ── Confirmation box (discharge) ────────────────────────────────────── --}}
     @if(!$isRO)
     <div class="ds-confirm-box" id="ds-confirm" style="display:none;">
-        <p class="ds-confirm-title">⚠ Confirm Patient Discharge</p>
+        <p class="ds-confirm-title"><x-heroicon-o-exclamation-triangle class="w-4 h-4 inline" style="display:inline-block;vertical-align:middle;margin-right:4px;" /> Confirm Patient Discharge</p>
         <p class="ds-confirm-body">
             You are about to <strong>finalize</strong> this discharge summary and mark
             <strong>{{ $patient->full_name }}</strong> as <strong>DISCHARGED</strong>.
@@ -521,7 +521,7 @@
         </p>
         <div class="ds-confirm-actions">
             <button type="button" class="btn-confirm-yes" wire:click="finalizeAndDischarge" wire:loading.attr="disabled">
-                <span wire:loading.remove wire:target="finalizeAndDischarge">✓ Yes, Discharge Patient</span>
+                <span wire:loading.remove wire:target="finalizeAndDischarge"><x-heroicon-o-check class="w-4 h-4 inline" /> Yes, Discharge Patient</span>
                 <span wire:loading wire:target="finalizeAndDischarge">Processing…</span>
             </button>
             <button type="button" class="btn-confirm-no" onclick="document.getElementById('ds-confirm').style.display='none'">
@@ -541,12 +541,12 @@
         <button type="button" class="btn-ds-draft"
             wire:click="saveDraft"
             wire:loading.attr="disabled">
-            <span wire:loading.remove wire:target="saveDraft">💾 Save Draft</span>
+            <span wire:loading.remove wire:target="saveDraft"><x-heroicon-o-archive-box-arrow-down class="w-4 h-4" /> Save Draft</span>
             <span wire:loading wire:target="saveDraft">Saving…</span>
         </button>
         <button type="button" class="btn-ds-discharge"
             onclick="document.getElementById('ds-confirm').style.display='block';window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})">
-            📋 Finalize &amp; Discharge Patient
+            <x-heroicon-o-clipboard-document-list class="w-4 h-4" /> Finalize &amp; Discharge Patient
         </button>
     </div>
     @else
@@ -558,7 +558,7 @@
         <a href="{{ route('forms.discharge-summary', ['visit' => $visitId]) }}"
             target="_blank"
             style="background:#1d4ed8;color:#fff;border:none;padding:10px 22px;border-radius:7px;font-size:0.85rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
-            🖨️ Print / Save as PDF
+            <x-heroicon-o-printer class="w-4 h-4" />️ Print / Save as PDF
         </a>
     </div>
     @endif
