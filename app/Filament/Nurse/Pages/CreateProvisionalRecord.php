@@ -12,10 +12,12 @@ use Carbon\Carbon;
 
 class CreateProvisionalRecord extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-heart';
-    protected static string $view = 'filament.nurse.pages.create-provisional-record';
-    protected static ?string $title = 'NICU - New Baby Arrival';
-    protected static ?int $navigationSort = 1;
+protected static ?string $navigationIcon = 'heroicon-o-heart';
+protected static string $view = 'filament.nurse.pages.create-provisional-record';
+protected static ?string $title = 'NICU - New Baby Arrival';
+protected static ?string $navigationLabel = 'NICU - New Baby Arrival';  // ← added
+protected static ?string $navigationGroup = 'NICU Care';                 // ← added
+protected static ?int    $navigationSort = 2; 
 
     public static function shouldRegisterNavigation(): bool
     {
