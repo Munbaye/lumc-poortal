@@ -106,7 +106,11 @@
                 <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
                     <span style="background:rgba(255,255,255,.18);font-size:.67rem;font-weight:700;
                                   border-radius:5px;padding:3px 9px;">
-                        {{ $this->isEr ? '🚑 EMERGENCY' : '📋 OUTPATIENT' }}
+                        @if($this->isEr)
+                            <x-heroicon-o-truck style="width:12px;height:12px;display:inline-block;vertical-align:-2px;" /> EMERGENCY
+                        @else
+                            <x-heroicon-o-clipboard-document-list style="width:12px;height:12px;display:inline-block;vertical-align:-2px;" /> OUTPATIENT
+                        @endif
                     </span>
                     <span style="background:rgba(255,255,255,.18);font-size:.67rem;font-weight:700;
                                   border-radius:5px;padding:3px 9px;">
@@ -133,7 +137,7 @@
                 {{-- Doctor --}}
                 @if($this->doctor)
                 <p style="font-size:.79rem;margin-top:7px;opacity:.85;">
-                    👨‍⚕️ Dr. {{ $this->doctor->name }}
+                    <x-heroicon-o-user-circle style="width:14px;height:14px;display:inline-block;vertical-align:-2px;" /> Dr. {{ $this->doctor->name }}
                     @if($this->doctor->specialty)
                         <span style="opacity:.6;"> — {{ $this->doctor->specialty }}</span>
                     @endif
@@ -160,13 +164,13 @@
                         default      => 'rgba(255,255,255,.15)',
                     };
                     $dIcon = match($this->visit->disposition){
-                        'Admitted'=>'🏥','Discharged'=>'🏠','Referred'=>'🔄',
-                        'HAMA'=>'⚠️','Expired'=>'✝',default=>'📋',
+                        'Admitted'=>'heroicon-o-building-office-2','Discharged'=>'heroicon-o-home','Referred'=>'heroicon-o-arrow-path',
+                        'HAMA'=>'heroicon-o-exclamation-triangle','Expired'=>'heroicon-o-x-circle',default=>'heroicon-o-clipboard-document-list',
                     };
                 @endphp
                 <div style="margin-top:10px;padding:5px 10px;border-radius:6px;
                              background:{{ $dBg }};display:inline-block;text-align:left;">
-                    <p style="font-size:.77rem;font-weight:700;">{{ $dIcon }} {{ $this->visit->disposition }}</p>
+                    <p style="font-size:.77rem;font-weight:700;display:flex;align-items:center;gap:4px;"><x-dynamic-component :component="$dIcon" style="width:13px;height:13px;" /> {{ $this->visit->disposition }}</p>
                     @if($this->visit->admitted_ward)
                     <p style="font-size:.67rem;opacity:.75;margin-top:1px;">Ward: {{ $this->visit->admitted_ward }}</p>
                     @endif
@@ -329,7 +333,7 @@
                             <div style="display:grid;gap:5px;">
                                 @foreach($labResults as $result)
                                 <a href="{{ $this->getFileUrl($result->file_path) }}" target="_blank" class="rrow rrow-lab">
-                                    <span style="font-size:1.2rem;flex-shrink:0;">{{ $result->file_type_icon }}</span>
+                                    <x-dynamic-component :component="$result->file_type_icon" style="width:18px;height:18px;flex-shrink:0;" />
                                     <div style="flex:1;min-width:0;">
                                         <p style="font-size:.8rem;font-weight:600;color:#15803d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $result->file_name }}</p>
                                         <p style="font-size:.7rem;color:#9ca3af;">{{ $result->file_size_human }}@if($result->created_at) · {{ $result->created_at->format('M d, Y') }}@endif</p>
@@ -420,7 +424,7 @@
                         <div style="margin-bottom:9px;padding:11px 14px;border-radius:7px;
                                     border:1.5px solid #bfdbfe;background:#eff6ff;"
                              class="dark:bg-blue-900/10 dark:border-blue-800">
-                            <p style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#1d4ed8;margin-bottom:4px;">🩻 Radiologist Interpretation</p>
+                            <p style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#1d4ed8;margin-bottom:4px;display:flex;align-items:center;gap:5px;"><x-heroicon-o-eye-dropper style="width:13px;height:13px;" /> Radiologist Interpretation</p>
                             <p style="font-size:.85rem;line-height:1.65;white-space:pre-line;" class="text-gray-800 dark:text-gray-200">{{ $rad->radiologist_interpretation }}</p>
                         </div>
                         @endif
@@ -434,7 +438,7 @@
                                 @foreach($radResults as $result)
                                 @php $isImg = str_contains($result->file_mime??'','image'); @endphp
                                 <a href="{{ $this->getFileUrl($result->file_path) }}" target="_blank" class="rrow rrow-rad">
-                                    <span style="font-size:1.2rem;flex-shrink:0;">{{ $result->file_type_icon }}</span>
+                                    <x-dynamic-component :component="$result->file_type_icon" style="width:18px;height:18px;flex-shrink:0;" />
                                     <div style="flex:1;min-width:0;">
                                         <p style="font-size:.8rem;font-weight:600;color:#1d4ed8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $result->file_name }}</p>
                                         <p style="font-size:.7rem;color:#9ca3af;">{{ $isImg?'Image':'File' }} · {{ $result->file_size_human }}@if($result->created_at) · {{ $result->created_at->format('M d, Y') }}@endif</p>
@@ -464,7 +468,7 @@
     @if(!$this->admRec && $this->labReqs->isEmpty() && $this->radReqs->isEmpty())
     <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;
                 padding:40px;text-align:center;" class="dark:bg-gray-900 dark:border-gray-700">
-        <div style="font-size:2rem;margin-bottom:10px;">📋</div>
+        <div style="margin-bottom:10px;display:flex;justify-content:center;color:#9ca3af;"><x-heroicon-o-clipboard-document-list style="width:32px;height:32px;" /></div>
         <p style="font-weight:700;font-size:.93rem;margin-bottom:4px;" class="text-gray-800 dark:text-white">No records yet.</p>
         <p style="font-size:.81rem;" class="text-gray-400 dark:text-gray-500">Records will appear here as your visit progresses.</p>
     </div>

@@ -324,13 +324,13 @@
 
     <div class="nicu-form-card">
         <div class="nicu-card-header">
-            <h3>🩺 New Baby Arrival - Create Provisional Record</h3>
+            <h3 style="display:flex;align-items:center;gap:8px;"><x-heroicon-o-heart style="width:20px;height:20px;" /> New Baby Arrival - Create Provisional Record</h3>
         </div>
         <div class="nicu-card-body">
 
             <div class="info-box">
                 <p>
-                    <strong>📋 About this form:</strong> This creates a <strong>temporary record</strong> so you can start documenting care immediately.
+                    <strong><x-heroicon-o-clipboard-document-list style="width:15px;height:15px;display:inline-block;vertical-align:-2px;" /> About this form:</strong> This creates a <strong>temporary record</strong> so you can start documenting care immediately.
                     The baby will receive a temporary ID (TEMP-YYYYMMDD-XXX). Complete the full registration after talking to the mother.
                 </p>
             </div>
@@ -557,7 +557,7 @@
                         Cancel
                     </button>
                     <button type="submit" class="btn-primary" wire:loading.attr="disabled">
-                        <span wire:loading.remove>💾 Create Provisional Record</span>
+                        <span wire:loading.remove><x-heroicon-o-archive-box style="width:15px;height:15px;display:inline-block;vertical-align:-2px;" /> Create Provisional Record</span>
                         <span wire:loading>Creating...</span>
                     </button>
                 </div>
@@ -568,7 +568,7 @@
 
     <div class="warning-box">
         <p>
-            <strong>⚠️ Important:</strong> This creates a <strong>TEMPORARY</strong> record with ID format <strong>TEMP-YYYYMMDD-XXX</strong>.
+            <strong><x-heroicon-o-exclamation-triangle style="width:15px;height:15px;display:inline-block;vertical-align:-2px;" /> Important:</strong> This creates a <strong>TEMPORARY</strong> record with ID format <strong>TEMP-YYYYMMDD-XXX</strong>.
             The clerk must convert this to a permanent record (LUMC-YYYY-xxxxxx) on the next business day.
             All clinical data entered before conversion will remain linked to the permanent record.
         </p>

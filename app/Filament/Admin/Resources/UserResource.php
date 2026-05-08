@@ -106,11 +106,11 @@ class UserResource extends Resource
                         Forms\Components\Select::make('panel')
                             ->label('Portal / Role')
                             ->options([
-                                'admin'  => '🔴 Admin',
-                                'doctor' => '🔵 Doctor',
-                                'nurse'  => '🟡 Nurse',
-                                'clerk'  => '🔷 Clerk',
-                                'tech'   => '🟢 Lab / Radiology Tech',
+                                'admin'  => 'Admin',
+                                'doctor' => 'Doctor',
+                                'nurse'  => 'Nurse',
+                                'clerk'  => 'Clerk',
+                                'tech'   => 'Lab / Radiology Tech',
                             ])
                             ->required()
                             ->reactive()

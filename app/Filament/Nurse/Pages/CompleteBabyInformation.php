@@ -72,7 +72,8 @@ class CompleteBabyInformation extends Page
         if ($this->isPermanent && $this->baby->clerk_registered_at) {
             $this->isReadOnly = true;
             Notification::make()
-                ->title('⚠️ Record is in Read-Only Mode')
+                ->title('Record is in Read-Only Mode')
+                ->icon('heroicon-o-exclamation-triangle')
                 ->body('This baby has already been converted to a permanent record by the clerk. You can view but cannot edit.')
                 ->warning()
                 ->duration(8000)

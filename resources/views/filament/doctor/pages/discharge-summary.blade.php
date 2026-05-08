@@ -108,7 +108,7 @@
     .dark .ds-cb-opt { color: #f3f4f6; }
     .ds-cb { width: 11px; height: 11px; border: 1.5px solid #555; border-radius: 2px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .ds-cb.checked { background: #1d4ed8; border-color: #1d4ed8; }
-    .ds-cb.checked::after { content: '✓'; font-size: 7px; color: #fff; line-height: 1; }
+    .ds-cb.checked::after { content: '\2713'; font-size: 7px; color: #fff; line-height: 1; }
 
     /* ── Field rows inside the body ─────────────────────────────────────────── */
     .ds-field-row {

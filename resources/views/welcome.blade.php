@@ -897,13 +897,13 @@ $staticSlides = [
                         @csrf
                         <label class="modal-label">Current / Temporary Password</label>
                         <div class="modal-field"><i class="fas fa-lock modal-field-icon"></i><input type="password" name="current_password" id="chgCur" placeholder="Your temporary password" required><button type="button" class="modal-eye" onclick="togglePwd('chgCur','chgCurIc')"><i id="chgCurIc" class="fas fa-eye"></i></button></div>
-                        @error('current_password')<p style="color:#f87171;font-size:.73rem;margin-top:-10px;margin-bottom:14px;">⚠️ {{ $message }}</p>@enderror
+                        @error('current_password')<p style="color:#f87171;font-size:.73rem;margin-top:-10px;margin-bottom:14px;"><x-heroicon-o-exclamation-triangle style="width:13px;height:13px;display:inline-block;vertical-align:-2px;" /> {{ $message }}</p>@enderror
                         <label class="modal-label">New Password <span style="opacity:.5;font-weight:400;">(min 8 chars)</span></label>
                         <div class="modal-field"><i class="fas fa-key modal-field-icon"></i><input type="password" name="new_password" id="chgNew" placeholder="Choose a strong password" required><button type="button" class="modal-eye" onclick="togglePwd('chgNew','chgNewIc')"><i id="chgNewIc" class="fas fa-eye"></i></button></div>
-                        @error('new_password')<p style="color:#f87171;font-size:.73rem;margin-top:-10px;margin-bottom:14px;">⚠️ {{ $message }}</p>@enderror
+                        @error('new_password')<p style="color:#f87171;font-size:.73rem;margin-top:-10px;margin-bottom:14px;"><x-heroicon-o-exclamation-triangle style="width:13px;height:13px;display:inline-block;vertical-align:-2px;" /> {{ $message }}</p>@enderror
                         <label class="modal-label">Confirm New Password</label>
                         <div class="modal-field"><i class="fas fa-check-circle modal-field-icon"></i><input type="password" name="confirm_password" id="chgCon" placeholder="Re-enter new password" required><button type="button" class="modal-eye" onclick="togglePwd('chgCon','chgConIc')"><i id="chgConIc" class="fas fa-eye"></i></button></div>
-                        @error('confirm_password')<p style="color:#f87171;font-size:.73rem;margin-top:-10px;margin-bottom:14px;">⚠️ {{ $message }}</p>@enderror
+                        @error('confirm_password')<p style="color:#f87171;font-size:.73rem;margin-top:-10px;margin-bottom:14px;"><x-heroicon-o-exclamation-triangle style="width:13px;height:13px;display:inline-block;vertical-align:-2px;" /> {{ $message }}</p>@enderror
                         <button type="submit" class="modal-submit"><i class="fas fa-lock" style="margin-right:8px;"></i>SET NEW PASSWORD</button>
                     </form>
                     <div class="modal-footer-note">LUMC Patient Portal · La Union Medical Center</div>

@@ -637,7 +637,7 @@ html.dark .sig-modal-dismiss:hover { background:#334155; color:#e2e8f0; }
                         <div class="sig-preview-cell">
                             <div class="sig-preview-cell-label">
                                 Processed
-                                <span class="check">✓</span>
+                                <span class="check">&#10003;</span>
                             </div>
                             <div class="sig-preview-img-wrap">
                                 <img :src="uploadProcessed" alt="processed">

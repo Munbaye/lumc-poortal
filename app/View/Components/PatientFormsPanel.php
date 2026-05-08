@@ -24,7 +24,7 @@ use Illuminate\View\Component;
  * Each form definition is an array:
  *   [
  *     'key'        => unique string identifier
- *     'icon'       => emoji
+     *     'icon'       => Blade icon component name
  *     'label'      => display label (with form code)
  *     'url'        => fn(int $visitId): string — URL for the iframe src
  *     'print_url'  => fn(int $visitId): string|null — URL for "Open / Print" button (null = same as url)
@@ -82,7 +82,7 @@ class PatientFormsPanel extends Component
             // ── 1. Emergency Room Record ──────────────────────────────────────
             [
                 'key'         => 'er_record',
-                'icon'        => '🏥',
+                'icon'        => 'heroicon-o-building-office-2',
                 'label'       => 'Emergency Room Record (ER-001)',
                 'url'         => fn () => route('forms.er-record', ['visit' => $visitId]) . '?readonly=1',
                 'print_url'   => fn () => route('forms.er-record', ['visit' => $visitId]) . '?readonly=1',
@@ -91,13 +91,13 @@ class PatientFormsPanel extends Component
                 'show_iframe' => fn () => (bool) $visit?->erRecord,
                 'badge'       => fn () => $visit?->erRecord ? 'Saved' : 'Not yet filled',
                 'badge_style' => fn () => $visit?->erRecord ? $savedBadge : $missingBadge,
-                'placeholder' => '📋 ER Record has not been filled out by the clerk yet.',
+                'placeholder' => 'ER Record has not been filled out by the clerk yet.',
             ],
 
             // ── 2. Admission & Discharge Record ───────────────────────────────
             [
                 'key'         => 'adm_record',
-                'icon'        => '📋',
+                'icon'        => 'heroicon-o-clipboard-document-list',
                 'label'       => 'Admission &amp; Discharge Record (ADM-001)',
                 'url'         => fn () => route('forms.adm-record', ['visit' => $visitId]) . '?readonly=1',
                 'print_url'   => fn () => route('forms.adm-record', ['visit' => $visitId]) . '?readonly=1',
@@ -106,13 +106,13 @@ class PatientFormsPanel extends Component
                 'show_iframe' => fn () => (bool) $visit?->admissionRecord,
                 'badge'       => fn () => $visit?->admissionRecord ? 'Saved' : 'Not yet filled',
                 'badge_style' => fn () => $visit?->admissionRecord ? $savedBadge : $missingBadge,
-                'placeholder' => '📋 Admission &amp; Discharge Record has not been filled out by the clerk yet.',
+                'placeholder' => 'Admission &amp; Discharge Record has not been filled out by the clerk yet.',
             ],
 
             // ── 3. Consent to Care ────────────────────────────────────────────
             [
                 'key'         => 'consent',
-                'icon'        => '📄',
+                'icon'        => 'heroicon-o-document-text',
                 'label'       => 'Consent to Care (NUR-002-1)',
                 'url'         => fn () => route('forms.consent-to-care', ['visit' => $visitId]) . '?readonly=1',
                 'print_url'   => fn () => route('forms.consent-to-care', ['visit' => $visitId]) . '?readonly=1',
@@ -121,13 +121,13 @@ class PatientFormsPanel extends Component
                 'show_iframe' => fn () => (bool) $visit?->consentRecord,
                 'badge'       => fn () => $visit?->consentRecord ? 'Saved' : 'Not yet filled',
                 'badge_style' => fn () => $visit?->consentRecord ? $savedBadge : $missingBadge,
-                'placeholder' => '📄 Consent to Care has not been filled out by the clerk yet.',
+                'placeholder' => 'Consent to Care has not been filled out by the clerk yet.',
             ],
 
             // ── 4. History Form ───────────────────────────────────────────────
             [
                 'key'         => 'history_form',
-                'icon'        => '📝',
+                'icon'        => 'heroicon-o-pencil-square',
                 'label'       => 'History Form (NUR-006)',
                 'url'         => fn () => route('forms.history-form', ['visit' => $visitId]) . '?readonly=1',
                 'print_url'   => fn () => route('forms.history-form', ['visit' => $visitId]) . '?readonly=1',
@@ -136,13 +136,13 @@ class PatientFormsPanel extends Component
                 'show_iframe' => fn () => (bool) $visit?->medicalHistory,
                 'badge'       => fn () => $visit?->medicalHistory ? 'Filled' : 'Not yet assessed',
                 'badge_style' => fn () => $visit?->medicalHistory ? $savedBadge : $missingBadge,
-                'placeholder' => '📝 History Form will appear here once the patient has been assessed by a doctor.',
+                'placeholder' => 'History Form will appear here once the patient has been assessed by a doctor.',
             ],
 
             // ── 5. Physical Examination Form ──────────────────────────────────
             [
                 'key'         => 'physical_exam',
-                'icon'        => '🩺',
+                'icon'        => 'heroicon-o-heart',
                 'label'       => 'Physical Examination Form (NUR-005)',
                 'url'         => fn () => route('forms.physical-exam-form', ['visit' => $visitId]) . '?readonly=1',
                 'print_url'   => fn () => route('forms.physical-exam-form', ['visit' => $visitId]) . '?readonly=1',
@@ -151,13 +151,13 @@ class PatientFormsPanel extends Component
                 'show_iframe' => fn () => (bool) $visit?->medicalHistory,
                 'badge'       => fn () => $visit?->medicalHistory ? 'Filled' : 'Not yet assessed',
                 'badge_style' => fn () => $visit?->medicalHistory ? $savedBadge : $missingBadge,
-                'placeholder' => '🩺 Physical Examination Form will appear here once the patient has been assessed by a doctor.',
+                'placeholder' => 'Physical Examination Form will appear here once the patient has been assessed by a doctor.',
             ],
 
             // ── 6. Vital Sign Monitoring Sheet ────────────────────────────────
             [
                 'key'         => 'vitals_sheet',
-                'icon'        => '📊',
+                'icon'        => 'heroicon-o-chart-bar',
                 'label'       => 'Vital Sign Monitoring Sheet (NUR-014)',
                 'url'         => fn () => route('forms.vital-sign-monitoring-sheet', ['visit' => $visitId]),
                 'print_url'   => fn () => route('forms.vital-sign-monitoring-sheet', ['visit' => $visitId]),
@@ -173,13 +173,13 @@ class PatientFormsPanel extends Component
                 'badge_style' => function () use ($visitId, $infoBadge, $grayBadge) {
                     return Vital::where('visit_id', $visitId)->exists() ? $infoBadge : $grayBadge;
                 },
-                'placeholder' => '📊 No vital signs recorded yet.',
+                'placeholder' => 'No vital signs recorded yet.',
             ],
 
             // ── 7. IV / Blood Transfusion Sheet ──────────────────────────────
             [
                 'key'         => 'iv_bt_sheet',
-                'icon'        => '💧',
+                'icon'        => 'heroicon-o-beaker',
                 'label'       => 'IV / Blood Transfusion Sheet (NUR-012)',
                 'url'         => fn () => route('forms.iv-bt-sheet', ['visit' => $visitId]),
                 'print_url'   => fn () => route('forms.iv-bt-sheet', ['visit' => $visitId]),
@@ -195,13 +195,13 @@ class PatientFormsPanel extends Component
                 'badge_style' => function () use ($visitId, $tealBadge, $grayBadge) {
                     return IvFluidEntry::where('visit_id', $visitId)->exists() ? $tealBadge : $grayBadge;
                 },
-                'placeholder' => '💧 No IV / blood transfusion entries yet.',
+                'placeholder' => 'No IV / blood transfusion entries yet.',
             ],
 
             // ── 8. Nurse's Notes ──────────────────────────────────────────────
             [
                 'key'         => 'nurses_notes',
-                'icon'        => '📝',
+                'icon'        => 'heroicon-o-pencil-square',
                 'label'       => "Nurse's Notes (NUR-010)",
                 'url'         => fn () => route('forms.nurses-notes', ['visit' => $visitId]),
                 'print_url'   => fn () => route('forms.nurses-notes', ['visit' => $visitId]),
@@ -217,13 +217,13 @@ class PatientFormsPanel extends Component
                 'badge_style' => function () use ($visitId, $purpleBadge, $grayBadge) {
                     return NursesNote::where('visit_id', $visitId)->exists() ? $purpleBadge : $grayBadge;
                 },
-                'placeholder' => '📝 No nurse\'s notes yet.',
+                'placeholder' => 'No nurse\'s notes yet.',
             ],
 
             // ── 9. Medication Administration Record ───────────────────────────
             [
                 'key'         => 'mar',
-                'icon'        => '💊',
+                'icon'        => 'heroicon-o-circle-stack',
                 'label'       => 'Medication Administration Record (NUR-011)',
                 'url'         => fn () => route('forms.medication-records', ['visit' => $visitId]),
                 'print_url'   => fn () => route('forms.medication-records', ['visit' => $visitId]),
@@ -241,7 +241,7 @@ class PatientFormsPanel extends Component
                 'badge_style' => function () use ($visitId, $roseBadge, $grayBadge) {
                     return MarEntry::where('visit_id', $visitId)->exists() ? $roseBadge : $grayBadge;
                 },
-                'placeholder' => '💊 No medications recorded yet.',
+                'placeholder' => 'No medications recorded yet.',
             ],
 
             /*

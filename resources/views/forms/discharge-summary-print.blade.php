@@ -61,7 +61,7 @@
         .cb-opt { display: inline-flex; align-items: center; gap: 3px; }
         .cb { width: 11px; height: 11px; border: 1.5px solid #555; border-radius: 2px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .cb.on { background: #000; }
-        .cb.on::after { content: '✓'; font-size: 7px; color: #fff; line-height: 1; }
+        .cb.on::after { content: '\2713'; font-size: 7px; color: #fff; line-height: 1; }
 
         /* ── Two-column header fields ── */
         .hdr-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; margin-bottom: 8px; }

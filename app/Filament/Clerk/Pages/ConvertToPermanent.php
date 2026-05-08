@@ -91,7 +91,8 @@ class ConvertToPermanent extends Page
             $freshBaby = $this->baby->fresh();
 
             Notification::make()
-                ->title('✓ Record Converted to Permanent')
+                ->title('Record Converted to Permanent')
+                ->icon('heroicon-o-check-circle')
                 ->body("Permanent Case Number: {$freshBaby->case_no} — Please complete the Consent to Care form.")
                 ->success()
                 ->send();

@@ -92,7 +92,7 @@
             </div>
             @error('currentPassword')
                 <p style="color:#f87171;font-size:.73rem;margin-top:6px;font-weight:600;">
-                    ⚠️ {{ $message }}
+                    <x-heroicon-o-exclamation-triangle style="width:14px;height:14px;display:inline-block;vertical-align:-2px;" /> {{ $message }}
                 </p>
             @enderror
         </div>
@@ -123,7 +123,7 @@
             </div>
             @error('newPassword')
                 <p style="color:#f87171;font-size:.73rem;margin-top:6px;font-weight:600;">
-                    ⚠️ {{ $message }}
+                    <x-heroicon-o-exclamation-triangle style="width:14px;height:14px;display:inline-block;vertical-align:-2px;" /> {{ $message }}
                 </p>
             @enderror
         </div>
@@ -154,7 +154,7 @@
             </div>
             @error('confirmPassword')
                 <p style="color:#f87171;font-size:.73rem;margin-top:6px;font-weight:600;">
-                    ⚠️ {{ $message }}
+                    <x-heroicon-o-exclamation-triangle style="width:14px;height:14px;display:inline-block;vertical-align:-2px;" /> {{ $message }}
                 </p>
             @enderror
         </div>

@@ -139,7 +139,8 @@
 
     @if(!$readonly)
     <div class="screen-tip no-print">
-        💡 Fill <strong>either</strong> Section 1 (patient signs) <em>or</em> Section 2 (guardian signs) — not both.
+        <x-heroicon-o-light-bulb style="width:14px;height:14px;display:inline-block;vertical-align:-2px;" />
+        Fill <strong>either</strong> Section 1 (patient signs) <em>or</em> Section 2 (guardian signs) — not both.
         Type in the <u>Witness</u> field to activate Section 1, or type the
         <u>Guardian name</u> to activate Section 2. All text is automatically CAPITALISED.
         Click <strong>Save &amp; Continue</strong> when done.
@@ -497,8 +498,8 @@
             var json = await res.json();
 
             if (json.success) {
-                showToast('✔ Consent to Care saved — advancing…');
-                if (btn) btn.textContent = '✔ Saved';
+                showToast('Consent to Care saved — advancing…');
+                if (btn) btn.textContent = 'Saved';
                 window.parent.postMessage({ type: 'consentSaved' }, '*');
             } else {
                 showToast('Save failed: ' + (json.message ?? 'Unknown error'), true);

@@ -67,6 +67,12 @@
     font-size: .95rem;
     line-height: 1;
 }
+.hero-chip-icon svg,
+.queue-section-title svg,
+.search-wrap .si svg {
+    width: 1rem;
+    height: 1rem;
+}
 .hero-chip-num   { font-size:1.55rem; font-weight:800; line-height:1; margin-bottom:.18rem; }
 .hero-chip-label { font-size:.65rem; font-weight:700; opacity:.8; text-transform:uppercase; letter-spacing:.05em; white-space:nowrap; }
 
@@ -74,7 +80,7 @@
 .queue-controls { display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
 
 .search-wrap { flex:1; min-width:200px; position:relative; }
-.search-wrap .si { position:absolute; left:11px; top:50%; transform:translateY(-50%); }
+.search-wrap .si { position:absolute; left:11px; top:50%; transform:translateY(-50%); display:flex; }
 html:not(.dark) .search-wrap .si { color:#9ca3af; }
 html.dark       .search-wrap .si { color:#475569; }
 
@@ -200,7 +206,8 @@ html.dark .modality-badge { color:var(--accent-light); }
 
 /* Empty state */
 .empty-state { text-align:center; padding:40px 20px; }
-.empty-icon  { font-size:2.4rem; margin-bottom:9px; }
+.empty-icon  { display:flex;justify-content:center;margin-bottom:9px;color:var(--accent-color); }
+.empty-icon svg { width:2.4rem;height:2.4rem; }
 .empty-title { font-size:.9rem; font-weight:700; margin-bottom:4px; }
 html:not(.dark) .empty-title { color:#374151; }
 html.dark       .empty-title { color:#e5e7eb; }
@@ -225,7 +232,7 @@ html.dark       .empty-sub { color:#475569; }
     if ($this->isMedtech && !$this->isRadtech) {
         // ── MEDTECH — teal ──────────────────────────────────────
         $gradient    = 'linear-gradient(135deg, #0d9488 0%, #0f766e 55%, #134e4a 100%)';
-        $heroSub     = '🧬 Laboratory · Medical Technology';
+        $heroSub     = 'Laboratory · Medical Technology';
         $accentColor = '#0f766e';
         $accentLight = '#5eead4';
         $accentShadow= 'rgba(15,118,110,.1)';
@@ -233,7 +240,7 @@ html.dark       .empty-sub { color:#475569; }
     } elseif ($this->isRadtech && !$this->isMedtech) {
         // ── RADTECH — gray/slate ─────────────────────────────────
         $gradient    = 'linear-gradient(135deg, #64748b 0%, #475569 55%, #334155 100%)';
-        $heroSub     = '🩻 Radiology · Diagnostic Imaging';
+        $heroSub     = 'Radiology · Diagnostic Imaging';
         $accentColor = '#475569';
         $accentLight = '#94a3b8';
         $accentShadow= 'rgba(71,85,105,.1)';
@@ -241,7 +248,7 @@ html.dark       .empty-sub { color:#475569; }
     } else {
         // ── TECH — orange ────────────────────────────────────────
         $gradient    = 'linear-gradient(135deg, #f97316 0%, #ea580c 55%, #c2410c 100%)';
-        $heroSub     = '🔬 Laboratory · General Tech';
+        $heroSub     = 'Laboratory · General Tech';
         $accentColor = '#ea580c';
         $accentLight = '#fb923c';
         $accentShadow= 'rgba(234,88,12,.1)';
@@ -273,7 +280,7 @@ html.dark       .empty-sub { color:#475569; }
     <div class="tech-hero-right">
         @if($queueType !== 'radiology')
         <div class="hero-chip">
-            <div class="hero-chip-icon">🧪</div>
+            <div class="hero-chip-icon"><x-heroicon-o-beaker /></div>
             <div class="hero-chip-num">{{ $this->pendingLabCount }}</div>
             <div class="hero-chip-label">Pending Lab</div>
         </div>
@@ -281,20 +288,20 @@ html.dark       .empty-sub { color:#475569; }
 
         @if($queueType !== 'lab')
         <div class="hero-chip">
-            <div class="hero-chip-icon">🩻</div>
+            <div class="hero-chip-icon"><x-heroicon-o-eye-dropper /></div>
             <div class="hero-chip-num">{{ $this->pendingRadCount }}</div>
             <div class="hero-chip-label">Pending Rad</div>
         </div>
         @endif
 
         <div class="hero-chip">
-            <div class="hero-chip-icon">✅</div>
+            <div class="hero-chip-icon"><x-heroicon-o-check-circle /></div>
             <div class="hero-chip-num">{{ $this->myCompletedToday }}</div>
             <div class="hero-chip-label">Done Today</div>
         </div>
 
         <div class="hero-chip">
-            <div class="hero-chip-icon">📋</div>
+            <div class="hero-chip-icon"><x-heroicon-o-clipboard-document-list /></div>
             <div class="hero-chip-num">{{ $this->myTotalResults }}</div>
             <div class="hero-chip-label">Total Results</div>
         </div>
@@ -306,7 +313,7 @@ html.dark       .empty-sub { color:#475569; }
 ════════════════════════════════════════════════════════════ --}}
 <div class="queue-controls" style="margin-top:1.5rem;">
     <div class="search-wrap">
-        <span class="si">🔍</span>
+        <span class="si"><x-heroicon-o-magnifying-glass /></span>
         <input type="text" wire:model.live.debounce.300ms="search"
                class="search-input"
                placeholder="Search by request no, patient name, or diagnosis…">
@@ -329,13 +336,14 @@ html.dark       .empty-sub { color:#475569; }
 @if($queueType !== 'radiology')
 <div class="queue-section">
     <p class="queue-section-title">
-        🧪 Laboratory Requests
+        <x-heroicon-o-beaker />
+        Laboratory Requests
         <span class="qs-badge {{ $queueFilter }}">{{ $labQueue->count() }}</span>
     </p>
     <div class="req-table-wrap">
         @if($labQueue->isEmpty())
         <div class="empty-state">
-            <div class="empty-icon">🧪</div>
+            <div class="empty-icon"><x-heroicon-o-beaker /></div>
             <p class="empty-title">
                 @if($queueFilter === 'pending') No pending lab requests @else No completed lab requests @endif
             </p>
@@ -412,13 +420,14 @@ html.dark       .empty-sub { color:#475569; }
 @if($queueType !== 'lab')
 <div class="queue-section">
     <p class="queue-section-title">
-        🩻 Radiology Requests
+        <x-heroicon-o-eye-dropper />
+        Radiology Requests
         <span class="qs-badge {{ $queueFilter }}">{{ $radQueue->count() }}</span>
     </p>
     <div class="req-table-wrap">
         @if($radQueue->isEmpty())
         <div class="empty-state">
-            <div class="empty-icon">🩻</div>
+            <div class="empty-icon"><x-heroicon-o-eye-dropper /></div>
             <p class="empty-title">
                 @if($queueFilter === 'pending') No pending radiology requests @else No completed radiology requests @endif
             </p>

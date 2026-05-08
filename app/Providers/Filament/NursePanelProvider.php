@@ -20,22 +20,12 @@ class NursePanelProvider extends PanelProvider
             ->id('nurse')
             ->path('nurse')
             ->colors(['primary' => Color::Rose])
-            ->brandName('')
-            ->brandLogo(fn () => new \Illuminate\Support\HtmlString(
-                '<div style="display:flex;align-items:center;gap:.55rem;">
-                    <img src="' . asset('images/lumc-logo.png') . '"
-                         style="width:30px;height:30px;object-fit:contain;border-radius:50%;
-                                background:rgba(190,18,60,.12);padding:2px;flex-shrink:0;" alt="LUMC">
-                    <span class="lumc-brand-text"
-                          style="font-weight:800;font-size:.9rem;letter-spacing:.04em;
-                                 white-space:nowrap;text-transform:uppercase;">LUMC-NURSE</span>
-                </div>
-                <style>
-                    .fi-logo .lumc-brand-text { color:#be123c; }
-                    .dark .fi-logo .lumc-brand-text { color:#fda4af; }
-                </style>'
+            ->brandLogo(fn() => new HtmlString(
+                '<div style="display:flex;align-items:center;gap:10px;">'
+                    . '<img src="' . asset('images/lumc-logo.png') . '" alt="LUMC Logo" style="height:40px;width:auto;">'
+                    . '<span style="font-weight:700;color:#111827;">LUMC — Nurse Portal</span>'
+                    . '</div>'
             ))
-            ->brandLogoHeight('auto')
             ->sidebarCollapsibleOnDesktop(false)
             ->globalSearch(false)
             ->favicon(asset('images/lumc-logo.png'))

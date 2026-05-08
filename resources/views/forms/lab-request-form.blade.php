@@ -503,7 +503,8 @@ Specimen Collected, Test Started, Test Done) — these are filled by the system 
     <div class="paper">
 
         <div class="screen-tip no-print">
-            💡 <strong>Click test names</strong> to select. Click <strong>Submit Request</strong> to save, then
+            <x-heroicon-o-light-bulb style="width:14px;height:14px;display:inline-block;vertical-align:-2px;" />
+            <strong>Click test names</strong> to select. Click <strong>Submit Request</strong> to save, then
             <strong>Print / PDF</strong> for the hardcopy.
         </div>
 
@@ -763,14 +764,14 @@ Specimen Collected, Test Started, Test Done) — these are filled by the system 
         async function submitForm() {
             const btn = document.getElementById('btnSubmit'); btn.disabled = true; btn.textContent = 'Saving…';
             const selectedTests = getSelectedTests();
-            if (selectedTests.length === 0) { showToast('⚠ Please select at least one test before submitting.', true); btn.disabled = false; btn.textContent = '✔ Submit Request'; return; }
+            if (selectedTests.length === 0) { showToast('Please select at least one test before submitting.', true); btn.disabled = false; btn.textContent = 'Submit Request'; return; }
             const reqType = document.querySelector('input[name="req_type"]:checked')?.value ?? 'routine';
             const payload = { request_no: document.getElementById('f_receipt').value.trim(), request_type: reqType, ward: document.getElementById('f_ward').value.trim(), clinical_diagnosis: document.getElementById('f_diag').value.trim(), requesting_physician: '{{ $requestingPhysician ?? '' }}', tests: selectedTests, specimen: document.getElementById('f_specimen').value.trim(), antibiotics_taken: document.getElementById('f_antibiotics').value.trim(), other_tests: document.getElementById('f_others').value.trim(), date_requested: document.getElementById('f_date').value };
             try {
                 const res = await fetch('{{ route("forms.lab-request.store", ["visit" => $visit->id]) }}', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' }, body: JSON.stringify(payload) });
                 const json = await res.json();
-                if (json.success) { showToast('✔ ' + json.message, false); btn.textContent = '✔ Saved'; } else { showToast('⚠ Save failed. Please try again.', true); btn.disabled = false; btn.textContent = '✔ Submit Request'; }
-            } catch (err) { showToast('⚠ Network error — check connection.', true); btn.disabled = false; btn.textContent = '✔ Submit Request'; }
+                if (json.success) { showToast(json.message, false); btn.textContent = 'Saved'; } else { showToast('Save failed. Please try again.', true); btn.disabled = false; btn.textContent = 'Submit Request'; }
+            } catch (err) { showToast('Network error — check connection.', true); btn.disabled = false; btn.textContent = 'Submit Request'; }
         }
         function showToast(msg, isError) { const t = document.getElementById('toast'); t.textContent = msg; t.className = isError ? 'error' : ''; t.style.display = 'block'; setTimeout(() => { t.style.display = 'none'; }, 4500); }
     </script>

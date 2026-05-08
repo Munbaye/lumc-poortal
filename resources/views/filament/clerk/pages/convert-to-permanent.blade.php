@@ -129,7 +129,7 @@
 }
 .dark #adm-page-root .sq { border-color: #9ca3af; }
 #adm-page-root .sq.on::after {
-    content: '✓'; position: absolute; top: -3px; left: 0;
+    content: '\2713'; position: absolute; top: -3px; left: 0;
     font-size: 10pt; font-weight: bold; line-height: 1;
 }
 
@@ -322,7 +322,11 @@
 <div class="adm-toolbar no-print">
     <span class="tl">Admission and Discharge Record (ADM-001)</span>
     <span class="tag" style="background:rgba(245,158,11,.3);">
-        {{ $baby?->is_provisional ? '⚠ PROVISIONAL' : '✓ PERMANENT' }}
+        @if($baby?->is_provisional)
+            <x-heroicon-o-exclamation-triangle style="width:13px;height:13px;display:inline-block;vertical-align:-2px;" /> PROVISIONAL
+        @else
+            <x-heroicon-o-check-circle style="width:13px;height:13px;display:inline-block;vertical-align:-2px;" /> PERMANENT
+        @endif
     </span>
     <span class="tag">{{ $caseNo }}</span>
     @if($baby)
@@ -330,8 +334,8 @@
         {{ trim(($baby->baby_family_name ?? $baby->family_name ?? '') . ', ' . ($baby->baby_first_name ?? $baby->first_name ?? '')) }}
     </span>
     @endif
-    <button class="btn-print-adm" onclick="window.print()">🖨️ Print / PDF</button>
-    <button id="btnSaveAdm" class="btn-save-adm" onclick="admSaveRecord()">💾 Save Record</button>
+    <button class="btn-print-adm" onclick="window.print()"><x-heroicon-o-printer style="width:14px;height:14px;display:inline-block;vertical-align:-2px;" /> Print / PDF</button>
+    <button id="btnSaveAdm" class="btn-save-adm" onclick="admSaveRecord()"><x-heroicon-o-archive-box style="width:14px;height:14px;display:inline-block;vertical-align:-2px;" /> Save Record</button>
 </div>
 
 {{-- ── ADM-001 Paper ──────────────────────────────────────────────────────── --}}
@@ -679,7 +683,7 @@
 @elseif($baby && !$baby->is_provisional)
 <div class="no-print" style="margin-top:20px;background:#d1fae5;border:1px solid #6ee7b7;border-radius:10px;padding:16px 20px;font-size:0.875rem;font-family:inherit;">
     <p style="margin:0;font-weight:700;color:#065f46;">
-        ✓ This record has been converted to permanent — Case No: {{ $baby->case_no }}
+        <x-heroicon-o-check-circle style="width:15px;height:15px;display:inline-block;vertical-align:-3px;" /> This record has been converted to permanent — Case No: {{ $baby->case_no }}
     </p>
     <div style="margin-top:12px;">
         <button type="button" class="btn-back" onclick="window.location.href='/clerk/visits'">← Back to Visits</button>
@@ -809,17 +813,17 @@ async function admSaveRecord() {
         });
         const json = await res.json();
         if (json.success) {
-            showAdmToast('✔ Admission Record saved successfully.');
-            btn.textContent = '✔ Saved';
+            showAdmToast('Admission Record saved successfully.');
+            btn.textContent = 'Saved';
             btn.disabled = false;
         } else {
-            showAdmToast('⚠ Save failed: ' + (json.message ?? 'Unknown error'), true);
-            btn.textContent = '💾 Save Record';
+            showAdmToast('Save failed: ' + (json.message ?? 'Unknown error'), true);
+            btn.textContent = 'Save Record';
             btn.disabled = false;
         }
     } catch (e) {
-        showAdmToast('⚠ Network error — check connection.', true);
-        btn.textContent = '💾 Save Record';
+        showAdmToast('Network error — check connection.', true);
+        btn.textContent = 'Save Record';
         btn.disabled = false;
     }
 }

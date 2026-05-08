@@ -13,22 +13,27 @@ use App\Helpers\WHOGrowthChart;
 .chart-page { display:flex; flex-direction:column; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; background:#fff; }
 .dark .chart-page { background:#111827; border-color:#374151; }
 
-.chart-header { background:linear-gradient(135deg,#881337 0%,#f43f5e 100%); padding:16px 24px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+.chart-header { background:linear-gradient(135deg,#881337 0%,#f43f5e 100%); padding:18px 24px 20px; display:flex; flex-direction:column; gap:16px; }
+.chart-header-main { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; width:100%; }
 .chart-header-left { flex:1; min-width:200px; }
 .pt-name-big { font-size:1.1rem; font-weight:800; color:#fff; letter-spacing:.02em; }
 .pt-case-big { font-family:monospace; font-size:.78rem; color:#fda4af; margin-top:2px; }
-.header-pills { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
-.h-pill { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.22); border-radius:6px; padding:5px 14px; text-align:center; }
+.header-pills { display:grid; grid-template-columns:minmax(150px,auto) minmax(220px,1fr) auto minmax(150px,auto) minmax(170px,auto); gap:10px; align-items:stretch; width:100%; }
+.h-pill { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.22); border-radius:6px; padding:7px 14px; text-align:center; min-height:48px; display:flex; flex-direction:column; justify-content:center; min-width:0; }
 .h-pill .pl { font-size:.6rem; text-transform:uppercase; letter-spacing:.06em; color:#fda4af; }
-.h-pill .pv { font-size:.82rem; font-weight:700; color:#fff; }
-.svc-pill { background:#be123c; color:#fff; font-size:.72rem; font-weight:700; padding:4px 14px; border-radius:9999px; }
+.h-pill .pv { font-size:.82rem; font-weight:700; color:#fff; overflow:hidden; text-overflow:ellipsis; }
+.svc-pill { background:#be123c; color:#fff; font-size:.72rem; font-weight:700; padding:8px 16px; border-radius:9999px; display:inline-flex; align-items:center; justify-content:center; align-self:center; min-width:70px; }
 .btn-back-hdr { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:#fff; font-size:.78rem; font-weight:600; padding:7px 14px; border-radius:6px; text-decoration:none; flex-shrink:0; cursor:pointer; }
 .btn-back-hdr:hover { background:rgba(255,255,255,.25); }
 
 /* ── Single flat tab bar ────────────────────────────────────────── */
-.chart-tabs { display:flex; align-items:center; background:#fff; border-bottom:2px solid #e5e7eb; padding:0 16px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; }
-.chart-tabs::-webkit-scrollbar { display:none; }
+.chart-tabs { display:flex; align-items:center; justify-content:flex-start; background:#fff; border-bottom:2px solid #e5e7eb; padding:0 16px; overflow-x:auto; overflow-y:hidden; scrollbar-width:thin; -ms-overflow-style:auto; }
+.chart-tabs::-webkit-scrollbar { height:6px; }
+.chart-tabs::-webkit-scrollbar-thumb { background:#fecdd3; border-radius:9999px; }
+.chart-tabs::-webkit-scrollbar-track { background:#fff; }
 .dark .chart-tabs { background:#1f2937; border-bottom-color:#374151; }
+.dark .chart-tabs::-webkit-scrollbar-thumb { background:#4b5563; }
+.dark .chart-tabs::-webkit-scrollbar-track { background:#1f2937; }
 .chart-tab { display:inline-flex; align-items:center; gap:6px; padding:10px 13px; font-size:.78rem; font-weight:600; color:#6b7280; cursor:pointer; border:none; background:none; border-bottom:2.5px solid transparent; margin-bottom:-2px; white-space:nowrap; transition:color .15s,border-color .15s; }
 .chart-tab:hover { color:#374151; }
 .dark .chart-tab { color:#9ca3af; }
@@ -36,6 +41,8 @@ use App\Helpers\WHOGrowthChart;
 .chart-tab.active { color:#f43f5e; border-bottom-color:#f43f5e; font-weight:700; }
 .dark .chart-tab.active { color:#fb7185; border-bottom-color:#fb7185; }
 .chart-tab svg { width:14px; height:14px; flex-shrink:0; }
+@media(max-width:1100px) { .header-pills { grid-template-columns:repeat(2,minmax(0,1fr)); } .svc-pill { min-height:48px; } }
+@media(max-width:640px) { .chart-header { padding:16px; } .chart-header-main { flex-direction:column; } .header-pills { grid-template-columns:1fr; } }
 .tab-badge { background:#ef4444; color:#fff; font-size:.6rem; font-weight:700; padding:1px 5px; border-radius:9999px; min-width:17px; text-align:center; line-height:1.5; }
 .tab-badge-green { background:#059669; }
 .tab-badge-blue  { background:#2563eb; }

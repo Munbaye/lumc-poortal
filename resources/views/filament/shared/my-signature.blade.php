@@ -423,7 +423,7 @@ html.dark .sig-alert-error   { background:#450a0a; border-color:#7f1d1d; color:#
                     <div class="sig-preview-cell">
                         <div class="sig-preview-cell-label">
                             Processed
-                            <span class="check">✓</span>
+                            <span class="check">&#10003;</span>
                         </div>
                         <div class="sig-preview-img-wrap">
                             <img :src="uploadProcessed" alt="processed">

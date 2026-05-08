@@ -78,7 +78,7 @@
 .pd-source-opt { display:inline-flex; align-items:center; gap:5px; font-size:10pt; font-weight:600; }
 .pd-checkbox { width:12px; height:12px; border:1.5px solid #555; border-radius:2px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .pd-checkbox.on { background:#000; }
-.pd-checkbox.on::after { content:'✓'; font-size:8px; color:#fff; line-height:1; }
+.pd-checkbox.on::after { content: '\2713'; font-size:8px; color:#fff; line-height:1; }
 
 /* ══ COMPLETED RESULTS ═══════════════════════════════════════════════ */
 .result-box { background:#f0fdf4; border:1.5px solid #22c55e; border-radius:8px; padding:18px 20px; margin-bottom:16px; }
@@ -186,7 +186,7 @@
 
 {{-- ══ SECTION 1: CLINICAL INFO ══════════════════════════════════════ --}}
 <div class="section-header">
-    <span>🔒 Clinical Info — Original Request (Read-only)</span>
+    <span style="display:inline-flex;align-items:center;gap:6px;"><x-heroicon-o-lock-closed style="width:16px;height:16px;" /> Clinical Info — Original Request (Read-only)</span>
     <div class="sh-line"></div>
 </div>
 
@@ -286,20 +286,20 @@
 {{-- ══ COMPLETED RESULTS ══════════════════════════════════════════════ --}}
 @if($uploads->isNotEmpty())
 <div class="result-box">
-    <p class="result-box-title">✅ {{ $uploads->count() }} Result File(s) — {{ $radRequest->request_no }}</p>
+    <p class="result-box-title" style="display:flex;align-items:center;gap:6px;"><x-heroicon-o-check-circle style="width:17px;height:17px;" /> {{ $uploads->count() }} Result File(s) — {{ $radRequest->request_no }}</p>
     @php $uploader = $uploads->first()?->uploadedBy?->name ?? '—'; @endphp
     <p style="font-size:0.82rem;color:var(--c-accent);font-weight:600;margin:-4px 0 12px 2px;">Uploaded by {{ $uploader }}</p>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
         @foreach($uploads as $u)
         <a href="{{ $u->file_url }}" target="_blank" class="result-file-link">
-            {{ $u->file_type_icon }} {{ $u->file_name }}
+            <x-dynamic-component :component="$u->file_type_icon" style="width:14px;height:14px;display:inline-block;vertical-align:-2px;" /> {{ $u->file_name }}
             <span style="font-size:.7rem;font-weight:400;color:#6b7280;">({{ $u->file_size_human }})</span>
         </a>
         @endforeach
     </div>
     @if($bestInterp)
     <div class="result-interp-box">
-        <p class="result-interp-label">📋 Radiologist Interpretation</p>
+        <p class="result-interp-label" style="display:flex;align-items:center;gap:5px;"><x-heroicon-o-clipboard-document-list style="width:14px;height:14px;" /> Radiologist Interpretation</p>
         <div class="result-interp-text">{{ $bestInterp }}</div>
     </div>
     @endif
@@ -309,15 +309,15 @@
 {{-- ══ TECH TIMELINE ═══════════════════════════════════════════════════ --}}
 @if(!$isCompleted)
 <div class="section-header" style="margin-top:4px;">
-    <span>🔧 Tech Timeline / Status</span>
+    <span style="display:inline-flex;align-items:center;gap:6px;"><x-heroicon-o-wrench-screwdriver style="width:16px;height:16px;" /> Tech Timeline / Status</span>
     <div class="sh-line"></div>
 </div>
 
 <div class="tech-section">
-    <p class="tech-title">🔧 Tech Timeline / Status</p>
+    <p class="tech-title" style="display:flex;align-items:center;gap:6px;"><x-heroicon-o-wrench-screwdriver style="width:16px;height:16px;" /> Tech Timeline / Status</p>
 
     <div class="step-row">
-        <div class="step-num {{ $s1done ? 's-done' : 's-active' }}">{{ $s1done ? '✓' : '1' }}</div>
+        <div class="step-num {{ $s1done ? 's-done' : 's-active' }}">{!! $s1done ? '&#10003;' : '1' !!}</div>
         <div class="step-body">
             <p class="step-title">Mark as Received
                 @if($radRequest->request_received_at)
@@ -325,9 +325,9 @@
                 @endif
             </p>
             @if(!$radRequest->request_received_at)
-            <button type="button" wire:click="markReceived" wire:loading.attr="disabled" class="btn-step btn-primary">📥 Mark as Received</button>
+            <button type="button" wire:click="markReceived" wire:loading.attr="disabled" class="btn-step btn-primary"><x-heroicon-o-inbox-arrow-down style="width:14px;height:14px;display:inline-block;vertical-align:-2px;" /> Mark as Received</button>
             @else
-            <span style="font-size:.78rem;color:#059669;font-weight:600;">✅ Received</span>
+            <span style="font-size:.78rem;color:#059669;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><x-heroicon-o-check-circle style="width:14px;height:14px;" /> Received</span>
             @endif
         </div>
     </div>
@@ -335,7 +335,7 @@
     <div class="step-connector {{ $s1done ? 'done' : '' }}"></div>
 
     <div class="step-row">
-        <div class="step-num {{ $s2done ? 's-done' : ($s1done ? 's-active' : 's-waiting') }}">{{ $s2done ? '✓' : '2' }}</div>
+        <div class="step-num {{ $s2done ? 's-done' : ($s1done ? 's-active' : 's-waiting') }}">{!! $s2done ? '&#10003;' : '2' !!}</div>
         <div class="step-body">
             <p class="step-title">Exam Started
                 @if($radRequest->exam_started_at)
@@ -344,9 +344,9 @@
             </p>
             @if(!$radRequest->exam_started_at)
             <button type="button" wire:click="markExamStarted" wire:loading.attr="disabled" class="btn-step btn-blue" {{ !$s1done ? 'disabled' : '' }}>▶ Mark Exam Started</button>
-            @if(!$s1done)<p class="lock-notice">🔒 Complete Step 1 first</p>@endif
+            @if(!$s1done)<p class="lock-notice"><x-heroicon-o-lock-closed style="width:13px;height:13px;display:inline-block;vertical-align:-2px;" /> Complete Step 1 first</p>@endif
             @else
-            <span style="font-size:.78rem;color:#059669;font-weight:600;">✅ Exam started</span>
+            <span style="font-size:.78rem;color:#059669;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><x-heroicon-o-check-circle style="width:14px;height:14px;" /> Exam started</span>
             @endif
         </div>
     </div>
@@ -358,7 +358,7 @@
         <div class="step-body">
             <p class="step-title">Result Files <span style="color:#dc2626;">*</span></p>
             @if(!$canUpload)
-            <p class="lock-notice">🔒
+            <p class="lock-notice"><x-heroicon-o-lock-closed style="width:13px;height:13px;display:inline-block;vertical-align:-2px;" />
                 @if(!$s1done) Complete Step 1 (Mark as Received) first
                 @elseif(!$s2done) Complete Step 2 (Exam Started) first
                 @endif
@@ -368,10 +368,10 @@
             <div class="file-queue">
                 @foreach($resultFiles as $i => $f)
                 <div class="file-item" wire:key="rf-{{ $i }}">
-                    <span style="font-size:1.1rem;">🩻</span>
+                    <x-heroicon-o-eye-dropper style="width:18px;height:18px;" />
                     <span class="file-item-name">{{ $f->getClientOriginalName() }}</span>
                     <span class="file-item-size">{{ round($f->getSize() / 1024, 1) }} KB</span>
-                    <button type="button" wire:click="removeFile({{ $i }})" class="btn-rm">✕</button>
+                    <button type="button" wire:click="removeFile({{ $i }})" class="btn-rm">&times;</button>
                 </div>
                 @endforeach
             </div>
@@ -379,7 +379,7 @@
             <div class="drop-zone enabled" style="margin-top:{{ empty($resultFiles) ? '0' : '8px' }};">
                 <input type="file" wire:model="resultFiles" id="radFiles" accept=".pdf,.jpg,.jpeg,.png,.webp" multiple style="display:none;">
                 <label for="radFiles" style="cursor:pointer;display:block;">
-                    <p style="font-size:1.3rem;margin-bottom:4px;">🩻</p>
+                    <p style="margin-bottom:4px;display:flex;justify-content:center;"><x-heroicon-o-eye-dropper style="width:24px;height:24px;" /></p>
                     <p style="font-size:.85rem;font-weight:700;color:#374151;">{{ empty($resultFiles) ? 'Drop scan image or PDF here' : '+ Add more files' }}</p>
                     <p style="font-size:.75rem;color:#9ca3af;margin-top:3px;">PDF · JPG · PNG · WebP · max 30 MB each</p>
                 </label>
@@ -414,11 +414,11 @@
     </div>
 
     <button wire:click="saveResult" wire:loading.attr="disabled" wire:loading.class="opacity-50" type="button" class="btn-complete" {{ !$canComplete ? 'disabled' : '' }}>
-        <span wire:loading.remove wire:target="saveResult">✅ Complete Request &amp; Upload Results</span>
+        <span wire:loading.remove wire:target="saveResult"><x-heroicon-o-check-circle style="width:16px;height:16px;display:inline-block;vertical-align:-3px;" /> Complete Request &amp; Upload Results</span>
         <span wire:loading wire:target="saveResult">Saving…</span>
     </button>
     @if(!$canComplete)
-    <p class="lock-notice" style="margin-top:8px;">🔒
+    <p class="lock-notice" style="margin-top:8px;"><x-heroicon-o-lock-closed style="width:13px;height:13px;display:inline-block;vertical-align:-2px;" />
         @if(!$s1done) Mark as Received first
         @elseif(!$s2done) Mark Exam Started first
         @elseif(empty($resultFiles)) Add at least one result file

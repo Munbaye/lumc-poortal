@@ -7,7 +7,7 @@
 <style>
 .pfp-section { margin-bottom:32px; }
 .pfp-header { display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap; }
-.pfp-icon { font-size:1rem;flex-shrink:0; }
+.pfp-icon { width:1rem;height:1rem;flex-shrink:0;color:#6b7280; }
 .pfp-label { font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;white-space:nowrap; }
 .pfp-line { flex:1;border-top:1px solid #e5e7eb;min-width:20px; }
 .dark .pfp-line { border-top-color:#374151; }
@@ -51,12 +51,13 @@
 <div class="pfp-section" id="form-{{ $form['key'] }}">
 
     <div class="pfp-header">
-        <span class="pfp-icon">{{ $form['icon'] }}</span>
+        <x-dynamic-component :component="$form['icon']" class="pfp-icon" />
         <span class="pfp-label">{!! $form['label'] !!}</span>
         <div class="pfp-line"></div>
         <span class="pfp-badge" style="{{ $badgeStyle }}">{{ $badge }}</span>
         <a href="{{ $printUrl }}" target="_blank" rel="noopener" class="pfp-print-btn">
-            🖨️ Open / Print
+            <x-heroicon-o-printer style="width:13px;height:13px;" />
+            Open / Print
         </a>
     </div>
 

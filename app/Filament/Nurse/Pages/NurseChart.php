@@ -12,6 +12,7 @@ use App\Models\Vital;
 use App\Models\Visit;
 use App\Models\NicuBreastfeedingObservation;
 use App\Helpers\WHOGrowthChart;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Livewire\Attributes\Url;
@@ -118,6 +119,17 @@ class NurseChart extends Page
 
         // Add growth chart related code
         $this->measurementDate = now()->format('Y-m-d');
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('patientList')
+                ->label('Patient List')
+                ->icon('heroicon-o-arrow-left')
+                ->url(PatientList::getUrl())
+                ->color('gray'),
+        ];
     }
 
     private function loadVisit(): void

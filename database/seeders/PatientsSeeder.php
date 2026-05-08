@@ -35,13 +35,13 @@ class PatientsSeeder extends Seeder
                 'civil_status'        => 'Married',
                 'occupation'          => 'Housewife',
                 'nationality'         => 'Filipino',
-                'registration_type'   => 'OPD',      // ✓ enum: 'OPD'|'ER'
+                'registration_type'   => 'OPD',      // &#10003; enum: 'OPD'|'ER'
                 'has_incomplete_info' => false,
                 'is_unknown'          => false,
                 'philhealth_id'       => '12-345678901-1',
-                'philhealth_type'     => 'Government', // ✓ enum: 'Government'|'Indigent'|'Private'|'Self-Employed'
+                'philhealth_type'     => 'Government', // &#10003; enum: 'Government'|'Indigent'|'Private'|'Self-Employed'
                 'religion'            => 'Roman Catholic',
-                'social_service_class'=> 'C1',        // ✓ enum: 'A'|'B'|'C1'|'C2'|'C3'|'D'
+                'social_service_class'=> 'C1',        // &#10003; enum: 'A'|'B'|'C1'|'C2'|'C3'|'D'
             ],
 
             // 2 — Adult male, multiple admissions (Private)
@@ -60,7 +60,7 @@ class PatientsSeeder extends Seeder
                 'has_incomplete_info' => false,
                 'is_unknown'          => false,
                 'philhealth_id'       => '12-345678902-2',
-                'philhealth_type'     => 'Private',   // ✓ private-paying patient
+                'philhealth_type'     => 'Private',   // &#10003; private-paying patient
                 'religion'            => 'Roman Catholic',
                 'employer_name'       => 'Self-employed (retired)',
                 'social_service_class'=> 'B',
@@ -101,7 +101,7 @@ class PatientsSeeder extends Seeder
                 'has_incomplete_info' => false,
                 'is_unknown'          => false,
                 'philhealth_id'       => '12-345678904-4',
-                'philhealth_type'     => 'Indigent',  // ✓ enum value
+                'philhealth_type'     => 'Indigent',  // &#10003; enum value
                 'social_service_class'=> 'D',
             ],
 
@@ -117,11 +117,11 @@ class PatientsSeeder extends Seeder
                 'civil_status'        => 'Single',
                 'occupation'          => 'Construction Worker',
                 'nationality'         => 'Filipino',
-                'registration_type'   => 'ER',        // ✓ walk-in ER
+                'registration_type'   => 'ER',        // &#10003; walk-in ER
                 'has_incomplete_info' => true,
                 'is_unknown'          => false,
-                'brought_by'          => 'Self',      // ✓ enum: 'Self'|'Family'|'Ambulance'|'Police'|'Other'
-                'condition_on_arrival'=> 'Good',      // ✓ enum: 'Good'|'Fair'|'Poor'|'Shock'|'Comatose'|'Hemorrhagic'|'DOA'
+                'brought_by'          => 'Self',      // &#10003; enum: 'Self'|'Family'|'Ambulance'|'Police'|'Other'
+                'condition_on_arrival'=> 'Good',      // &#10003; enum: 'Good'|'Fair'|'Poor'|'Shock'|'Comatose'|'Hemorrhagic'|'DOA'
                 'social_service_class'=> 'D',
             ],
 
@@ -141,7 +141,7 @@ class PatientsSeeder extends Seeder
                 'has_incomplete_info' => false,
                 'is_unknown'          => false,
                 'philhealth_id'       => '12-345678906-6',
-                'philhealth_type'     => 'Self-Employed', // ✓ enum value (closest to employed teacher)
+                'philhealth_type'     => 'Self-Employed', // &#10003; enum value (closest to employed teacher)
                 'employer_name'       => 'DepEd La Union',
                 'social_service_class'=> 'B',
             ],
@@ -162,7 +162,7 @@ class PatientsSeeder extends Seeder
                 'has_incomplete_info' => false,
                 'is_unknown'          => false,
                 'philhealth_id'       => '12-345678907-7',
-                'philhealth_type'     => 'Indigent',  // ✓ enum value
+                'philhealth_type'     => 'Indigent',  // &#10003; enum value
                 'social_service_class'=> 'D',
             ],
 
@@ -209,17 +209,17 @@ class PatientsSeeder extends Seeder
                 'family_name'         => 'Unknown',
                 'first_name'          => 'Patient-' . str_pad($seq, 4, '0', STR_PAD_LEFT),
                 'birthday'            => null,
-                'sex'                 => 'Female',    // ✓ enum: 'Male'|'Female' — no 'Unknown' option
+                'sex'                 => 'Female',    // &#10003; enum: 'Male'|'Female' — no 'Unknown' option
                 'address'             => 'Unknown',
                 'has_incomplete_info' => true,
                 'is_unknown'          => true,
-                'registration_type'   => 'ER',        // ✓ enum: 'OPD'|'ER'
-                'brought_by'          => 'Ambulance', // ✓ enum value
-                'condition_on_arrival'=> 'Poor',      // ✓ enum value
+                'registration_type'   => 'ER',        // &#10003; enum: 'OPD'|'ER'
+                'brought_by'          => 'Ambulance', // &#10003; enum value
+                'condition_on_arrival'=> 'Poor',      // &#10003; enum value
             ]
         );
 
         $total = Patient::count();
-        $this->command->info("✅ {$total} patients seeded (including 1 unknown).");
+        $this->command->info("{$total} patients seeded (including 1 unknown).");
     }
 }

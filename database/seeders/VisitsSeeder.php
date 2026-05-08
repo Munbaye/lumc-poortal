@@ -192,11 +192,11 @@ class VisitsSeeder extends Seeder
             'patient_id'         => $patient->id,
             'clerk_id'           => $clerk->id,
             'assigned_doctor_id' => $paymentClass === 'Private' ? $doctor->id : null,
-            'visit_type'         => 'OPD',            // ✓ enum: 'OPD'|'ER'
+            'visit_type'         => 'OPD',            // &#10003; enum: 'OPD'|'ER'
             'chief_complaint'    => $chiefComplaint,
-            'payment_class'      => $paymentClass,    // ✓ enum: 'Charity'|'Private'
-            'status'             => 'discharged',     // ✓ enum: 'registered'|'vitals_done'|'assessed'|'discharged'|'admitted'|'referred'
-            'disposition'        => 'Discharged',     // ✓ enum: 'Discharged'|'Admitted'|'Referred'|'HAMA'|'Expired'
+            'payment_class'      => $paymentClass,    // &#10003; enum: 'Charity'|'Private'
+            'status'             => 'discharged',     // &#10003; enum: 'registered'|'vitals_done'|'assessed'|'discharged'|'admitted'|'referred'
+            'disposition'        => 'Discharged',     // &#10003; enum: 'Discharged'|'Admitted'|'Referred'|'HAMA'|'Expired'
             'registered_at'      => $registeredAt,
             'discharged_at'      => $registeredAt->copy()->addHours(2),
             'type_of_service'    => 'OPD',            // plain string — no enum constraint
@@ -218,7 +218,7 @@ class VisitsSeeder extends Seeder
             'diagnosis'                  => $chiefComplaint . ' — stable',
             'plan'                       => 'Continue home medications. Follow up in 4 weeks.',
             'service'                    => 'OPD',
-            'disposition'                => 'Discharged',  // ✓ Title-case enum
+            'disposition'                => 'Discharged',  // &#10003; Title-case enum
         ]);
 
         $this->addOrders($visit, $doctor, $assessedAt, 2, true);
@@ -246,7 +246,7 @@ class VisitsSeeder extends Seeder
             'chief_complaint'     => $chiefComplaint,
             'payment_class'       => $paymentClass,
             'status'              => 'discharged',
-            'disposition'         => 'Discharged',    // ✓ Title-case
+            'disposition'         => 'Discharged',    // &#10003; Title-case
             'registered_at'       => $registeredAt,
             'discharged_at'       => $registeredAt->copy()->addHours(4),
             'brought_by'          => 'Family',
@@ -272,7 +272,7 @@ class VisitsSeeder extends Seeder
             'admitting_impression'       => $chiefComplaint,
             'diagnosis'                  => $chiefComplaint,
             'plan'                       => 'Treated and observed. Discharged stable.',
-            'disposition'                => 'Discharged',  // ✓ Title-case enum
+            'disposition'                => 'Discharged',  // &#10003; Title-case enum
             'service'                    => 'ER',
         ]);
 
@@ -309,7 +309,7 @@ class VisitsSeeder extends Seeder
             'admitting_diagnosis' => $chiefComplaint,
             'payment_class'       => $paymentClass,
             'status'              => 'discharged',
-            'disposition'         => 'Discharged',    // ✓ Title-case enum
+            'disposition'         => 'Discharged',    // &#10003; Title-case enum
             'admitted_service'    => $service,
             'registered_at'       => $registeredAt,
             'doctor_admitted_at'  => $doctorAdmittedAt,
@@ -343,7 +343,7 @@ class VisitsSeeder extends Seeder
             'diagnosis'                  => $chiefComplaint,
             'plan'                       => 'Admit to ' . $service . ' service. IV antibiotics. Daily monitoring.',
             'service'                    => $service,
-            'disposition'                => 'Discharged',  // ✓ Title-case enum
+            'disposition'                => 'Discharged',  // &#10003; Title-case enum
         ]);
 
         $this->fillErRecord($visit, $patient, $clerk, $registeredAt);
@@ -390,8 +390,8 @@ class VisitsSeeder extends Seeder
             'chief_complaint'     => $chiefComplaint,
             'admitting_diagnosis' => $chiefComplaint,
             'payment_class'       => $paymentClass,
-            'status'              => 'admitted',      // ✓ still admitted
-            'disposition'         => null,            // ✓ no disposition yet (still in-house)
+            'status'              => 'admitted',      // &#10003; still admitted
+            'disposition'         => null,            // &#10003; no disposition yet (still in-house)
             'admitted_service'    => $service,
             'registered_at'       => $registeredAt,
             'doctor_admitted_at'  => $doctorAdmittedAt,
@@ -427,7 +427,7 @@ class VisitsSeeder extends Seeder
             'diagnosis'                  => $chiefComplaint,
             'plan'                       => 'Admit. IV fluids. Monitoring. Labs pending.',
             'service'                    => $service,
-            'disposition'                => 'Admitted',  // ✓ Title-case enum — doctor has decided to admit
+            'disposition'                => 'Admitted',  // &#10003; Title-case enum — doctor has decided to admit
         ]);
 
         $this->fillErRecord($visit, $patient, $clerk, $registeredAt);
@@ -463,7 +463,7 @@ class VisitsSeeder extends Seeder
             'nurse_name'       => $recorder->full_name ?: $recorder->name,
             'taken_at'         => $takenAt,
             'temperature'      => $isAbnormal ? 38.5 + round(rand(0, 15) / 10, 1) : 36.5 + round(rand(0, 8) / 10, 1),
-            'temperature_site' => 'Axilla',   // ✓ enum: 'Axilla'|'Oral'|'Rectal'
+            'temperature_site' => 'Axilla',   // &#10003; enum: 'Axilla'|'Oral'|'Rectal'
             'pulse_rate'       => $isAbnormal ? rand(100, 120) : rand(70, 95),
             'cardiac_rate'     => $isAbnormal ? rand(100, 120) : rand(70, 95),
             'respiratory_rate' => $isAbnormal ? rand(22, 28)  : rand(14, 20),
@@ -530,7 +530,7 @@ class VisitsSeeder extends Seeder
                 'visit_id'     => $visit->id,
                 'doctor_id'    => $doctor->id,
                 'order_text'   => $line,
-                'status'       => $status,    // ✓ enum: 'pending'|'carried'|'discontinued'
+                'status'       => $status,    // &#10003; enum: 'pending'|'carried'|'discontinued'
                 'order_date'   => $orderDate,
                 'is_completed' => $status !== 'pending',
                 'completed_by' => $carriedBy,
@@ -573,7 +573,7 @@ class VisitsSeeder extends Seeder
             'action'   => $fdar['action'],
             'response' => $fdar['response'],
             'noted_at' => $notedAt,
-            'shift'    => $shift,    // ✓ enum: '7-3'|'3-11'|'11-7'
+            'shift'    => $shift,    // &#10003; enum: '7-3'|'3-11'|'11-7'
         ]);
         $this->noteCount++;
     }
@@ -664,7 +664,7 @@ class VisitsSeeder extends Seeder
         User    $doctor,
         User    $clerk,
         User    $tech,
-        string  $status,    // ✓ enum: 'pending'|'in_progress'|'completed'
+        string  $status,    // &#10003; enum: 'pending'|'in_progress'|'completed'
         Carbon  $requestedAt
     ): void {
         $testSets = [
@@ -716,7 +716,7 @@ class VisitsSeeder extends Seeder
         User    $doctor,
         User    $clerk,
         User    $tech,
-        string  $status,    // ✓ enum: 'pending'|'in_progress'|'completed'
+        string  $status,    // &#10003; enum: 'pending'|'in_progress'|'completed'
         Carbon  $requestedAt
     ): void {
         $exams = [
@@ -854,7 +854,7 @@ class VisitsSeeder extends Seeder
         ConsentRecord::firstOrCreate(['visit_id' => $visit->id], [
             'patient_id'          => $patient->id,
             'saved_by'            => $clerk->id,
-            'active_section'      => 1,              // ✓ unsignedTinyInteger — NOT a string like 'both'
+            'active_section'      => 1,              // &#10003; unsignedTinyInteger — NOT a string like 'both'
             'patient_name'        => $patient->consent_name,
             'doctor_name_sec1'    => $docName,
             'witness_sec1'        => 'Grace Mendoza',

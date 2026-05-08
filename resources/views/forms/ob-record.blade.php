@@ -90,9 +90,9 @@ table {
 
 td, th {
     border:1px solid black;
-    padding:6px;          /* 🔥 mas malaki spacing */
-    font-size:11pt;       /* 🔥 bigger text */
-    height:22px;          /* 🔥 taller rows */
+    padding:6px;          /* larger spacing */
+    font-size:11pt;       /* bigger text */
+    height:22px;          /* taller rows */
 }
 
 th {

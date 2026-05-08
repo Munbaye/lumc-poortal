@@ -46,7 +46,7 @@
         @media print{.fi-date,.fi-num,.fi-tel{border-bottom:1px solid #000 !important;}}
         .cb{display:inline-flex;align-items:center;gap:3px;margin-right:5px;white-space:nowrap;font-size:8.5pt;}
         .sq{width:10px;height:10px;border:1.2px solid #000;display:inline-block;flex-shrink:0;position:relative;vertical-align:middle;cursor:pointer;}
-        .sq.on::after{content:'✓';position:absolute;top:-3px;left:0;font-size:10pt;font-weight:bold;line-height:1;}
+        .sq.on::after{content: '\2713';position:absolute;top:-3px;left:0;font-size:10pt;font-weight:bold;line-height:1;}
         .icd-boxes{display:inline-flex;gap:3px;margin-left:6px;}
         .icd-box{width:22px;height:22px;border:1.2px solid #000;display:inline-block;}
         #toast{position:fixed;bottom:22px;right:22px;background:#059669;color:#fff;padding:12px 22px;border-radius:8px;font-family:'Segoe UI',sans-serif;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.25);display:none;z-index:99999;}
@@ -510,8 +510,8 @@ async function saveAndContinue() {
         });
         const json = await res.json();
         if (json.success) {
-            showToast('✓ Admission Record saved — advancing…');
-            btn.textContent = '✓ Saved';
+            showToast('Admission Record saved — advancing…');
+            btn.textContent = 'Saved';
             @if($isNicu ?? false)
             setTimeout(() => { window.location.href = '{{ $consentUrl ?? "#" }}'; }, 1200);
             @else

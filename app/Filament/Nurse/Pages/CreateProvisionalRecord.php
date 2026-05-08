@@ -119,7 +119,8 @@ protected static ?int    $navigationSort = 2;
 
         if ($one < 7) {
             Notification::make()
-                ->title('⚠️ Low APGAR at 1 minute')
+                ->title('Low APGAR at 1 minute')
+                ->icon('heroicon-o-exclamation-triangle')
                 ->body("APGAR score of {$one} at 1 minute may indicate need for resuscitation.")
                 ->warning()
                 ->persistent()
@@ -128,7 +129,8 @@ protected static ?int    $navigationSort = 2;
 
         if ($five < 7) {
             Notification::make()
-                ->title('⚠️ Low APGAR at 5 minutes')
+                ->title('Low APGAR at 5 minutes')
+                ->icon('heroicon-o-exclamation-triangle')
                 ->body("APGAR score of {$five} at 5 minutes. Please document 10-minute APGAR if needed.")
                 ->warning()
                 ->persistent()
@@ -208,7 +210,8 @@ protected static ?int    $navigationSort = 2;
             DB::commit();
 
             Notification::make()
-                ->title('✓ Provisional Record Created')
+                ->title('Provisional Record Created')
+                ->icon('heroicon-o-check-circle')
                 ->body("Temporary ID: {$temporaryCaseNo}\n\nNext: Please complete the baby's information after talking to the mother.")
                 ->success()
                 ->duration(10000)

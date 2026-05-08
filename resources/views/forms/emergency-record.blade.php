@@ -47,7 +47,7 @@
         @media print{.fi-date,.fi-num,.fi-inline,.fi-tel{border-bottom:1px solid #000 !important;}}
         .cb{display:inline-flex;align-items:center;gap:3px;margin-right:5px;white-space:nowrap;font-size:8.5pt;}
         .sq{width:10px;height:10px;border:1.2px solid #000;display:inline-block;flex-shrink:0;position:relative;vertical-align:middle;cursor:pointer;}
-        .sq.on::after{content:'✓';position:absolute;top:-3px;left:0;font-size:10pt;font-weight:bold;line-height:1;}
+        .sq.on::after{content: '\2713';position:absolute;top:-3px;left:0;font-size:10pt;font-weight:bold;line-height:1;}
         .hosp-name{font-size:14pt;font-weight:bold;text-transform:uppercase;line-height:1.2;}
         .hosp-addr{font-size:8.5pt;margin-top:2px;}
         .form-title{font-size:13pt;font-weight:bold;text-transform:uppercase;text-align:center;line-height:1.3;}
@@ -479,8 +479,8 @@ async function saveAndContinue() {
         });
         const json = await res.json();
         if (json.success) {
-            showToast('✔ ER Record saved — advancing…');
-            btn.textContent = '✔ Saved';
+            showToast('ER Record saved — advancing…');
+            btn.textContent = 'Saved';
             window.parent.postMessage({ type: 'erSaved' }, '*');
         } else {
             showToast('Save failed: ' + (json.message ?? 'Unknown error'), true);

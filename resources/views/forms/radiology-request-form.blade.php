@@ -476,7 +476,8 @@ Non-editable fields:
     <div class="paper">
 
         <div class="screen-tip no-print">
-            💡 Pre-filled fields can be edited. Click <strong>Submit Request</strong> to save, then <strong>Print /
+            <x-heroicon-o-light-bulb style="width:14px;height:14px;display:inline-block;vertical-align:-2px;" />
+            Pre-filled fields can be edited. Click <strong>Submit Request</strong> to save, then <strong>Print /
                 PDF</strong> for the hardcopy.
         </div>
 
@@ -653,8 +654,8 @@ Non-editable fields:
             try {
                 const res = await fetch('{{ route("forms.radiology-request.store", ["visit" => $visit->id]) }}', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' }, body: JSON.stringify(payload) });
                 const json = await res.json();
-                if (json.success) { showToast('✔ ' + json.message, false); btn.textContent = '✔ Saved'; } else { showToast('⚠ Save failed. Please try again.', true); btn.disabled = false; btn.textContent = '✔ Submit Request'; }
-            } catch (err) { showToast('⚠ Network error — check connection.', true); btn.disabled = false; btn.textContent = '✔ Submit Request'; }
+                if (json.success) { showToast(json.message, false); btn.textContent = 'Saved'; } else { showToast('Save failed. Please try again.', true); btn.disabled = false; btn.textContent = 'Submit Request'; }
+            } catch (err) { showToast('Network error — check connection.', true); btn.disabled = false; btn.textContent = 'Submit Request'; }
         }
         function showToast(msg, isError) { const t = document.getElementById('toast'); t.textContent = msg; t.className = isError ? 'error' : ''; t.style.display = 'block'; setTimeout(() => { t.style.display = 'none'; }, 4000); }
     </script>

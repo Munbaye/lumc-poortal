@@ -225,8 +225,8 @@
             </div>
         </div>
 
-        @error('upload.*') <p style="color:#dc2626;font-size:11.5px;font-weight:700;padding:8px 22px 0;">⚠ {{ $message }}</p> @enderror
-        @error('upload')   <p style="color:#dc2626;font-size:11.5px;font-weight:700;padding:8px 22px 0;">⚠ {{ $message }}</p> @enderror
+        @error('upload.*') <p style="color:#dc2626;font-size:11.5px;font-weight:700;padding:8px 22px 0;"><x-heroicon-o-exclamation-triangle style="width:13px;height:13px;display:inline-block;vertical-align:-2px;" /> {{ $message }}</p> @enderror
+        @error('upload')   <p style="color:#dc2626;font-size:11.5px;font-weight:700;padding:8px 22px 0;"><x-heroicon-o-exclamation-triangle style="width:13px;height:13px;display:inline-block;vertical-align:-2px;" /> {{ $message }}</p> @enderror
 
         {{-- Label + Upload button --}}
         <div class="cm-upload-row">
@@ -508,7 +508,7 @@
             if (sub)   sub.textContent   = 'Click "Upload to Carousel" below when ready.';
         } else if (state === 'done') {
             zone.classList.add('done');
-            if (title) title.textContent = '✓ Uploaded! Images are now in the gallery.';
+            if (title) title.textContent = 'Uploaded. Images are now in the gallery.';
             if (sub)   sub.textContent   = 'Select more images to upload another batch.';
         } else {
             if (title) title.textContent = 'Click to browse or drag & drop images here';

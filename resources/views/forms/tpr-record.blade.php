@@ -260,12 +260,12 @@ $polyline = fn($pts) => implode(' ', array_map(fn($p) => "{$p['x']},{$p['y']}", 
 @endphp
 
 <div class="toolbar no-print">
-    <span class="lbl">🌡️ TPR Record</span>
+    <span class="lbl"><x-heroicon-o-heart style="width:14px;height:14px;display:inline-block;vertical-align:-2px;" /> TPR Record</span>
     <span style="font-size:11px;color:rgba(255,255,255,.85);">
         {{ $patient->full_name }} • {{ $patient->case_no }}
     </span>
     <span class="spacer"></span>
-    <button class="btn-print" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    <button class="btn-print" onclick="window.print()"><x-heroicon-o-printer style="width:14px;height:14px;display:inline-block;vertical-align:-2px;" /> Print / Save as PDF</button>
 </div>
 
 <div class="paper">

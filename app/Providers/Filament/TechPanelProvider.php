@@ -7,7 +7,7 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use App\Http\Middleware\Filament\StaffAuthenticate;
 use Filament\Navigation\MenuItem;
-
+use Illuminate\Support\HtmlString;
 class TechPanelProvider extends PanelProvider
 {
     private static function getSpec(): string
@@ -40,7 +40,7 @@ class TechPanelProvider extends PanelProvider
 
     private static function navbarBg(): string
     {
-        return match(true) {
+        return match (true) {
             self::isRad() && !self::isMed() => '#475569',
             self::isMed() && !self::isRad() => '#0f766e',
             default                         => '#ea580c',
@@ -49,7 +49,7 @@ class TechPanelProvider extends PanelProvider
 
     private static function brandName(): string
     {
-        return match(true) {
+        return match (true) {
             self::isRad() && !self::isMed() => 'LUMC-RADTECH',
             self::isMed() && !self::isRad() => 'LUMC-MEDTECH',
             default                         => 'LUMC-TECH',
@@ -58,7 +58,7 @@ class TechPanelProvider extends PanelProvider
 
     private static function roleLabel(): string
     {
-        return match(true) {
+        return match (true) {
             self::isRad() && !self::isMed() => 'Radiologic Technologist',
             self::isMed() && !self::isRad() => 'Medical Technologist',
             default                         => 'Tech Staff',
@@ -67,7 +67,7 @@ class TechPanelProvider extends PanelProvider
 
     private static function activeBgLight(): string
     {
-        return match(true) {
+        return match (true) {
             self::isRad() && !self::isMed() => 'rgba(71,85,105,.12)',
             self::isMed() && !self::isRad() => 'rgba(15,118,110,.12)',
             default                         => 'rgba(234,88,12,.12)',
@@ -76,7 +76,7 @@ class TechPanelProvider extends PanelProvider
 
     private static function activeBgDark(): string
     {
-        return match(true) {
+        return match (true) {
             self::isRad() && !self::isMed() => 'rgba(71,85,105,.4)',
             self::isMed() && !self::isRad() => 'rgba(15,118,110,.35)',
             default                         => 'rgba(234,88,12,.3)',
@@ -85,7 +85,7 @@ class TechPanelProvider extends PanelProvider
 
     private static function activeText(): string
     {
-        return match(true) {
+        return match (true) {
             self::isRad() && !self::isMed() => '#475569',
             self::isMed() && !self::isRad() => '#0f766e',
             default                         => '#ea580c',
@@ -94,7 +94,7 @@ class TechPanelProvider extends PanelProvider
 
     private static function avatarBg(): string
     {
-        return match(true) {
+        return match (true) {
             self::isRad() && !self::isMed() => 'rgba(255,255,255,.2)',
             self::isMed() && !self::isRad() => 'rgba(255,255,255,.2)',
             default                         => 'rgba(255,255,255,.2)',
@@ -103,7 +103,7 @@ class TechPanelProvider extends PanelProvider
 
     private static function avatarBorder(): string
     {
-        return match(true) {
+        return match (true) {
             self::isRad() && !self::isMed() => 'rgba(255,255,255,.35)',
             self::isMed() && !self::isRad() => 'rgba(255,255,255,.35)',
             default                         => 'rgba(255,255,255,.35)',
@@ -116,31 +116,22 @@ class TechPanelProvider extends PanelProvider
             ->id('tech')
             ->path('tech')
 
-            ->colors(fn (): array => match(true) {
+            ->colors(fn(): array => match (true) {
                 self::isRad() && !self::isMed() => ['primary' => Color::Slate],
                 self::isMed() && !self::isRad() => ['primary' => Color::Teal],
                 default                         => ['primary' => Color::Orange],
             })
 
-            ->brandName('')
-
-            ->brandLogo(fn () => new \Illuminate\Support\HtmlString(
-                '<div style="display:flex;align-items:center;gap:.55rem;">
-                    <img src="' . asset('images/lumc-logo.png') . '"
-                         style="width:30px;height:30px;object-fit:contain;border-radius:50%;
-                                background:rgba(255,255,255,.18);padding:2px;flex-shrink:0;"
-                         alt="LUMC">
-                    <span style="font-weight:800;font-size:.9rem;letter-spacing:.04em;
-                                 white-space:nowrap;color:#fff;text-transform:uppercase;">'
-                    . self::brandName() .
-                    '</span>
-                </div>'
+            ->brandLogo(fn() => new HtmlString(
+                '<div style="display:flex;align-items:center;gap:10px;">'
+                    . '<img src="' . asset('images/lumc-logo.png') . '" alt="LUMC Logo" style="height:40px;width:auto;">'
+                    . '<span style="font-weight:700;color:#111827;">LUMC — Tech Portal</span>'
+                    . '</div>'
             ))
-            ->brandLogoHeight('auto')
 
             ->renderHook(
                 'panels::head.end',
-                fn () => new \Illuminate\Support\HtmlString('
+                fn() => new \Illuminate\Support\HtmlString('
                 <style>
                 /* ══════════════════════════════════════════════════
                    TOPBAR — full width, all children colored
@@ -302,7 +293,7 @@ class TechPanelProvider extends PanelProvider
 
             ->renderHook(
                 'panels::sidebar.nav.start',
-                fn () => new \Illuminate\Support\HtmlString(
+                fn() => new \Illuminate\Support\HtmlString(
                     auth()->check()
                         ? '<div class="lumc-sidebar-user"
                                style="padding:.875rem 1rem .75rem;margin-bottom:.5rem;">
@@ -319,13 +310,13 @@ class TechPanelProvider extends PanelProvider
                                        <div class="lumc-user-name"
                                             style="font-weight:700;font-size:.875rem;line-height:1.2;
                                                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'
-                                           . e(auth()->user()->name ?? 'Tech Staff') .
-                                       '</div>
+                        . e(auth()->user()->name ?? 'Tech Staff') .
+                        '</div>
                                        <div class="lumc-user-role"
                                             style="font-size:.72rem;margin-top:.15rem;font-weight:500;
                                                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'
-                                           . self::roleLabel() .
-                                       '</div>
+                        . self::roleLabel() .
+                        '</div>
                                    </div>
                                </div>
                            </div>'
@@ -338,8 +329,8 @@ class TechPanelProvider extends PanelProvider
             ->favicon(asset('images/lumc-logo.png'))
 
             ->userMenuItems([
-                'profile'  => MenuItem::make()->label('My Profile')->icon('heroicon-o-user-circle')->url(fn () => '#'),
-                'settings' => MenuItem::make()->label('Settings')->icon('heroicon-o-cog-6-tooth')->url(fn () => '#'),
+                'profile'  => MenuItem::make()->label('My Profile')->icon('heroicon-o-user-circle')->url(fn() => '#'),
+                'settings' => MenuItem::make()->label('Settings')->icon('heroicon-o-cog-6-tooth')->url(fn() => '#'),
             ])
 
             ->discoverPages(in: app_path('Filament/Tech/Pages'), for: 'App\\Filament\\Tech\\Pages')

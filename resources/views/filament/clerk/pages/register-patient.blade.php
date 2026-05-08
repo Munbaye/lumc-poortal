@@ -10,7 +10,7 @@
                     display:flex;align-items:center;gap:12px;">
                 <div style="width:38px;height:38px;background:#16a34a;border-radius:8px;
                         display:flex;align-items:center;justify-content:center;
-                        color:#fff;font-size:1.1rem;flex-shrink:0;">✓</div>
+                        color:#fff;font-size:1.1rem;flex-shrink:0;">&#10003;</div>
                 <div>
                     <p style="font-size:.95rem;font-weight:700;color:#15803d;margin:0;">Patient Account Created</p>
                     <p style="font-size:.75rem;color:#6b7280;margin:0;">Provide these login details to the patient now</p>
@@ -431,7 +431,7 @@
             <div>
                 <label class="lumc-label">Birthday <span style="font-size:.65rem;color:#9ca3af;font-weight:400;"> — preferred</span></label>
                 <input type="date" wire:model.live="formData.birthday" class="lumc-input">
-                @if($formData['birthday'])<p style="font-size:.7rem;color:#059669;margin-top:3px;">✓ Age calculated automatically</p>@endif
+                @if($formData['birthday'])<p style="font-size:.7rem;color:#059669;margin-top:3px;">&#10003; Age calculated automatically</p>@endif
             </div>
             <div>
                 <label class="lumc-label">Age <span style="font-size:.65rem;color:#9ca3af;font-weight:400;"> — if no birthday</span></label>

@@ -13,7 +13,7 @@ class WardRoomSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->command->info('🌟 Seeding LUMC Wards, Rooms, Beds + Patient Assignment...');
+        $this->command->info('Seeding LUMC Wards, Rooms, Beds + Patient Assignment...');
 
         // Create Wards + Rooms + Beds
         $this->seedAllWards();
@@ -21,7 +21,7 @@ class WardRoomSeeder extends Seeder
         // Assign already admitted patients to rooms/beds
         $this->assignPatientsToBeds();
 
-        $this->command->info('✅ Wards, Rooms, Beds & Patient Assignments completed!');
+        $this->command->info('Wards, Rooms, Beds & Patient Assignments completed!');
     }
 
     private function seedAllWards(): void

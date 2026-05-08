@@ -356,7 +356,8 @@ class NicuAssessment extends Page
             DB::commit();
 
             Notification::make()
-                ->title($this->admitToNICU && !$this->isAdmitted ? '✓ Baby Admitted to NICU' : 'Assessment Saved')
+                ->title($this->admitToNICU && !$this->isAdmitted ? 'Baby Admitted to NICU' : 'Assessment Saved')
+                ->icon($this->admitToNICU && !$this->isAdmitted ? 'heroicon-o-check-circle' : 'heroicon-o-clipboard-document-check')
                 ->success()
                 ->send();
 

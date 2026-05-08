@@ -14,7 +14,7 @@ class PendingRegistrations extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected static ?string $navigationIcon  = 'heroicon-o-exclamation-triangle';
+    protected static ?string $navigationIcon  = 'heroicon-o-heart';
     protected static ?string $navigationLabel = 'NICU Registration';
     protected static ?string $title           = 'NICU Registration';
     protected static ?int    $navigationSort  = 3;
