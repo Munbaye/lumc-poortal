@@ -1,18 +1,17 @@
 <x-filament-panels::page>
 <style>
     .bf-container { max-width: 1400px; margin: 0 auto; }
-    
+
     .bf-header {
         background: linear-gradient(135deg, #1e3a5f, #1d4ed8);
         border-radius: 12px;
-        padding: 20px 24px;
-        margin-bottom: 24px;
+        padding: 18px 24px;
+        margin-bottom: 20px;
     }
-    
     .bf-header-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
+        gap: 16px;
     }
     
     .bf-header-item { text-align: center; }
@@ -35,15 +34,15 @@
         background: #fff;
         border: 1px solid #e5e7eb;
         border-radius: 12px;
-        margin-bottom: 24px;
+        margin-bottom: 20px;
         overflow: hidden;
     }
     .dark .bf-section { background: #1f2937; border-color: #374151; }
-    
+
     .bf-section-header {
         background: #f0fdf4;
         border-bottom: 1px solid #bbf7d0;
-        padding: 12px 20px;
+        padding: 10px 18px;
         display: flex;
         align-items: center;
         gap: 10px;
@@ -59,13 +58,13 @@
         gap: 7px;
     }
     .dark .bf-section-title { color: #86efac; }
-    
-    .bf-section-body { padding: 20px; }
-    
-    .bf-grid {
+    .bf-section-body { padding: 0; }
+
+    /* ── The two-column observation grid ─────────────────────────────────── */
+    .obs-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
     }
     
     .bf-card {
@@ -79,11 +78,11 @@
     .bf-card-header {
         padding: 10px 16px;
         font-weight: 700;
-        font-size: 0.85rem;
-        border-bottom: 1px solid #e5e7eb;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 0 0 8px 0;
+        margin: 0 0 8px 0;
+        border-bottom: 2px solid;
     }
     .bf-card-header-well {
         background: #f0fdf4;
@@ -104,9 +103,12 @@
         align-items: center;
         gap: 8px;
         cursor: pointer;
-        padding: 6px 8px;
+        padding: 5px 6px;
         border-radius: 6px;
+        font-size: 0.82rem;
+        color: #374151;
         transition: background 0.1s;
+        line-height: 1.3;
     }
     .bf-checkbox-label:hover { background: #f0fdf4; }
     .dark .bf-checkbox-label:hover { background: #064e3b; }
@@ -118,13 +120,13 @@
     .btn-primary { display:inline-flex; align-items:center; gap:6px; background: #1d4ed8; color: #fff; border: none; padding: 12px 28px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; }
     .btn-primary:hover { background: #1e40af; }
     .btn-secondary { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 10px 24px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; }
-    
+
     .observer-badge {
         background: #e0e7ff;
         color: #3730a3;
-        padding: 8px 16px;
+        padding: 7px 14px;
         border-radius: 8px;
-        font-size: 0.8rem;
+        font-size: 0.78rem;
         font-weight: 500;
         display: inline-flex;
         align-items: center;
@@ -161,7 +163,7 @@
                 <div class="bf-header-label">Baby's Age</div>
                 <div class="bf-header-value">
                     @if($babyAgeDays > 0)
-                        {{ $babyAgeDays }} day(s), {{ $babyAgeHours % 24 }} hour(s)
+                        {{ $babyAgeDays }}d {{ $babyAgeHours % 24 }}h
                     @elseif($babyAgeHours > 0)
                         {{ $babyAgeHours }} hour(s)
                     @else
@@ -171,6 +173,7 @@
             </div>
         </div>
     </div>
+
 
     <form wire:submit="save">
 
@@ -182,7 +185,7 @@
                     Observation Information
                 </span>
             </div>
-            <div class="bf-section-body">
+            <div style="padding: 14px 18px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
                 <div class="observer-badge">
                     <x-heroicon-o-clock style="width:14px;height:14px;" />
                     {{ now()->format('h:i A') }}
@@ -316,6 +319,7 @@
                 <span wire:loading>Saving...</span>
             </button>
         </div>
+
 
     </form>
 </div>

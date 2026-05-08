@@ -1398,6 +1398,100 @@ use App\Helpers\WHOGrowthChart;
             .dark .bfobs-empty-section { color: #4b5563; }
         </style>
 
+        <style>
+            /* ── Breastfeeding observation card ───────────────────────────────────── */
+            .bfobs-card {
+                background: #fff;
+                border: 1px solid #e5e7eb;
+                border-radius: 10px;
+                margin-bottom: 14px;
+                overflow: hidden;
+            }
+            .dark .bfobs-card { background: #1f2937; border-color: #374151; }
+
+            .bfobs-header {
+                background: #f9fafb;
+                border-bottom: 1px solid #e5e7eb;
+                padding: 9px 16px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .dark .bfobs-header { background: #111827; border-color: #374151; }
+
+            .bfobs-meta { font-size: 0.8rem; font-weight: 700; color: #1e293b; }
+            .dark .bfobs-meta { color: #f1f5f9; }
+            .bfobs-time { font-size: 0.7rem; color: #6b7280; margin-left: 8px; }
+
+            .bfobs-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 2px 10px;
+                border-radius: 20px;
+                font-size: 0.68rem;
+                font-weight: 700;
+            }
+            .bfobs-badge.well { background: #dcfce7; color: #166534; }
+            .bfobs-badge.diff { background: #fee2e2; color: #991b1b; }
+            .bfobs-badge.none { background: #f1f5f9; color: #64748b; }
+
+            .bfobs-body {
+                padding: 12px 16px;
+            }
+
+            /* 5-column section grid */
+            .bfobs-sections {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 10px;
+            }
+            @media (max-width: 900px) {
+                .bfobs-sections { grid-template-columns: repeat(2, 1fr); }
+            }
+
+            .bfobs-section { }
+
+            .bfobs-section-title {
+                font-size: 0.62rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #9ca3af;
+                margin-bottom: 5px;
+                padding-bottom: 3px;
+                border-bottom: 1px solid #f1f5f9;
+            }
+            .dark .bfobs-section-title { color: #6b7280; border-color: #374151; }
+
+            .bfobs-item {
+                display: flex;
+                align-items: flex-start;
+                gap: 5px;
+                font-size: 0.72rem;
+                color: #374151;
+                line-height: 1.35;
+                padding: 2px 0;
+            }
+            .dark .bfobs-item { color: #d1d5db; }
+
+            .bfobs-item.well .dot  { color: #16a34a; flex-shrink: 0; }
+            .bfobs-item.diff .dot  { color: #dc2626; flex-shrink: 0; }
+            .bfobs-item.well       { color: #166534; }
+            .bfobs-item.diff       { color: #991b1b; }
+            .dark .bfobs-item.well { color: #4ade80; }
+            .dark .bfobs-item.diff { color: #f87171; }
+
+            .bfobs-empty-section {
+                font-size: 0.68rem;
+                color: #d1d5db;
+                font-style: italic;
+            }
+            .dark .bfobs-empty-section { color: #4b5563; }
+        </style>
+
         <div class="sec-head">
             <h2 class="sec-title">Breastfeeding Observations (NUR-044-0)</h2>
             <a href="{{ \App\Filament\Nurse\Pages\BreastfeedingObservation::getUrl(['visitId' => $visit->id]) }}"
@@ -1415,6 +1509,7 @@ use App\Helpers\WHOGrowthChart;
             <p class="ph-sub">Click "New Observation" to record a breastfeeding assessment.</p>
         </div>
         @else
+
 
         @foreach($observations as $obs)
         @php
