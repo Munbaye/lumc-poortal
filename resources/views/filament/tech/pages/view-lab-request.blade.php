@@ -362,76 +362,143 @@
 <div class="tech-section">
     <p class="tech-title" style="display:flex;align-items:center;gap:6px;"><x-heroicon-o-wrench-screwdriver style="width:16px;height:16px;" /> Tech Timeline / Status</p>
 
+    {{-- Step 1: Received --}}
     <div class="step-row">
-        <div class="step-num {{ $s1done ? 's-done' : 's-active' }}">{!! $s1done ? '&#10003;' : '1' !!}</div>
+        <div class="step-num {{ $s1done ? 's-done' : 's-active' }}">
+            @if($s1done)
+                <x-heroicon-o-check class="w-4 h-4" />
+            @else
+                1
+            @endif
+        </div>
         <div class="step-body">
-            <p class="step-title">Mark as Received
+            <p class="step-title">
+                Mark as Received
+            <p class="step-title">
+                Mark as Received
                 @if($labRequest->request_received_at)
                 <span class="step-ts">{{ $labRequest->request_received_at->timezone('Asia/Manila')->format('M j, Y g:i A') }}</span>
                 @endif
             </p>
             @if(!$labRequest->request_received_at)
-            <button type="button" wire:click="markReceived" wire:loading.attr="disabled" class="btn-step btn-primary"><x-heroicon-o-inbox-arrow-down style="width:14px;height:14px;display:inline-block;vertical-align:-2px;" /> Mark as Received</button>
+            <button type="button" wire:click="markReceived" wire:loading.attr="disabled" class="btn-step btn-primary">
+                <x-heroicon-o-inbox-arrow-down class="w-4 h-4" /> Mark as Received
+            </button>
             @else
-            <span style="font-size:.78rem;color:#059669;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><x-heroicon-o-check-circle style="width:14px;height:14px;" /> Received</span>
+            <span class="done-notice">
+                <x-heroicon-o-check-circle class="w-4 h-4" /> Received
+            </span>
             @endif
         </div>
     </div>
 
     <div class="step-connector {{ $s1done ? 'done' : '' }}"></div>
 
+    {{-- Step 2: Specimen --}}
+    {{-- Step 2: Specimen --}}
     <div class="step-row">
-        <div class="step-num {{ $labRequest->specimen_collected ? 's-done' : ($s1done ? 's-active' : 's-waiting') }}">{!! $labRequest->specimen_collected ? '&#10003;' : '2' !!}</div>
+        <div class="step-num {{ $labRequest->specimen_collected ? 's-done' : ($s1done ? 's-active' : 's-waiting') }}">
+            @if($labRequest->specimen_collected)
+                <x-heroicon-o-check class="w-4 h-4" />
+            @else
+                2
+            @endif
+        </div>
         <div class="step-body">
             <p class="step-title">Specimen Collected</p>
             <div style="display:flex;gap:10px;align-items:center;">
-                <input type="text" wire:model="specimenCollected" class="tf-input" style="width:280px;" placeholder="e.g. venous blood, urine, stool" {{ !$s1done ? 'disabled' : '' }}>
-                <button type="button" wire:click="saveSpecimen" wire:loading.attr="disabled" class="btn-step btn-primary" style="padding:8px 16px;" {{ !$s1done ? 'disabled' : '' }}>Save</button>
+                <input type="text" wire:model="specimenCollected" class="tf-input" style="width:280px;"
+                       placeholder="e.g. venous blood, urine, stool" {{ !$s1done ? 'disabled' : '' }}>
+                <button type="button" wire:click="saveSpecimen" wire:loading.attr="disabled"
+                        class="btn-step btn-primary" style="padding:8px 16px;" {{ !$s1done ? 'disabled' : '' }}>
+                    Save
+                </button>
+                <input type="text" wire:model="specimenCollected" class="tf-input" style="width:280px;"
+                       placeholder="e.g. venous blood, urine, stool" {{ !$s1done ? 'disabled' : '' }}>
+                <button type="button" wire:click="saveSpecimen" wire:loading.attr="disabled"
+                        class="btn-step btn-primary" style="padding:8px 16px;" {{ !$s1done ? 'disabled' : '' }}>
+                    Save
+                </button>
             </div>
             @if(!$s1done)
-            <p class="lock-notice"><x-heroicon-o-lock-closed style="width:13px;height:13px;display:inline-block;vertical-align:-2px;" /> Complete Step 1 first</p>
+            <p class="lock-notice">
+                <x-heroicon-o-lock-closed class="w-3 h-3" /> Complete Step 1 first
+            </p>
             @elseif($labRequest->specimen_collected)
-            <p style="font-size:.75rem;color:#059669;margin-top:4px;font-weight:600;">&#10004; Saved: {{ $labRequest->specimen_collected }}</p>
+            <span class="done-notice" style="margin-top:4px;display:inline-flex;">
+                <x-heroicon-o-check-circle class="w-4 h-4" /> Saved: {{ $labRequest->specimen_collected }}
+            </span>
             @endif
         </div>
     </div>
 
     <div class="step-connector {{ $s1done ? 'done' : '' }}"></div>
 
+    {{-- Step 3: Test Started --}}
+    {{-- Step 3: Test Started --}}
     <div class="step-row">
-        <div class="step-num {{ $s3done ? 's-done' : ($s1done ? 's-active' : 's-waiting') }}">{!! $s3done ? '&#10003;' : '3' !!}</div>
+        <div class="step-num {{ $s3done ? 's-done' : ($s1done ? 's-active' : 's-waiting') }}">
+            @if($s3done)
+                <x-heroicon-o-check class="w-4 h-4" />
+            @else
+                3
+            @endif
+        </div>
         <div class="step-body">
-            <p class="step-title">Test Started
+            <p class="step-title">
+                Test Started
+            <p class="step-title">
+                Test Started
                 @if($labRequest->test_started_at)
                 <span class="step-ts">{{ $labRequest->test_started_at->timezone('Asia/Manila')->format('M j, Y g:i A') }}</span>
                 @endif
             </p>
             @if(!$labRequest->test_started_at)
-            <button type="button" wire:click="markTestStarted" wire:loading.attr="disabled" class="btn-step btn-blue" {{ !$s1done ? 'disabled' : '' }}>▶ Mark Test Started</button>
-            @if(!$s1done)<p class="lock-notice"><x-heroicon-o-lock-closed style="width:13px;height:13px;display:inline-block;vertical-align:-2px;" /> Complete Step 1 first</p>@endif
+            <button type="button" wire:click="markTestStarted" wire:loading.attr="disabled"
+                    class="btn-step btn-blue" {{ !$s1done ? 'disabled' : '' }}>
+                <x-heroicon-o-play class="w-4 h-4" /> Mark Test Started
+            </button>
+            @if(!$s1done)
+            <p class="lock-notice">
+                <x-heroicon-o-lock-closed class="w-3 h-3" /> Complete Step 1 first
+            </p>
+            @endif
             @else
-            <span style="font-size:.78rem;color:#059669;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><x-heroicon-o-check-circle style="width:14px;height:14px;" /> Test started</span>
+            <span class="done-notice">
+                <x-heroicon-o-check-circle class="w-4 h-4" /> Test started
+            </span>
             @endif
         </div>
     </div>
 
     <div class="step-connector {{ $s1done ? 'done' : '' }}"></div>
 
+    {{-- Step 4: Result Files --}}
+    {{-- Step 4: Result Files --}}
     <div class="step-row">
         <div class="step-num {{ !empty($resultFiles) && $canUpload ? 's-active' : 's-waiting' }}">4</div>
         <div class="step-body">
-            <p class="step-title">Result Files <span style="color:#dc2626;">*</span></p>
+            <p class="step-title">
+                Result Files <span style="color:#dc2626;">*</span>
+            </p>
+            <p class="step-title">
+                Result Files <span style="color:#dc2626;">*</span>
+            </p>
             @if(!$canUpload)
-            <p class="lock-notice"><x-heroicon-o-lock-closed style="width:13px;height:13px;display:inline-block;vertical-align:-2px;" /> Complete Step 1 (Mark as Received) before uploading files</p>
+            <p class="lock-notice">
+                <x-heroicon-o-lock-closed class="w-3 h-3" /> Complete Step 1 (Mark as Received) before uploading files
+            </p>
             @else
             @if(!empty($resultFiles))
             <div class="file-queue">
                 @foreach($resultFiles as $i => $f)
                 <div class="file-item" wire:key="lf-{{ $i }}">
-                    <x-heroicon-o-document-text style="width:18px;height:18px;" />
+                    <x-heroicon-o-document class="w-5 h-5 text-gray-400 flex-shrink-0" />
                     <span class="file-item-name">{{ $f->getClientOriginalName() }}</span>
                     <span class="file-item-size">{{ round($f->getSize() / 1024, 1) }} KB</span>
-                    <button type="button" wire:click="removeFile({{ $i }})" class="btn-rm">&times;</button>
+                    <button type="button" wire:click="removeFile({{ $i }})" class="btn-rm">
+                        <x-heroicon-o-x-mark class="w-3 h-3" />
+                    </button>
                 </div>
                 @endforeach
             </div>
@@ -439,7 +506,7 @@
             <div class="drop-zone enabled" style="margin-top:{{ empty($resultFiles) ? '0' : '8px' }};">
                 <input type="file" wire:model="resultFiles" id="labFiles" accept=".pdf,.jpg,.jpeg,.png,.webp" multiple style="display:none;">
                 <label for="labFiles" style="cursor:pointer;display:block;">
-                    <p style="margin-bottom:4px;display:flex;justify-content:center;"><x-heroicon-o-document-text style="width:24px;height:24px;" /></p>
+                    <x-heroicon-o-document-arrow-up class="w-8 h-8 mx-auto text-gray-400 mb-2" />
                     <p style="font-size:.85rem;font-weight:700;color:#374151;">{{ empty($resultFiles) ? 'Drop files here or click to browse' : '+ Add more files' }}</p>
                     <p style="font-size:.75rem;color:#9ca3af;margin-top:3px;">PDF · JPG · PNG · WebP · max 20 MB each</p>
                 </label>
@@ -455,13 +522,21 @@
         </div>
     </div>
 
-    <button wire:click="saveResult" wire:loading.attr="disabled" wire:loading.class="opacity-50" type="button" class="btn-complete" {{ !$canComplete ? 'disabled' : '' }}>
-        <span wire:loading.remove wire:target="saveResult"><x-heroicon-o-check-circle style="width:16px;height:16px;display:inline-block;vertical-align:-3px;" /> Complete Request &amp; Upload Results</span>
+    <button wire:click="saveResult" wire:loading.attr="disabled" wire:loading.class="opacity-50"
+            type="button" class="btn-complete" {{ !$canComplete ? 'disabled' : '' }}>
+        <span wire:loading.remove wire:target="saveResult">
+            <x-heroicon-o-check-circle class="w-5 h-5" /> Complete Request &amp; Upload Results
+        </span>
         <span wire:loading wire:target="saveResult">Saving…</span>
     </button>
+
+
     @if(!$canComplete)
     <p class="lock-notice" style="margin-top:8px;">
-        <x-heroicon-o-lock-closed style="width:13px;height:13px;display:inline-block;vertical-align:-2px;" /> @if(!$s1done) Mark as Received first @elseif(empty($resultFiles)) Add at least one result file @endif
+        <x-heroicon-o-lock-closed class="w-3 h-3" />
+        @if(!$s1done) Mark as Received first
+        @elseif(empty($resultFiles)) Add at least one result file
+        @endif
     </p>
     @else
     <p style="font-size:.72rem;color:#9ca3af;margin-top:8px;">Test Done time will be recorded automatically when you complete.</p>

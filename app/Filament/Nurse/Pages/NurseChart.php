@@ -39,6 +39,7 @@ class NurseChart extends Page
 
     public ?Visit $visit = null;
 
+    #[Url]
     public string $activeTab      = 'orders';
     public ?int   $confirmCarryId = null;
 

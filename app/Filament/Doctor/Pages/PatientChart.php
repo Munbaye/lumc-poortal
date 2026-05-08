@@ -39,6 +39,7 @@ class PatientChart extends Page
 
     public ?int $ballardExamId = null;
 
+    #[Url]
     public string $activeTab             = 'orders';
     public bool   $writingOrders         = false;
 

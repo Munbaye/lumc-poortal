@@ -167,6 +167,11 @@
             outline: none;
             box-sizing: border-box;
         }
+        .dark .lumc-input {
+            background: #1f2937 !important;
+            color: #f3f4f6 !important;
+            border-color: #4b5563 !important;
+        }
 
         input.lumc-input,
         select.lumc-input {
@@ -193,6 +198,9 @@
             margin-bottom: 5px;
             color: #374151;
         }
+        .dark .lumc-label {
+            color: #d1d5db !important;
+        }
 
         .lumc-required {
             color: #dc2626;
@@ -210,11 +218,15 @@
         }
 
         .lumc-section {
-            background: #fff;
+            background: var(--lumc-section-bg, #fff);
             border: 1px solid #e5e7eb;
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 16px;
+        }
+        .dark .lumc-section {
+            background: rgb(31 41 55) !important;
+            border-color: #374151 !important;
         }
     </style>
 
@@ -255,7 +267,7 @@
     <div class="lumc-section">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
             <div>
-                <h2 style="font-size:1rem;font-weight:700;margin:0 0 4px;color:#111827;">Step 1: Search for Existing Patient</h2>
+                <h2 style="font-size:1rem;font-weight:700;margin:0 0 4px;color:inherit;">Step 1: Search for Existing Patient</h2>
                 <p style="font-size:.83rem;color:#6b7280;margin:0;">Always search first to prevent duplicate records. Type at least 2 characters.</p>
             </div>
             <button wire:click="activateUnknownMode" class="lumc-btn-danger" style="flex-shrink:0;margin-left:16px;white-space:nowrap;">Unknown Patient</button>
@@ -313,19 +325,18 @@
                     @foreach($searchResults as $r)
                     <tr @style([
                         'border-top:1px solid #f3f4f6;' => true,
-                        'background:#f0fdf4;' => $selectedPatientId == $r['id'],
-                        'background:#fef2f2;' => $selectedPatientId != $r['id'] && $r['has_incomplete'],
-                        'background:#fff;' => $selectedPatientId != $r['id'] && !$r['has_incomplete'],
+                        'background:rgba(22,163,74,.12);' => $selectedPatientId == $r['id'],
+                        'background:rgba(220,38,38,.08);' => $selectedPatientId != $r['id'] && $r['has_incomplete'],
                     ])>
                         <td style="padding:9px 12px;font-family:monospace;font-size:.75rem;color:#1d4ed8;">{{ $r['case_no'] }}</td>
                         <td style="padding:9px 12px;font-weight:600;" @style([
                             'color:#dc2626;' => $r['has_incomplete'],
-                            'color:#111827;' => !$r['has_incomplete'],
+                            'color:inherit;' => !$r['has_incomplete'],
                         ])>
                             {{ $r['full_name'] }}
                             @if($r['has_incomplete'])<span style="display:inline-block;background:#fef2f2;border:1px solid #fca5a5;color:#dc2626;font-size:.6rem;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:4px;">INCOMPLETE</span>@endif
                         </td>
-                        <td style="padding:9px 12px;color:#374151;">{{ $r['age_display'] }} / {{ $r['sex'] }}</td>
+                        <td style="padding:9px 12px;color:inherit;opacity:.85;">{{ $r['age_display'] }} / {{ $r['sex'] }}</td>
                         <td style="padding:9px 12px;color:#6b7280;font-size:.78rem;">{{ $r['birthday'] ?? '—' }}</td>
                         <td style="padding:9px 12px;color:#6b7280;font-size:.78rem;">{{ $r['last_visit'] ?? 'No visit' }}</td>
                         <td style="padding:9px 12px;color:#6b7280;font-size:.78rem;">{{ $r['address'] }}…</td>
@@ -353,7 +364,7 @@
             <p style="font-size:.83rem;color:#92400e;margin:0 0 12px;">Double-check spelling. If certain this is a new patient, tick the box below.</p>
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
                 <input type="checkbox" id="confirmNoMatch" wire:model.live="confirmNoMatch" style="width:16px;height:16px;cursor:pointer;accent-color:#1d4ed8;">
-                <label for="confirmNoMatch" style="font-size:.83rem;font-weight:600;cursor:pointer;color:#111827;">I confirm no existing patient matches — create new record</label>
+                <label for="confirmNoMatch" style="font-size:.83rem;font-weight:600;cursor:pointer;color:inherit;">I confirm no existing patient matches — create new record</label>
             </div>
             @if($confirmNoMatch)
             <button wire:click="showNewPatientForm" class="lumc-btn-primary">
@@ -376,7 +387,7 @@
     {{-- ══ STEP 2: REGISTRATION FORM ══ --}}
     @if($showCreateForm)
     <div class="lumc-section">
-        <h2 style="font-size:1rem;font-weight:700;margin:0 0 20px;color:#111827;">
+        <h2 style="font-size:1rem;font-weight:700;margin:0 0 20px;color:inherit;">
             @if($selectedPatientId) Step 2: Update Existing Patient &amp; Register Visit
             @else Step 2: New Patient Registration @endif
         </h2>

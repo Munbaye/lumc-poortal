@@ -32,7 +32,7 @@
         .toolbar .spacer { flex:1; }
         .toolbar .pt-info { font-size:11px; color:rgba(255,255,255,.8); }
         .btn-print{background:#fff;color:#1e3a5f;border:none;padding:6px 16px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;}
-.btn-print:hover{background:#dbeafe;}
+        .btn-print:hover{background:#dbeafe;}
         .btn-save  { background:#059669; color:#fff; border:none; padding:6px 22px; border-radius:4px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; }
         .btn-save:hover  { background:#047857; }
         .btn-save:disabled { opacity:.6; cursor:not-allowed; }

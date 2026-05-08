@@ -11,38 +11,64 @@ use App\Helpers\WHOGrowthChart;
    ══════════════════════════════════════════════════════════════════ */
 
 .chart-page { display:flex; flex-direction:column; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; background:#fff; }
+/* Allow tab bar to scroll horizontally without being clipped */
+.chart-tabs-wrap { overflow-x:auto; overflow-y:visible; }
+.chart-tabs { min-width:0; }
 .dark .chart-page { background:#111827; border-color:#374151; }
 
-.chart-header { background:linear-gradient(135deg,#881337 0%,#f43f5e 100%); padding:18px 24px 20px; display:flex; flex-direction:column; gap:16px; }
-.chart-header-main { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; width:100%; }
+.chart-header { background:linear-gradient(135deg,#881337 0%,#f43f5e 100%); padding:16px 24px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
 .chart-header-left { flex:1; min-width:200px; }
 .pt-name-big { font-size:1.1rem; font-weight:800; color:#fff; letter-spacing:.02em; }
 .pt-case-big { font-family:monospace; font-size:.78rem; color:#fda4af; margin-top:2px; }
-.header-pills { display:grid; grid-template-columns:minmax(150px,auto) minmax(220px,1fr) auto minmax(150px,auto) minmax(170px,auto); gap:10px; align-items:stretch; width:100%; }
-.h-pill { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.22); border-radius:6px; padding:7px 14px; text-align:center; min-height:48px; display:flex; flex-direction:column; justify-content:center; min-width:0; }
+.header-pills { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.h-pill { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.22); border-radius:6px; padding:5px 14px; text-align:center; }
 .h-pill .pl { font-size:.6rem; text-transform:uppercase; letter-spacing:.06em; color:#fda4af; }
-.h-pill .pv { font-size:.82rem; font-weight:700; color:#fff; overflow:hidden; text-overflow:ellipsis; }
-.svc-pill { background:#be123c; color:#fff; font-size:.72rem; font-weight:700; padding:8px 16px; border-radius:9999px; display:inline-flex; align-items:center; justify-content:center; align-self:center; min-width:70px; }
+.h-pill .pv { font-size:.82rem; font-weight:700; color:#fff; }
+.svc-pill { background:#be123c; color:#fff; font-size:.72rem; font-weight:700; padding:4px 14px; border-radius:9999px; }
 .btn-back-hdr { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:#fff; font-size:.78rem; font-weight:600; padding:7px 14px; border-radius:6px; text-decoration:none; flex-shrink:0; cursor:pointer; }
 .btn-back-hdr:hover { background:rgba(255,255,255,.25); }
 
 /* ── Single flat tab bar ────────────────────────────────────────── */
-.chart-tabs { display:flex; align-items:center; justify-content:flex-start; background:#fff; border-bottom:2px solid #e5e7eb; padding:0 16px; overflow-x:auto; overflow-y:hidden; scrollbar-width:thin; -ms-overflow-style:auto; }
-.chart-tabs::-webkit-scrollbar { height:6px; }
-.chart-tabs::-webkit-scrollbar-thumb { background:#fecdd3; border-radius:9999px; }
-.chart-tabs::-webkit-scrollbar-track { background:#fff; }
-.dark .chart-tabs { background:#1f2937; border-bottom-color:#374151; }
-.dark .chart-tabs::-webkit-scrollbar-thumb { background:#4b5563; }
+.chart-tabs-wrap { position:relative; overflow-x:auto; overflow-y:visible; }
+.chart-tabs {
+    display:flex; align-items:center; flex-wrap:nowrap;
+    background:#fff; border-bottom:2px solid #e5e7eb;
+    padding:0 16px;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scroll-behavior:smooth;
+    scrollbar-width:thin;
+    scrollbar-color:#d1d5db #f3f4f6;
+    padding-bottom:4px;
+}
+.dark .chart-tabs {
+    scrollbar-color:#374151 #1f2937;
+}
+.chart-tabs::-webkit-scrollbar {
+    height:4px;
+}
+.chart-tabs::-webkit-scrollbar-track {
+    background:#f3f4f6;
+    border-radius:9999px;
+}
+.chart-tabs::-webkit-scrollbar-thumb {
+    background:#d1d5db;
+    border-radius:9999px;
+}
+.chart-tabs::-webkit-scrollbar-thumb:hover {
+    background:#9ca3af;
+}
 .dark .chart-tabs::-webkit-scrollbar-track { background:#1f2937; }
-.chart-tab { display:inline-flex; align-items:center; gap:6px; padding:10px 13px; font-size:.78rem; font-weight:600; color:#6b7280; cursor:pointer; border:none; background:none; border-bottom:2.5px solid transparent; margin-bottom:-2px; white-space:nowrap; transition:color .15s,border-color .15s; }
+.dark .chart-tabs::-webkit-scrollbar-thumb { background:#374151; }
+.dark .chart-tabs::-webkit-scrollbar-thumb:hover { background:#4b5563; }
+.dark .chart-tabs { background:#1f2937; border-bottom-color:#374151; }
+.chart-tab { display:inline-flex; align-items:center; gap:6px; padding:10px 13px; font-size:.78rem; font-weight:600; color:#6b7280; cursor:pointer; border:none; background:none; border-bottom:2.5px solid transparent; margin-bottom:-2px; white-space:nowrap; flex-shrink:0; transition:color .15s,border-color .15s; }
 .chart-tab:hover { color:#374151; }
 .dark .chart-tab { color:#9ca3af; }
 .dark .chart-tab:hover { color:#e5e7eb; }
 .chart-tab.active { color:#f43f5e; border-bottom-color:#f43f5e; font-weight:700; }
 .dark .chart-tab.active { color:#fb7185; border-bottom-color:#fb7185; }
 .chart-tab svg { width:14px; height:14px; flex-shrink:0; }
-@media(max-width:1100px) { .header-pills { grid-template-columns:repeat(2,minmax(0,1fr)); } .svc-pill { min-height:48px; } }
-@media(max-width:640px) { .chart-header { padding:16px; } .chart-header-main { flex-direction:column; } .header-pills { grid-template-columns:1fr; } }
 .tab-badge { background:#ef4444; color:#fff; font-size:.6rem; font-weight:700; padding:1px 5px; border-radius:9999px; min-width:17px; text-align:center; line-height:1.5; }
 .tab-badge-green { background:#059669; }
 .tab-badge-blue  { background:#2563eb; }
@@ -672,6 +698,7 @@ use App\Helpers\WHOGrowthChart;
     {{-- ════ TABS ═══════════════════════════════════════════════════ --}}
     @if(!$isReadonly)
     @php $isNicu = $visit->visit_type === 'NICU'; @endphp
+    <div class="chart-tabs-wrap">
     <div class="chart-tabs">
 
         {{-- Doctor's Orders --}}
@@ -761,6 +788,7 @@ use App\Helpers\WHOGrowthChart;
 
     </div>
     @endif{{-- !isReadonly --}}
+    </div>{{-- /chart-tabs-wrap --}}
 
     <div class="chart-content">
 
@@ -1405,100 +1433,6 @@ use App\Helpers\WHOGrowthChart;
             .dark .bfobs-empty-section { color: #4b5563; }
         </style>
 
-        <style>
-            /* ── Breastfeeding observation card ───────────────────────────────────── */
-            .bfobs-card {
-                background: #fff;
-                border: 1px solid #e5e7eb;
-                border-radius: 10px;
-                margin-bottom: 14px;
-                overflow: hidden;
-            }
-            .dark .bfobs-card { background: #1f2937; border-color: #374151; }
-
-            .bfobs-header {
-                background: #f9fafb;
-                border-bottom: 1px solid #e5e7eb;
-                padding: 9px 16px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-            .dark .bfobs-header { background: #111827; border-color: #374151; }
-
-            .bfobs-meta { font-size: 0.8rem; font-weight: 700; color: #1e293b; }
-            .dark .bfobs-meta { color: #f1f5f9; }
-            .bfobs-time { font-size: 0.7rem; color: #6b7280; margin-left: 8px; }
-
-            .bfobs-badge {
-                display: inline-flex;
-                align-items: center;
-                gap: 4px;
-                padding: 2px 10px;
-                border-radius: 20px;
-                font-size: 0.68rem;
-                font-weight: 700;
-            }
-            .bfobs-badge.well { background: #dcfce7; color: #166534; }
-            .bfobs-badge.diff { background: #fee2e2; color: #991b1b; }
-            .bfobs-badge.none { background: #f1f5f9; color: #64748b; }
-
-            .bfobs-body {
-                padding: 12px 16px;
-            }
-
-            /* 5-column section grid */
-            .bfobs-sections {
-                display: grid;
-                grid-template-columns: repeat(5, 1fr);
-                gap: 10px;
-            }
-            @media (max-width: 900px) {
-                .bfobs-sections { grid-template-columns: repeat(2, 1fr); }
-            }
-
-            .bfobs-section { }
-
-            .bfobs-section-title {
-                font-size: 0.62rem;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                color: #9ca3af;
-                margin-bottom: 5px;
-                padding-bottom: 3px;
-                border-bottom: 1px solid #f1f5f9;
-            }
-            .dark .bfobs-section-title { color: #6b7280; border-color: #374151; }
-
-            .bfobs-item {
-                display: flex;
-                align-items: flex-start;
-                gap: 5px;
-                font-size: 0.72rem;
-                color: #374151;
-                line-height: 1.35;
-                padding: 2px 0;
-            }
-            .dark .bfobs-item { color: #d1d5db; }
-
-            .bfobs-item.well .dot  { color: #16a34a; flex-shrink: 0; }
-            .bfobs-item.diff .dot  { color: #dc2626; flex-shrink: 0; }
-            .bfobs-item.well       { color: #166534; }
-            .bfobs-item.diff       { color: #991b1b; }
-            .dark .bfobs-item.well { color: #4ade80; }
-            .dark .bfobs-item.diff { color: #f87171; }
-
-            .bfobs-empty-section {
-                font-size: 0.68rem;
-                color: #d1d5db;
-                font-style: italic;
-            }
-            .dark .bfobs-empty-section { color: #4b5563; }
-        </style>
-
         <div class="sec-head">
             <h2 class="sec-title">Breastfeeding Observations (NUR-044-0)</h2>
             <a href="{{ \App\Filament\Nurse\Pages\BreastfeedingObservation::getUrl(['visitId' => $visit->id]) }}"
@@ -1516,7 +1450,6 @@ use App\Helpers\WHOGrowthChart;
             <p class="ph-sub">Click "New Observation" to record a breastfeeding assessment.</p>
         </div>
         @else
-
 
         @foreach($observations as $obs)
         @php
@@ -2703,4 +2636,54 @@ use App\Helpers\WHOGrowthChart;
 </div>
 @endif
 
+
+<script>
+(function () {
+    function initChartTabScroll() {
+        const wrap = document.querySelector('.chart-tabs-wrap');
+        const bar  = document.querySelector('.chart-tabs');
+        if (!wrap || !bar) return;
+
+        // Scroll the active tab into center view
+        const active = bar.querySelector('.chart-tab.active');
+        if (active) {
+            // Use scrollIntoView with nearest block so it doesn't jump the page
+            const tabLeft   = active.offsetLeft;
+            const tabWidth  = active.offsetWidth;
+            const barWidth  = bar.clientWidth;
+            bar.scrollLeft  = tabLeft - (barWidth / 2) + (tabWidth / 2);
+        }
+
+        // Update fade classes on scroll
+        function updateFades() {
+            wrap.classList.toggle('scrolled', bar.scrollLeft > 4);
+            wrap.classList.toggle('at-end',   bar.scrollLeft + bar.clientWidth >= bar.scrollWidth - 4);
+        }
+
+        bar.addEventListener('scroll',  updateFades, { passive: true });
+        window.addEventListener('resize', updateFades);
+        updateFades();
+
+        // Re-run when Livewire updates (e.g. tab change)
+        document.addEventListener('livewire:updated', function () {
+            setTimeout(function () {
+                const a = bar.querySelector('.chart-tab.active');
+                if (a) {
+                    const tl = a.offsetLeft;
+                    const tw = a.offsetWidth;
+                    const bw = bar.clientWidth;
+                    bar.scrollTo({ left: tl - (bw / 2) + (tw / 2), behavior: 'smooth' });
+                }
+                updateFades();
+            }, 60);
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initChartTabScroll);
+    } else {
+        initChartTabScroll();
+    }
+})();
+</script>
 </x-filament-panels::page>

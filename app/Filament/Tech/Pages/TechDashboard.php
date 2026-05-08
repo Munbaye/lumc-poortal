@@ -30,21 +30,12 @@ class TechDashboard extends Page
 
     public function getIsMedtechProperty(): bool
     {
-        $spec = strtolower(auth()->user()->specialty ?? '');
-        return str_contains($spec, 'med tech')
-            || str_contains($spec, 'medical tech')
-            || str_contains($spec, 'laboratory')
-            || str_contains($spec, 'medtech')
-            || str_contains($spec, 'medical technologist');
+        return auth()->user()?->hasRole('tech-med') ?? false;
     }
 
     public function getIsRadtechProperty(): bool
     {
-        $spec = strtolower(auth()->user()->specialty ?? '');
-        return str_contains($spec, 'radiolog')
-            || str_contains($spec, 'x-ray')
-            || str_contains($spec, 'rad tech')
-            || str_contains($spec, 'radtech');
+        return auth()->user()?->hasRole('tech-rad') ?? false;
     }
 
     public function getQueueTypeProperty(): string

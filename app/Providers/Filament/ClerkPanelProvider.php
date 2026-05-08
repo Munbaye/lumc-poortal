@@ -21,7 +21,7 @@ class ClerkPanelProvider extends PanelProvider
             ->brandLogo(fn() => new HtmlString(
                 '<div style="display:flex;align-items:center;gap:10px;">'
                     . '<img src="' . asset('images/lumc-logo.png') . '" alt="LUMC Logo" style="height:40px;width:auto;">'
-                    . '<span style="font-weight:700;color:#111827;">LUMC — Clerk Portal</span>'
+                    . '<span style="font-weight:700;color:currentColor;">LUMC-CLERK PORTAL</span>'
                     . '</div>'
             ))
             ->favicon(asset('images/lumc-logo.png'))

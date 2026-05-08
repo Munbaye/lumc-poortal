@@ -1,11 +1,3 @@
-{{--
-    NUR-018-B — Newborn Maturity Rating and Classification (Ballard Score)
-    Version A: Printable Form — matches existing LUMC form style
-    Path : resources/views/forms/ballard-score-printable.blade.php
-
-    Variables (suggested from ChartController):
-      $visit, $patient, $doctor, $today
---}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,18 +15,126 @@
         }
         @media print {
             html, body { margin: 0; padding: 0; background: #fff; }
-            .paper { 
-                width: 100%; 
-                padding: 0; 
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .paper {
+                width: 100%;
+                padding: 0;
                 margin: 0;
-                box-shadow: none; 
-                page-break-inside: avoid;
-                break-inside: avoid;
-                overflow: hidden;
+                box-shadow: none;
             }
             .no-print { display: none !important; }
             .circle-btn { display: none !important; }
-            .circled { border: 2px solid #000 !important; border-radius: 50% !important; background: transparent !important; color: #000 !important; }
+            .circled {
+                border: 2px solid #000 !important;
+                border-radius: 50% !important;
+                background: transparent !important;
+                color: #000 !important;
+            }
+            /* ── Selected cell: show filled circle in print ── */
+            .score-cell.selected {
+                background: #e0e0e0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .score-cell.selected .circled {
+                border: 2.5px solid #000 !important;
+                border-radius: 50% !important;
+                background: #000 !important;
+                color: #fff !important;
+                font-weight: bold !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .score-cell.selected .score-desc {
+                font-weight: bold !important;
+            }
+            .score-cell img {
+                display: block !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* ── FIX: prevent borders from vanishing at page breaks ── */
+            .score-table {
+                border-collapse: separate !important;
+                border-spacing: 0 !important;
+                border: 1.5px solid #000 !important;
+            }
+            .score-table th,
+            .score-table td {
+                border-right: 1px solid #000 !important;
+                border-bottom: 1px solid #000 !important;
+                border-top: 0 !important;
+                border-left: 0 !important;
+            }
+            .score-table thead th {
+                border-top: 0 !important;
+            }
+            .score-table tbody tr:first-child td {
+                border-top: 0 !important;
+            }
+
+            /* ── FIX: repeat table headers across page breaks ── */
+            .score-table thead {
+                display: table-header-group;
+            }
+
+            /* ── FIX: avoid row splitting across pages ── */
+            .score-table tbody tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            /* ── FIX: keep section heading with its table ── */
+            .sec-h {
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+
+            /* ── FIX: keep the two-col layout together if possible ── */
+            .two-col {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            /* Keep scoring-table borders clean too */
+            .scoring-table {
+                border-collapse: separate !important;
+                border-spacing: 0 !important;
+                border: 1.5px solid #000 !important;
+            }
+            .scoring-table th,
+            .scoring-table td {
+                border-right: 1px solid #000 !important;
+                border-bottom: 1px solid #000 !important;
+                border-top: 0 !important;
+                border-left: 0 !important;
+            }
+
+            .maturity-table {
+                border-collapse: separate !important;
+                border-spacing: 0 !important;
+                border: 1.5px solid #000 !important;
+            }
+            .maturity-table th,
+            .maturity-table td {
+                border-right: 1px solid #000 !important;
+                border-bottom: 1px solid #000 !important;
+                border-top: 0 !important;
+                border-left: 0 !important;
+            }
+
+            .patient-bar {
+                border: 1.5px solid #000 !important;
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            .pb-cell {
+                border-right: 1px solid #000 !important;
+            }
         }
 
         /* ── TOOLBAR ── */
@@ -78,10 +178,6 @@
         /* ── SECTION HEADING ── */
         .sec-h { background: #111827; color: #fff; font-size: 8.5pt; font-weight: bold; text-transform: uppercase; letter-spacing: .08em; padding: 3px 8px; margin: 8px 0 4px; }
 
-        /* ── SYMBOLS LEGEND ── */
-        .legend-bar { font-size: 8pt; margin-bottom: 5px; font-family: 'Segoe UI', system-ui, sans-serif; }
-        .legend-bar strong { margin-right: 14px; }
-
         /* ── SCORING TABLE ── */
         .score-table { width: 100%; border-collapse: collapse; font-size: 8pt; margin-bottom: 8px; }
         .score-table th, .score-table td { border: 1px solid #000; text-align: center; vertical-align: middle; padding: 3px 4px; line-height: 1.2; }
@@ -89,23 +185,36 @@
         .score-table .row-label { text-align: left; font-weight: bold; padding-left: 6px; font-size: 8pt; background: #f9fafb; white-space: nowrap; }
         .score-table .sub-label { font-size: 6.5pt; font-weight: normal; display: block; color: #555; }
 
-        /* Score cell - clickable circles on screen */
+        /* Score cell */
         .score-cell { position: relative; cursor: pointer; min-width: 62px; min-height: 34px; }
-        .score-val { font-size: 7pt; color: #9ca3af; font-weight: bold; display: block; margin-bottom: 2px; }
         .score-desc { font-size: 7pt; line-height: 1.2; color: #374151; }
-        .score-cell.selected .score-val,
         .score-cell.selected .score-desc { color: #000; }
         .score-cell.selected { background: #e0f2fe; }
         .circled { display: inline-block; width: 22px; height: 22px; border-radius: 50%; line-height: 22px; font-size: 8pt; font-weight: bold; border: 2px solid #9ca3af; color: #9ca3af; margin-bottom: 2px; }
         .score-cell.selected .circled { border-color: #1d4ed8; color: #1d4ed8; background: #dbeafe; }
+
+        /* NM image inside score cell */
+        .nm-img {
+            width: 58px;
+            height: 40px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 3px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 2px;
+            background: #fff;
+        }
+        .score-cell.selected .nm-img {
+            border-color: #93c5fd;
+            background: #eff6ff;
+        }
 
         /* ── TWO COLUMN LAYOUT ── */
         .two-col { display: grid; grid-template-columns: 1fr 340px; gap: 12px; margin-top: 8px; }
         .right-col { display: flex; flex-direction: column; gap: 8px; }
 
         /* ── INFO BOXES ── */
-        .info-box { border: 1px solid #000; padding: 6px 10px; font-size: 9pt; }
-        .info-box .ib-title { font-weight: bold; font-size: 8pt; text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid #000; margin-bottom: 5px; padding-bottom: 3px; }
         .info-row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 5px; font-size: 9pt; }
         .info-row .ir-label { font-size: 8.5pt; white-space: nowrap; min-width: 90px; }
         .info-line { flex: 1; border-bottom: 1px solid #000; min-height: 16px; }
@@ -136,6 +245,7 @@
         /* ── PRINT HINT ── */
         .screen-tip { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 9.5px; color: #374151; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 4px; padding: 5px 12px; margin-bottom: 8px; }
         @media print { .screen-tip { display: none !important; } }
+
     </style>
 </head>
 <body>
@@ -225,66 +335,107 @@
             </tr>
         </thead>
         <tbody>
+
+            {{-- POSTURE --}}
             <tr>
                 <td class="row-label">Posture</td>
-                <td class="score-cell" data-row="posture" data-score="0" onclick="selectScore(this)"><span class="circled">0</span><br><span class="score-desc">Flat, no flexion</span></td>
-                <td class="score-cell" data-row="posture" data-score="1" onclick="selectScore(this)"><span class="circled">1</span><br><span class="score-desc">Slight hip/leg flexion</span></td>
-                <td class="score-cell" data-row="posture" data-score="2" onclick="selectScore(this)"><span class="circled">2</span><br><span class="score-desc">Stronger leg flexion</span></td>
-                <td class="score-cell" data-row="posture" data-score="3" onclick="selectScore(this)"><span class="circled">3</span><br><span class="score-desc">Arms flexed, legs flexed</span></td>
-                <td class="score-cell" data-row="posture" data-score="4" onclick="selectScore(this)"><span class="circled">4</span><br><span class="score-desc">Full flexion</span></td>
-                <td class="score-cell" data-row="posture" data-score="5" onclick="selectScore(this)" style="background:#f9fafb;opacity:.4;cursor:not-allowed;pointer-events:none;"></td>
+                @for($i = 0; $i <= 4; $i++)
+                <td class="score-cell" data-row="posture" data-score="{{ $i }}" onclick="selectScore(this)">
+                    <img src="{{ asset('images/ballard/nm/nmPosture/' . $i . '.png') }}"
+                         alt="Posture {{ $i }}" class="nm-img"
+                         onerror="this.style.display='none'">
+                    <span class="circled">{{ $i }}</span><br>
+                    <span class="score-desc">{{ ['Flat, no flexion','Slight hip/leg flexion','Stronger leg flexion','Arms & legs flexed','Full flexion'][$i] }}</span>
+                </td>
+                @endfor
+                <td style="background:#f9fafb;opacity:.4;cursor:not-allowed;"></td>
                 <td id="score-posture" style="font-weight:bold;font-size:12pt;text-align:center;">—</td>
             </tr>
+
+            {{-- SQUARE WINDOW --}}
             <tr>
                 <td class="row-label">Square Window<span class="sub-label">(Wrist)</span></td>
-                <td class="score-cell" data-row="square" data-score="0" onclick="selectScore(this)"><span class="circled">0</span><br><span class="score-desc">&gt; 90°</span></td>
-                <td class="score-cell" data-row="square" data-score="1" onclick="selectScore(this)"><span class="circled">1</span><br><span class="score-desc">90°</span></td>
-                <td class="score-cell" data-row="square" data-score="2" onclick="selectScore(this)"><span class="circled">2</span><br><span class="score-desc">60°</span></td>
-                <td class="score-cell" data-row="square" data-score="3" onclick="selectScore(this)"><span class="circled">3</span><br><span class="score-desc">45°</span></td>
-                <td class="score-cell" data-row="square" data-score="4" onclick="selectScore(this)"><span class="circled">4</span><br><span class="score-desc">30°</span></td>
-                <td class="score-cell" data-row="square" data-score="5" onclick="selectScore(this)"><span class="circled">5</span><br><span class="score-desc">0°</span></td>
+                @php $squareDescs = ['90°','60°','45°','30°','0°']; @endphp
+                @for($i = 0; $i <= 4; $i++)
+                <td class="score-cell" data-row="square" data-score="{{ $i }}" onclick="selectScore(this)">
+                    <img src="{{ asset('images/ballard/nm/nmSquareWindow/' . $i . '.png') }}"
+                         alt="Square Window {{ $i }}" class="nm-img"
+                         onerror="this.style.display='none'">
+                    <span class="circled">{{ $i }}</span><br>
+                    <span class="score-desc">{{ $squareDescs[$i] }}</span>
+                </td>
+                @endfor
+                <td style="background:#f9fafb;opacity:.4;cursor:not-allowed;"></td>
                 <td id="score-square" style="font-weight:bold;font-size:12pt;text-align:center;">—</td>
             </tr>
+
+            {{-- ARM RECOIL --}}
             <tr>
                 <td class="row-label">Arm Recoil</td>
-                <td class="score-cell" data-row="arm" data-score="0" onclick="selectScore(this)"><span class="circled">0</span><br><span class="score-desc">180° (none)</span></td>
-                <td class="score-cell" data-row="arm" data-score="1" onclick="selectScore(this)"><span class="circled">1</span><br><span class="score-desc">140–180°</span></td>
-                <td class="score-cell" data-row="arm" data-score="2" onclick="selectScore(this)"><span class="circled">2</span><br><span class="score-desc">110–140°</span></td>
-                <td class="score-cell" data-row="arm" data-score="3" onclick="selectScore(this)"><span class="circled">3</span><br><span class="score-desc">90–110°</span></td>
-                <td class="score-cell" data-row="arm" data-score="4" onclick="selectScore(this)"><span class="circled">4</span><br><span class="score-desc">&lt; 90°</span></td>
-                <td class="score-cell" data-row="arm" data-score="5" onclick="selectScore(this)" style="background:#f9fafb;opacity:.4;cursor:not-allowed;pointer-events:none;"></td>
+                @php $armDescs = ['180° (none)','140–180°','110–140°','90–110°','< 90°']; @endphp
+                @for($i = 0; $i <= 4; $i++)
+                <td class="score-cell" data-row="arm" data-score="{{ $i }}" onclick="selectScore(this)">
+                    <img src="{{ asset('images/ballard/nm/nmArmRecoil/' . $i . '.png') }}"
+                         alt="Arm Recoil {{ $i }}" class="nm-img"
+                         onerror="this.style.display='none'">
+                    <span class="circled">{{ $i }}</span><br>
+                    <span class="score-desc">{{ $armDescs[$i] }}</span>
+                </td>
+                @endfor
+                <td style="background:#f9fafb;opacity:.4;cursor:not-allowed;"></td>
                 <td id="score-arm" style="font-weight:bold;font-size:12pt;text-align:center;">—</td>
             </tr>
+
+            {{-- POPLITEAL ANGLE --}}
             <tr>
                 <td class="row-label">Popliteal Angle</td>
-                <td class="score-cell" data-row="popliteal" data-score="0" onclick="selectScore(this)"><span class="circled">0</span><br><span class="score-desc">180°</span></td>
-                <td class="score-cell" data-row="popliteal" data-score="1" onclick="selectScore(this)"><span class="circled">1</span><br><span class="score-desc">160°</span></td>
-                <td class="score-cell" data-row="popliteal" data-score="2" onclick="selectScore(this)"><span class="circled">2</span><br><span class="score-desc">130°</span></td>
-                <td class="score-cell" data-row="popliteal" data-score="3" onclick="selectScore(this)"><span class="circled">3</span><br><span class="score-desc">110°</span></td>
-                <td class="score-cell" data-row="popliteal" data-score="4" onclick="selectScore(this)"><span class="circled">4</span><br><span class="score-desc">90°</span></td>
-                <td class="score-cell" data-row="popliteal" data-score="5" onclick="selectScore(this)"><span class="circled">5</span><br><span class="score-desc">&lt; 90°</span></td>
+                @php $poplitealDescs = ['180°','160°','130°','110°','90°','< 90°']; @endphp
+                @for($i = 0; $i <= 5; $i++)
+                <td class="score-cell" data-row="popliteal" data-score="{{ $i }}" onclick="selectScore(this)">
+                    <img src="{{ asset('images/ballard/nm/nmPoplitealAngle/' . $i . '.png') }}"
+                         alt="Popliteal Angle {{ $i }}" class="nm-img"
+                         onerror="this.style.display='none'">
+                    <span class="circled">{{ $i }}</span><br>
+                    <span class="score-desc">{{ $poplitealDescs[$i] }}</span>
+                </td>
+                @endfor
                 <td id="score-popliteal" style="font-weight:bold;font-size:12pt;text-align:center;">—</td>
             </tr>
+
+            {{-- SCARF SIGN --}}
             <tr>
                 <td class="row-label">Scarf Sign</td>
-                <td class="score-cell" data-row="scarf" data-score="0" onclick="selectScore(this)"><span class="circled">0</span><br><span class="score-desc">Elbow to opposite axilla</span></td>
-                <td class="score-cell" data-row="scarf" data-score="1" onclick="selectScore(this)"><span class="circled">1</span><br><span class="score-desc">Elbow past midline</span></td>
-                <td class="score-cell" data-row="scarf" data-score="2" onclick="selectScore(this)"><span class="circled">2</span><br><span class="score-desc">Elbow at midline</span></td>
-                <td class="score-cell" data-row="scarf" data-score="3" onclick="selectScore(this)"><span class="circled">3</span><br><span class="score-desc">Elbow short of midline</span></td>
-                <td class="score-cell" data-row="scarf" data-score="4" onclick="selectScore(this)"><span class="circled">4</span><br><span class="score-desc">Elbow cannot reach midline</span></td>
-                <td class="score-cell" data-row="scarf" data-score="5" onclick="selectScore(this)" style="background:#f9fafb;opacity:.4;cursor:not-allowed;pointer-events:none;"></td>
+                @php $scarfDescs = ['Elbow to opposite axilla','Elbow past midline','Elbow at midline','Elbow short of midline','Elbow cannot reach midline']; @endphp
+                @for($i = 0; $i <= 4; $i++)
+                <td class="score-cell" data-row="scarf" data-score="{{ $i }}" onclick="selectScore(this)">
+                    <img src="{{ asset('images/ballard/nm/nmScarfSign/' . $i . '.png') }}"
+                         alt="Scarf Sign {{ $i }}" class="nm-img"
+                         onerror="this.style.display='none'">
+                    <span class="circled">{{ $i }}</span><br>
+                    <span class="score-desc">{{ $scarfDescs[$i] }}</span>
+                </td>
+                @endfor
+                <td style="background:#f9fafb;opacity:.4;cursor:not-allowed;"></td>
                 <td id="score-scarf" style="font-weight:bold;font-size:12pt;text-align:center;">—</td>
             </tr>
+
+            {{-- HEEL TO EAR --}}
             <tr>
                 <td class="row-label">Heel to Ear</td>
-                <td class="score-cell" data-row="heel" data-score="0" onclick="selectScore(this)"><span class="circled">0</span><br><span class="score-desc">Touches ear, full extension</span></td>
-                <td class="score-cell" data-row="heel" data-score="1" onclick="selectScore(this)"><span class="circled">1</span><br><span class="score-desc">Near ear</span></td>
-                <td class="score-cell" data-row="heel" data-score="2" onclick="selectScore(this)"><span class="circled">2</span><br><span class="score-desc">Near face</span></td>
-                <td class="score-cell" data-row="heel" data-score="3" onclick="selectScore(this)"><span class="circled">3</span><br><span class="score-desc">Near umbilicus</span></td>
-                <td class="score-cell" data-row="heel" data-score="4" onclick="selectScore(this)"><span class="circled">4</span><br><span class="score-desc">Near knee</span></td>
-                <td class="score-cell" data-row="heel" data-score="5" onclick="selectScore(this)" style="background:#f9fafb;opacity:.4;cursor:not-allowed;pointer-events:none;"></td>
+                @php $heelDescs = ['Touches ear, full extension','Near ear','Near face','Near umbilicus','Near knee']; @endphp
+                @for($i = 0; $i <= 4; $i++)
+                <td class="score-cell" data-row="heel" data-score="{{ $i }}" onclick="selectScore(this)">
+                    <img src="{{ asset('images/ballard/nm/nmHeelToEar/' . $i . '.png') }}"
+                         alt="Heel to Ear {{ $i }}" class="nm-img"
+                         onerror="this.style.display='none'">
+                    <span class="circled">{{ $i }}</span><br>
+                    <span class="score-desc">{{ $heelDescs[$i] }}</span>
+                </td>
+                @endfor
+                <td style="background:#f9fafb;opacity:.4;cursor:not-allowed;"></td>
                 <td id="score-heel" style="font-weight:bold;font-size:12pt;text-align:center;">—</td>
             </tr>
+
         </tbody>
     </table>
 
@@ -429,7 +580,6 @@
         </div>
 
         <div class="right-col">
-            {{-- MATURITY RATING TABLE --}}
             <div>
                 <div class="sec-h">Maturity Rating</div>
                 <table class="maturity-table">
@@ -457,34 +607,53 @@
 <script>
     const scores = {};
 
-    const maturityMap = [
-        { min:-10, max:10,  weeks:20 },
-        { min:10,  max:15,  weeks:28 },
-        { min:15,  max:20,  weeks:30 },
-        { min:20,  max:25,  weeks:32 },
-        { min:25,  max:30,  weeks:34 },
-        { min:30,  max:35,  weeks:36 },
-        { min:35,  max:40,  weeks:38 },
-        { min:40,  max:45,  weeks:40 },
-        { min:45,  max:50,  weeks:42 },
-        { min:50,  max:99,  weeks:44 },
-    ];
+    // Mirror the PHP $gaLookup table exactly — key = score, value = weeks.
+    // Uses the same "closest key" logic as the PHP lookupGa() method so the
+    // print view always shows the same GA as the Livewire exam form.
+    const gaLookup = {
+        '-10': 20,
+        '-5':  22,
+        '0':   24,
+        '5':   26,
+        '10':  28,
+        '15':  30,
+        '20':  32,
+        '25':  34,
+        '30':  36,
+        '35':  38,
+        '40':  40,
+        '45':  42,
+        '50':  44,
+    };
 
     function getWeeks(total) {
-        for (const m of maturityMap) {
-            if (total >= m.min && total < m.max) return m.weeks;
+        const keys = Object.keys(gaLookup).map(Number).sort((a, b) => a - b);
+        const minKey = keys[0];
+        const maxKey = keys[keys.length - 1];
+
+        // Clamp to table bounds
+        if (total <= minKey) return gaLookup[minKey];
+        if (total >= maxKey) return gaLookup[maxKey];
+
+        // Find the closest key — same logic as PHP collect()->sortBy(abs diff)->first()
+        let closestKey = keys[0];
+        let closestDiff = Math.abs(keys[0] - total);
+        for (const k of keys) {
+            const diff = Math.abs(k - total);
+            if (diff < closestDiff) {
+                closestDiff = diff;
+                closestKey  = k;
+            }
         }
-        return null;
+        return gaLookup[closestKey];
     }
 
     function selectScore(cell) {
         const row   = cell.dataset.row;
         const score = parseInt(cell.dataset.score);
 
-        // Deselect all cells in this row
         document.querySelectorAll(`[data-row="${row}"]`).forEach(c => c.classList.remove('selected'));
 
-        // If same cell clicked again, deselect (toggle)
         if (scores[row] === score) {
             delete scores[row];
         } else {
@@ -492,7 +661,6 @@
             scores[row] = score;
         }
 
-        // Update row score display
         const scoreCell = document.getElementById('score-' + row);
         if (scoreCell) scoreCell.textContent = scores[row] !== undefined ? scores[row] : '—';
 
@@ -505,10 +673,8 @@
         const allRows = [...neuroRows, ...physicalRows];
 
         let total = 0;
-        let hasAll = true;
         allRows.forEach(r => {
             if (scores[r] !== undefined) total += scores[r];
-            else hasAll = false;
         });
 
         const totalEl = document.getElementById('total-score');
@@ -526,7 +692,6 @@
         const weeks = getWeeks(total);
         weeksEl.textContent = weeks ? weeks + ' weeks' : '? weeks';
 
-        // Highlight maturity table row
         rows.forEach(r => {
             const s = parseInt(r.dataset.score);
             r.classList.toggle('highlight', s <= total && s + 5 > total);
@@ -534,7 +699,7 @@
     }
 </script>
 
-{{-- ══ AUTO-POPULATE SAVED SCORES FROM DATABASE ══════════════════════════ --}}
+{{-- AUTO-POPULATE SAVED SCORES FROM DATABASE --}}
 @php
     $exam1 = isset($visit)
         ? \App\Models\NicuBallardExam::where('visit_id', $visit->id)

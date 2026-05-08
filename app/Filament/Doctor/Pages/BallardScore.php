@@ -26,12 +26,6 @@ class BallardScore extends Page
     public ?int $examNumber       = 1;
 
     // ── Neuromuscular Maturity ────────────────────────────────────────────────
-    // Posture:         0–4
-    // Square Window:   0–5
-    // Arm Recoil:      0–4
-    // Popliteal Angle: 0–5
-    // Scarf Sign:      0–4
-    // Heel to Ear:     0–5
     public ?int $nmPosture        = null;
     public ?int $nmSquareWindow   = null;
     public ?int $nmArmRecoil      = null;
@@ -40,18 +34,12 @@ class BallardScore extends Page
     public ?int $nmHeelToEar      = null;
 
     // ── Physical Maturity ─────────────────────────────────────────────────────
-    // Skin:            0–5
-    // Lanugo:          0–4
-    // Plantar Surface: 0–4
-    // Breast:          0–5
-    // Eye/Ear:         0–5
-    // Genitals:        0–5
     public ?int $pmSkin           = null;
     public ?int $pmLanugo         = null;
     public ?int $pmPlantarSurface = null;
     public ?int $pmBreast         = null;
     public ?int $pmEyeEar         = null;
-    public ?int $pmGenitalsMale = null;
+    public ?int $pmGenitalsMale   = null;
     public ?int $pmGenitalsFemale = null;
 
     // ── Exam Metadata ─────────────────────────────────────────────────────────
@@ -60,6 +48,15 @@ class BallardScore extends Page
     // ── Calculated ────────────────────────────────────────────────────────────
     public ?int $totalScore        = null;
     public ?int $estimatedGaWeeks  = null;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Helper: normalise the patient sex value so both 'M' and 'Male' work
+    // ─────────────────────────────────────────────────────────────────────────
+    protected function isMale(): bool
+    {
+        $sex = strtolower(trim($this->visit->patient->sex ?? ''));
+        return $sex === 'm' || $sex === 'male';
+    }
 
     public function mount(): void
     {
@@ -80,27 +77,21 @@ class BallardScore extends Page
             return;
         }
 
-        // Check if we are creating a 2nd exam
         $isSecondExam = request()->query('exam') == '2';
 
         if ($isSecondExam) {
-            // For 2nd exam, DO NOT load 1st exam data
             $this->examNumber = 2;
-            // Leave all scores as null (empty form)
-            // Set default exam datetime
             $birthDt = $this->visit->nicuAdmission?->date_time_of_birth;
             $this->examDatetime = $birthDt
                 ? Carbon::parse($birthDt)->addHours(48)->format('Y-m-d\TH:i')
                 : now()->format('Y-m-d\TH:i');
         } else {
-            // For 1st exam, load existing data if available
             $firstExam = $this->visit->ballardExams->firstWhere('exam_number', 1);
             if ($firstExam) {
-                $this->examNumber = $firstExam->exam_number;
+                $this->examNumber  = $firstExam->exam_number;
                 $this->ballardExam = $firstExam;
                 $this->loadExamData($firstExam);
             } else {
-                // New 1st exam - set default datetime
                 $birthDt = $this->visit->nicuAdmission?->date_time_of_birth;
                 $this->examDatetime = $birthDt
                     ? Carbon::parse($birthDt)->addHours(24)->format('Y-m-d\TH:i')
@@ -122,17 +113,18 @@ class BallardScore extends Page
         $this->pmPlantarSurface = $exam->pm_plantar_surface;
         $this->pmBreast         = $exam->pm_breast;
         $this->pmEyeEar         = $exam->pm_eye_ear;
-        $isMale = $this->visit->patient->sex === 'M';
-        if ($isMale) {
-            $this->pmGenitalsMale = $exam->pm_genitals;
+
+        // Use the shared isMale() helper so the sex value is normalised
+        if ($this->isMale()) {
+            $this->pmGenitalsMale   = $exam->pm_genitals;
         } else {
             $this->pmGenitalsFemale = $exam->pm_genitals;
         }
+
         $this->examDatetime     = $exam->exam_datetime?->format('Y-m-d\TH:i');
         $this->totalScore       = $exam->total_score;
         $this->estimatedGaWeeks = $exam->estimated_ga_weeks;
 
-        // Recompute subtotals
         $this->calculateScore();
     }
 
@@ -140,19 +132,10 @@ class BallardScore extends Page
     public function updated(string $property): void
     {
         $scoreFields = [
-            'nmPosture',
-            'nmSquareWindow',
-            'nmArmRecoil',
-            'nmPoplitealAngle',
-            'nmScarfSign',
-            'nmHeelToEar',
-            'pmSkin',
-            'pmLanugo',
-            'pmPlantarSurface',
-            'pmBreast',
-            'pmEyeEar',
-            'pmGenitalsMale',
-            'pmGenitalsFemale',
+            'nmPosture', 'nmSquareWindow', 'nmArmRecoil',
+            'nmPoplitealAngle', 'nmScarfSign', 'nmHeelToEar',
+            'pmSkin', 'pmLanugo', 'pmPlantarSurface',
+            'pmBreast', 'pmEyeEar', 'pmGenitalsMale', 'pmGenitalsFemale',
         ];
 
         if (in_array($property, $scoreFields)) {
@@ -162,8 +145,8 @@ class BallardScore extends Page
 
     public function calculateScore(): void
     {
-        $isMale = $this->visit->patient->sex === 'M';
-        $genitalsScore = $isMale ? $this->pmGenitalsMale : $this->pmGenitalsFemale;
+        $genitalsScore = $this->isMale() ? $this->pmGenitalsMale : $this->pmGenitalsFemale;
+
         $criteria = [
             $this->nmPosture,
             $this->nmSquareWindow,
@@ -198,23 +181,17 @@ class BallardScore extends Page
         }
     }
 
-    /**
-     * Look up GA weeks from Ballard score using the official maturity rating table.
-     * Interpolates linearly between anchor points.
-     */
     protected function lookupGa(int $score): ?int
     {
         $lookup = NicuBallardExam::$gaLookup;
         $keys   = array_keys($lookup);
 
-        // Clamp to table bounds
         $minKey = min($keys);
         $maxKey = max($keys);
 
         if ($score <= $minKey) return $lookup[$minKey];
         if ($score >= $maxKey) return $lookup[$maxKey];
 
-        // Find closest key
         $closestKey = collect($keys)
             ->sortBy(fn($key) => abs($key - $score))
             ->first();
@@ -224,25 +201,18 @@ class BallardScore extends Page
 
     public function save(): void
     {
-        $isMale = $this->visit->patient->sex === 'M';
-        $genitalsScore = $isMale ? $this->pmGenitalsMale : $this->pmGenitalsFemale;
+        $genitalsScore = $this->isMale() ? $this->pmGenitalsMale : $this->pmGenitalsFemale;
 
-        $criteria = [
-            'nmPosture',
-            'nmSquareWindow',
-            'nmArmRecoil',
-            'nmPoplitealAngle',
-            'nmScarfSign',
-            'nmHeelToEar',
-            'pmSkin',
-            'pmLanugo',
-            'pmPlantarSurface',
-            'pmBreast',
-            'pmEyeEar',
-            $isMale ? 'pmGenitalsMale' : 'pmGenitalsFemale',
+        // Build the list of fields to validate — use the correct genitals field
+        $criteriaFields = [
+            'nmPosture', 'nmSquareWindow', 'nmArmRecoil',
+            'nmPoplitealAngle', 'nmScarfSign', 'nmHeelToEar',
+            'pmSkin', 'pmLanugo', 'pmPlantarSurface',
+            'pmBreast', 'pmEyeEar',
+            $this->isMale() ? 'pmGenitalsMale' : 'pmGenitalsFemale',
         ];
 
-        foreach ($criteria as $field) {
+        foreach ($criteriaFields as $field) {
             if ($this->{$field} === null) {
                 Notification::make()
                     ->title('Please fill in all 12 criteria before saving.')
@@ -264,20 +234,13 @@ class BallardScore extends Page
                 ->diffInHours(Carbon::parse($this->examDatetime));
         }
 
-        $allValues  = [
-            $this->nmPosture,
-            $this->nmSquareWindow,
-            $this->nmArmRecoil,
-            $this->nmPoplitealAngle,
-            $this->nmScarfSign,
-            $this->nmHeelToEar,
-            $this->pmSkin,
-            $this->pmLanugo,
-            $this->pmPlantarSurface,
-            $this->pmBreast,
-            $this->pmEyeEar,
-            $genitalsScore,
+        $allValues = [
+            $this->nmPosture, $this->nmSquareWindow, $this->nmArmRecoil,
+            $this->nmPoplitealAngle, $this->nmScarfSign, $this->nmHeelToEar,
+            $this->pmSkin, $this->pmLanugo, $this->pmPlantarSurface,
+            $this->pmBreast, $this->pmEyeEar, $genitalsScore,
         ];
+
         $finalTotal = (int) array_sum($allValues);
         $finalGa    = $this->lookupGa($finalTotal);
 
@@ -336,8 +299,8 @@ class BallardScore extends Page
                 ->success()
                 ->send();
 
-            // Redirect back to Patient Chart with Ballard tab active
             $this->redirect('/doctor/patient-chart?visitId=' . $this->visitId . '&tab=ballard');
+
         } catch (\Exception $e) {
             DB::rollBack();
             Notification::make()
@@ -361,8 +324,9 @@ class BallardScore extends Page
 
     public function pmSubtotal(): int
     {
-        $isMale = $this->visit->patient->sex === 'M';
-        $genitals = $isMale ? ($this->pmGenitalsMale ?? 0) : ($this->pmGenitalsFemale ?? 0);
+        $genitals = $this->isMale()
+            ? ($this->pmGenitalsMale ?? 0)
+            : ($this->pmGenitalsFemale ?? 0);
 
         return (int) (
             ($this->pmSkin ?? 0) + ($this->pmLanugo ?? 0) +

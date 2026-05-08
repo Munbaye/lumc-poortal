@@ -1,7 +1,6 @@
 <x-filament-panels::page>
 
 @php
-    $nurse = auth()->user();
 @endphp
 
 <style>
@@ -20,56 +19,8 @@
     --np-rgb:   190,18,60;
 }
 
-/* ── Hero header ───────────────────────────────────────────── */
-.dash-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    margin-bottom: 24px;
-    padding: 22px 26px;
-    background: linear-gradient(135deg, #f43f5e 0%, #be123c 55%, #881337 100%);
-    border-radius: 16px;
-    position: relative;
-    overflow: hidden;
-}
-.dash-header::before {
-    content: '';
-    position: absolute;
-    width: 300px; height: 300px;
-    background: rgba(255,255,255,.06);
-    border-radius: 50%;
-    top: -80px; right: -60px;
-    pointer-events: none;
-}
-.dash-header-icon {
-    position: absolute; right: 26px; top: 50%;
-    transform: translateY(-50%);
-    opacity: .08; pointer-events: none;
-    color: #fff;
-}
-.dash-left { position: relative; z-index: 1; }
-.dash-eyebrow { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
-.eyebrow-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: rgba(255,255,255,.7);
-    animation: blink 2.4s ease-in-out infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
-.eyebrow-label { font-size:.67rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:rgba(255,255,255,.75); }
-.dash-title { font-size:1.55rem; font-weight:800; color:#fff; margin:0 0 5px; letter-spacing:-.025em; line-height:1.2; }
-.dash-tagline { font-size:.78rem; color:rgba(255,255,255,.72); display:flex; align-items:center; gap:6px; }
-
-.dash-right {
-    position: relative; z-index: 1;
-    display: flex; flex-direction: column;
-    align-items: flex-end; gap: 5px; flex-shrink: 0;
-}
-.dash-nurse-name { font-size:.9rem; font-weight:700; color:#fff; }
-.dash-clock { font-size:.68rem; color:rgba(255,255,255,.62); font-variant-numeric:tabular-nums; }
-
 /* ── Stat cards ────────────────────────────────────────────── */
-.stats-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:13px; margin-bottom:22px; }
+.stats-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:13px; margin-bottom:10px; }
 .stat-card { border-radius:14px; padding:18px 20px; display:flex; align-items:center; gap:16px; border:1px solid; transition:box-shadow .18s,transform .18s; }
 html:not(.dark) .stat-card { background:#fff; border-color:#e5e7eb; box-shadow:0 1px 4px rgba(0,0,0,.05); }
 html.dark       .stat-card { background:#0f172a; border-color:#1e293b; }
@@ -98,7 +49,7 @@ html:not(.dark) .stat-sub { color:#6b7280; }
 html.dark       .stat-sub { color:#475569; }
 
 /* ── Filter bar ────────────────────────────────────────────── */
-.filter-bar { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+.filter-bar { display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap; }
 
 .view-toggle { display:inline-flex; border-radius:10px; padding:3px; border:1px solid; }
 html:not(.dark) .view-toggle { background:#f9fafb; border-color:#e5e7eb; }
@@ -238,7 +189,7 @@ html.dark       .btn-filter.is-active { border-color:var(--npa); color:#fda4af; 
 html.dark .btn-filter .f-count { background:var(--npa); }
 
 /* ── Filter panel ──────────────────────────────────────────── */
-.filter-panel-wrap { position:relative; display:flex; justify-content:flex-end; }
+.filter-panel-wrap { position:relative; display:flex; justify-content:flex-end; min-height:0; margin-bottom:0; }
 .filter-panel {
     position:absolute; right:0; top:6px; z-index:100;
     width:300px; background:#fff; border:1px solid #e5e7eb;
@@ -268,7 +219,7 @@ html.dark       .fp-sel:focus, html.dark       .fp-date:focus { border-color:var
 html.dark .fp-active-range { color:#fda4af; background:#4c0519; }
 
 /* ── Active filter badges ──────────────────────────────────── */
-.active-filter-bar { display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:8px 0 4px; font-size:.78rem; }
+.active-filter-bar { display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:4px 0 6px; font-size:.78rem; }
 .af-label { color:#6b7280; font-weight:600; white-space:nowrap; font-size:.75rem; }
 html.dark .af-label { color:#475569; }
 .af-badge { display:inline-flex; align-items:center; gap:4px; background:var(--np-light); color:var(--np-dark); border:1px solid var(--np-mid); border-radius:9999px; padding:2px 10px; font-size:.7rem; font-weight:700; white-space:nowrap; }
@@ -282,38 +233,12 @@ html.dark .pending-clerk-badge { background:#1c1400; color:#fde047; }
 
 @media(max-width:768px) {
     .stats-bar { grid-template-columns:1fr; }
-    .dash-header { flex-direction:column; gap:12px; padding:16px; }
-    .dash-header-icon { display:none; }
-    .dash-right { align-items:flex-start; flex-direction:row; flex-wrap:wrap; gap:8px; }
     .filter-bar { flex-direction:column; align-items:stretch; }
     .search-wrap { min-width:unset; width:100%; }
     .patients-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
     .patients-table { min-width:600px; }
 }
 </style>
-
-{{-- ══ HERO HEADER ══ --}}
-<div class="dash-header">
-    <div class="dash-left">
-        <div class="dash-eyebrow">
-            <div class="eyebrow-dot"></div>
-            <span class="eyebrow-label">Active · LUMC Portal</span>
-        </div>
-        <h1 class="dash-title">Nurse Dashboard</h1>
-        <p class="dash-tagline">
-            <x-heroicon-o-building-office-2 class="w-4 h-4" style="color:rgba(255,255,255,.8);" />
-            Nursing Services · Patient Care
-        </p>
-    </div>
-    <div class="dash-right">
-        <span class="dash-nurse-name">{{ $nurse->name ?? 'Nurse' }}</span>
-        <span class="dash-clock" id="nurse-clock">{{ now()->timezone('Asia/Manila')->format('D, M j · H:i') }}</span>
-    </div>
-    {{-- Decorative background icon --}}
-    <div class="dash-header-icon">
-        <x-heroicon-o-building-office-2 style="width:72px;height:72px;" />
-    </div>
-</div>
 
 {{-- ══ STAT CARDS ══ --}}
 <div class="stats-bar">
@@ -359,281 +284,286 @@ html.dark .pending-clerk-badge { background:#1c1400; color:#fde047; }
     </div>
 </div>
 
-{{-- ══ FILTER BAR ══ --}}
-<div class="filter-bar">
-    <div class="view-toggle">
-        <button wire:click="$set('viewFilter','admitted')" type="button"
-                class="vt-btn {{ $viewFilter === 'admitted' ? 'active' : '' }}">
-            <x-heroicon-o-building-office-2 class="w-4 h-4" />
-            Admitted
+{{-- ══ FILTER + PANEL + ACTIVE FILTERS + TABLE (grouped to kill Filament spacing) ══ --}}
+<div style="display:flex; flex-direction:column; gap:6px;">
+
+    {{-- ══ FILTER BAR ══ --}}
+    <div class="filter-bar">
+        <div class="view-toggle">
+            <button wire:click="$set('viewFilter','admitted')" type="button"
+                    class="vt-btn {{ $viewFilter === 'admitted' ? 'active' : '' }}">
+                <x-heroicon-o-building-office-2 class="w-4 h-4" />
+                Admitted
+            </button>
+            <button wire:click="$set('viewFilter','discharged')" type="button"
+                    class="vt-btn {{ $viewFilter === 'discharged' ? 'active' : '' }}">
+                <x-heroicon-o-check-circle class="w-4 h-4" />
+                Discharged
+            </button>
+            <button wire:click="$set('viewFilter','all')" type="button"
+                    class="vt-btn {{ $viewFilter === 'all' ? 'active' : '' }}">
+                <x-heroicon-o-folder-open class="w-4 h-4" />
+                All Patients
+            </button>
+        </div>
+        <div class="search-wrap">
+            <span class="search-icon">
+                <x-heroicon-o-magnifying-glass style="width:15px;height:15px;" />
+            </span>
+            <input type="text" wire:model.live.debounce.300ms="search"
+                   placeholder="Search by patient name or case number…"
+                   class="search-input">
+        </div>
+        <button wire:click="toggleFilters" type="button"
+                class="btn-filter {{ $showFilters ? 'is-active' : '' }}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/></svg>
+            Filters
+            @if($this->activeFilterCount > 0)
+            <span class="f-count">{{ $this->activeFilterCount }}</span>
+            @endif
         </button>
-        <button wire:click="$set('viewFilter','discharged')" type="button"
-                class="vt-btn {{ $viewFilter === 'discharged' ? 'active' : '' }}">
-            <x-heroicon-o-check-circle class="w-4 h-4" />
-            Discharged
+        @if($search)
+        <button wire:click="$set('search','')" type="button"
+                style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.78rem;font-weight:600;display:inline-flex;align-items:center;gap:4px;">
+            <x-heroicon-o-x-mark style="width:13px;height:13px;" /> Clear
         </button>
-        <button wire:click="$set('viewFilter','all')" type="button"
-                class="vt-btn {{ $viewFilter === 'all' ? 'active' : '' }}">
-            <x-heroicon-o-folder-open class="w-4 h-4" />
-            All Patients
-        </button>
-    </div>
-    <div class="search-wrap">
-        <span class="search-icon">
-            <x-heroicon-o-magnifying-glass style="width:15px;height:15px;" />
-        </span>
-        <input type="text" wire:model.live.debounce.300ms="search"
-               placeholder="Search by patient name or case number…"
-               class="search-input">
-    </div>
-    <button wire:click="toggleFilters" type="button"
-            class="btn-filter {{ $showFilters ? 'is-active' : '' }}">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/></svg>
-        Filters
-        @if($this->activeFilterCount > 0)
-        <span class="f-count">{{ $this->activeFilterCount }}</span>
         @endif
-    </button>
-    @if($search)
-    <button wire:click="$set('search','')" type="button"
-            style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.78rem;font-weight:600;display:inline-flex;align-items:center;gap:4px;">
-        <x-heroicon-o-x-mark style="width:13px;height:13px;" /> Clear
-    </button>
-    @endif
-</div>
+    </div>
 
-{{-- ══ FILTER PANEL ══ --}}
-<div class="filter-panel-wrap">
-    @if($showFilters)
-    <div class="filter-panel">
-        <div class="fp-head">
-            <span class="fp-head-title">Filters</span>
-            <button type="button" wire:click="clearFilters" class="fp-reset">Reset</button>
-        </div>
-        <div class="fp-field">
-            <label class="fp-label">Sex</label>
-            <select wire:model.live="sexFilter" class="fp-sel">
-                <option value="">All</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-            </select>
-        </div>
-        <div class="fp-field">
-            <label class="fp-label">Service</label>
-            <select wire:model.live="serviceFilter" class="fp-sel">
-                <option value="">All Services</option>
-                @foreach($this->serviceOptions as $svc)
-                <option value="{{ $svc }}">{{ $svc }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="fp-field">
-            <label class="fp-label">Date Range (Registration)</label>
-            <div class="fp-date-row">
-                <div>
-                    <div class="fp-date-sub">From</div>
-                    <input type="date" wire:model.live="dateFrom" class="fp-date">
-                </div>
-                <div>
-                    <div class="fp-date-sub">Until</div>
-                    <input type="date" wire:model.live="dateUntil" class="fp-date">
-                </div>
+    {{-- ══ FILTER PANEL ══ --}}
+    <div class="filter-panel-wrap">
+        @if($showFilters)
+        <div class="filter-panel">
+            <div class="fp-head">
+                <span class="fp-head-title">Filters</span>
+                <button type="button" wire:click="clearFilters" class="fp-reset">Reset</button>
             </div>
-            @if($dateFrom || $dateUntil)
-            <div class="fp-active-range">
-                <x-heroicon-o-calendar-days style="width:13px;height:13px;" />
-                @if($dateFrom && $dateUntil)
-                    {{ \Carbon\Carbon::parse($dateFrom)->format('M j') }} – {{ \Carbon\Carbon::parse($dateUntil)->format('M j, Y') }}
-                @elseif($dateFrom)
-                    From {{ \Carbon\Carbon::parse($dateFrom)->format('M j, Y') }}
-                @else
-                    Until {{ \Carbon\Carbon::parse($dateUntil)->format('M j, Y') }}
+            <div class="fp-field">
+                <label class="fp-label">Sex</label>
+                <select wire:model.live="sexFilter" class="fp-sel">
+                    <option value="">All</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+            <div class="fp-field">
+                <label class="fp-label">Service</label>
+                <select wire:model.live="serviceFilter" class="fp-sel">
+                    <option value="">All Services</option>
+                    @foreach($this->serviceOptions as $svc)
+                    <option value="{{ $svc }}">{{ $svc }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="fp-field">
+                <label class="fp-label">Date Range (Registration)</label>
+                <div class="fp-date-row">
+                    <div>
+                        <div class="fp-date-sub">From</div>
+                        <input type="date" wire:model.live="dateFrom" class="fp-date">
+                    </div>
+                    <div>
+                        <div class="fp-date-sub">Until</div>
+                        <input type="date" wire:model.live="dateUntil" class="fp-date">
+                    </div>
+                </div>
+                @if($dateFrom || $dateUntil)
+                <div class="fp-active-range">
+                    <x-heroicon-o-calendar-days style="width:13px;height:13px;" />
+                    @if($dateFrom && $dateUntil)
+                        {{ \Carbon\Carbon::parse($dateFrom)->format('M j') }} – {{ \Carbon\Carbon::parse($dateUntil)->format('M j, Y') }}
+                    @elseif($dateFrom)
+                        From {{ \Carbon\Carbon::parse($dateFrom)->format('M j, Y') }}
+                    @else
+                        Until {{ \Carbon\Carbon::parse($dateUntil)->format('M j, Y') }}
+                    @endif
+                </div>
                 @endif
             </div>
-            @endif
         </div>
+        @endif
+    </div>
+
+    {{-- ══ ACTIVE FILTERS ══ --}}
+    @if($this->hasActiveFilters)
+    <div class="active-filter-bar">
+        <span class="af-label">Active filters:</span>
+        @if($sexFilter)
+        <span class="af-badge">Sex: {{ $sexFilter }} <button wire:click="$set('sexFilter','')">×</button></span>
+        @endif
+        @if($serviceFilter)
+        <span class="af-badge">Service: {{ $serviceFilter }} <button wire:click="$set('serviceFilter','')">×</button></span>
+        @endif
+        @if($dateFrom)
+        <span class="af-badge">From: {{ \Carbon\Carbon::parse($dateFrom)->format('M j, Y') }} <button wire:click="$set('dateFrom','')">×</button></span>
+        @endif
+        @if($dateUntil)
+        <span class="af-badge">Until: {{ \Carbon\Carbon::parse($dateUntil)->format('M j, Y') }} <button wire:click="$set('dateUntil','')">×</button></span>
+        @endif
+        <button wire:click="clearFilters" class="af-clear-all">Clear all ×</button>
     </div>
     @endif
-</div>
 
-{{-- ══ ACTIVE FILTERS ══ --}}
-@if($this->hasActiveFilters)
-<div class="active-filter-bar">
-    <span class="af-label">Active filters:</span>
-    @if($sexFilter)
-    <span class="af-badge">Sex: {{ $sexFilter }} <button wire:click="$set('sexFilter','')">×</button></span>
-    @endif
-    @if($serviceFilter)
-    <span class="af-badge">Service: {{ $serviceFilter }} <button wire:click="$set('serviceFilter','')">×</button></span>
-    @endif
-    @if($dateFrom)
-    <span class="af-badge">From: {{ \Carbon\Carbon::parse($dateFrom)->format('M j, Y') }} <button wire:click="$set('dateFrom','')">×</button></span>
-    @endif
-    @if($dateUntil)
-    <span class="af-badge">Until: {{ \Carbon\Carbon::parse($dateUntil)->format('M j, Y') }} <button wire:click="$set('dateUntil','')">×</button></span>
-    @endif
-    <button wire:click="clearFilters" class="af-clear-all">Clear all ×</button>
-</div>
-@endif
-
-{{-- ══ PATIENTS TABLE ══ --}}
-<div class="patients-table-wrap">
-    @if($this->admittedPatients->count() > 0)
-    <table class="patients-table">
-        <thead>
-            <tr>
-                <th style="width:32px;">#</th>
-                <th>Patient</th>
-                @if($viewFilter === 'all' || $viewFilter === 'discharged')
-                    <th>Entry</th>
-                    <th>Status</th>
-                @endif
-                <th>Service</th>
-                <th>Diagnosis</th>
-                <th>Physician</th>
-                @if($viewFilter === 'admitted')
-                    <th style="text-align:center;">Pending Orders</th>
-                @endif
-                <th>{{ $viewFilter === 'admitted' ? 'Admitted' : ($viewFilter === 'discharged' ? 'Discharged' : 'Registered') }}</th>
-                <th style="width:120px;"></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($this->admittedPatients as $i => $visit)
-            @php
-                $pendingCount = $visit->doctorsOrders->count();
-                $statusLabel  = match($visit->status) {
-                    'vitals_done' => 'Vitals Done',
-                    default       => ucfirst(str_replace('_', ' ', $visit->status)),
-                };
-                $statusClass = match($visit->status) {
-                    'admitted'    => 's-admitted',
-                    'discharged'  => 's-discharged',
-                    'assessed'    => 's-assessed',
-                    'referred'    => 's-referred',
-                    'vitals_done' => 's-vitals',
-                    default       => 's-registered',
-                };
-            @endphp
-            <tr wire:click="openChart({{ $visit->id }})" wire:key="row-{{ $visit->id }}">
-                <td style="font-size:.75rem;font-weight:600;color:#9ca3af;">
-                    {{ $this->admittedPatients->firstItem() + $i }}
-                </td>
-                <td>
-                    <p class="pt-name">{{ $visit->patient->full_name }}</p>
-                    <p class="pt-case">{{ $visit->patient->case_no }}</p>
-                    <p style="font-size:.7rem;color:#9ca3af;margin-top:1px;">
-                        {{ $visit->patient->age_display }} · {{ $visit->patient->sex }}
-                    </p>
-                </td>
-                @if($viewFilter === 'all' || $viewFilter === 'discharged')
-                <td>
-                    @if($visit->visit_type === 'ER')
-                        <span class="type-badge type-er">
-                            <x-heroicon-o-truck style="width:11px;height:11px;" /> ER
-                        </span>
-                    @else
-                        <span class="type-badge type-opd">
-                            <x-heroicon-o-clipboard-document-list style="width:11px;height:11px;" /> OPD
-                        </span>
+    {{-- ══ PATIENTS TABLE ══ --}}
+    <div class="patients-table-wrap">
+        @if($this->admittedPatients->count() > 0)
+        <table class="patients-table">
+            <thead>
+                <tr>
+                    <th style="width:32px;">#</th>
+                    <th>Patient</th>
+                    @if($viewFilter === 'all' || $viewFilter === 'discharged')
+                        <th>Entry</th>
+                        <th>Status</th>
                     @endif
-                </td>
-                <td><span class="status-pill {{ $statusClass }}">{{ $statusLabel }}</span></td>
-                @endif
-                <td>
-                    @if($visit->admitted_service)
-                        <span class="svc-badge">{{ $visit->admitted_service }}</span>
-                    @else
-                        <span style="color:#9ca3af;">—</span>
-                    @endif
-                    @if($visit->payment_class)
-                    <br><span class="pay-badge {{ $visit->payment_class === 'Private' ? 'pay-private' : 'pay-charity' }}" style="margin-top:3px;">
-                        {{ $visit->payment_class }}
-                    </span>
-                    @endif
-                </td>
-                <td style="max-width:200px;">
-                    <p style="font-size:.83rem;line-height:1.4;">
-                        {{ \Str::limit($visit->admitting_diagnosis ?? $visit->medicalHistory?->diagnosis ?? '—', 50) }}
-                    </p>
-                </td>
-                <td style="font-size:.8rem;color:#6b7280;">
-                    @if($visit->medicalHistory?->doctor)
-                        Dr. {{ $visit->medicalHistory->doctor->name }}
-                    @else
-                        <span style="color:#9ca3af;">—</span>
-                    @endif
-                </td>
-                @if($viewFilter === 'admitted')
-                <td style="text-align:center;">
-                    <span class="orders-badge {{ $pendingCount > 0 ? 'has-orders' : 'no-orders' }}">
-                        @if($pendingCount > 0)
-                            {{ $pendingCount }}
-                        @else
-                            <x-heroicon-o-check style="width:12px;height:12px;" />
-                        @endif
-                    </span>
-                </td>
-                @endif
-                <td>
+                    <th>Service</th>
+                    <th>Diagnosis</th>
+                    <th>Physician</th>
                     @if($viewFilter === 'admitted')
-                        @if($visit->clerk_admitted_at)
-                            <p class="adm-time">{{ $visit->clerk_admitted_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
-                            <p class="adm-ago">{{ $visit->clerk_admitted_at->diffForHumans() }}</p>
-                        @else
-                            <p class="adm-time">{{ $visit->doctor_admitted_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
-                            <p style="margin-top:2px;">
-                                <span class="pending-clerk-badge">
-                                    <x-heroicon-o-clock style="width:11px;height:11px;" />
-                                    Pending Clerk
-                                </span>
-                            </p>
-                        @endif
-                    @elseif($viewFilter === 'discharged')
-                        @if($visit->discharged_at)
-                            <p class="adm-time">{{ $visit->discharged_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
-                            <p class="adm-ago">{{ $visit->discharged_at->diffForHumans() }}</p>
-                        @else
-                            <p style="color:#9ca3af;font-size:.78rem;">—</p>
-                        @endif
-                    @else
-                        <p class="adm-time">{{ $visit->registered_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
-                        <p class="adm-ago">{{ $visit->registered_at->diffForHumans() }}</p>
+                        <th style="text-align:center;">Pending Orders</th>
                     @endif
-                </td>
-                <td wire:click.stop>
-                    <button wire:click="openChart({{ $visit->id }})" type="button" class="btn-open-chart">
-                        Open Chart →
-                    </button>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-    <div class="pag-wrap">{{ $this->admittedPatients->links() }}</div>
+                    <th>{{ $viewFilter === 'admitted' ? 'Admitted' : ($viewFilter === 'discharged' ? 'Discharged' : 'Registered') }}</th>
+                    <th style="width:120px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($this->admittedPatients as $i => $visit)
+                @php
+                    $pendingCount = $visit->doctorsOrders->count();
+                    $statusLabel  = match($visit->status) {
+                        'vitals_done' => 'Vitals Done',
+                        default       => ucfirst(str_replace('_', ' ', $visit->status)),
+                    };
+                    $statusClass = match($visit->status) {
+                        'admitted'    => 's-admitted',
+                        'discharged'  => 's-discharged',
+                        'assessed'    => 's-assessed',
+                        'referred'    => 's-referred',
+                        'vitals_done' => 's-vitals',
+                        default       => 's-registered',
+                    };
+                @endphp
+                <tr wire:click="openChart({{ $visit->id }})" wire:key="row-{{ $visit->id }}">
+                    <td style="font-size:.75rem;font-weight:600;color:#9ca3af;">
+                        {{ $this->admittedPatients->firstItem() + $i }}
+                    </td>
+                    <td>
+                        <p class="pt-name">{{ $visit->patient->full_name }}</p>
+                        <p class="pt-case">{{ $visit->patient->case_no }}</p>
+                        <p style="font-size:.7rem;color:#9ca3af;margin-top:1px;">
+                            {{ $visit->patient->age_display }} · {{ $visit->patient->sex }}
+                        </p>
+                    </td>
+                    @if($viewFilter === 'all' || $viewFilter === 'discharged')
+                    <td>
+                        @if($visit->visit_type === 'ER')
+                            <span class="type-badge type-er">
+                                <x-heroicon-o-truck style="width:11px;height:11px;" /> ER
+                            </span>
+                        @else
+                            <span class="type-badge type-opd">
+                                <x-heroicon-o-clipboard-document-list style="width:11px;height:11px;" /> OPD
+                            </span>
+                        @endif
+                    </td>
+                    <td><span class="status-pill {{ $statusClass }}">{{ $statusLabel }}</span></td>
+                    @endif
+                    <td>
+                        @if($visit->admitted_service)
+                            <span class="svc-badge">{{ $visit->admitted_service }}</span>
+                        @else
+                            <span style="color:#9ca3af;">—</span>
+                        @endif
+                        @if($visit->payment_class)
+                        <br><span class="pay-badge {{ $visit->payment_class === 'Private' ? 'pay-private' : 'pay-charity' }}" style="margin-top:3px;">
+                            {{ $visit->payment_class }}
+                        </span>
+                        @endif
+                    </td>
+                    <td style="max-width:200px;">
+                        <p style="font-size:.83rem;line-height:1.4;">
+                            {{ \Str::limit($visit->admitting_diagnosis ?? $visit->medicalHistory?->diagnosis ?? '—', 50) }}
+                        </p>
+                    </td>
+                    <td style="font-size:.8rem;color:#6b7280;">
+                        @if($visit->medicalHistory?->doctor)
+                            Dr. {{ $visit->medicalHistory->doctor->name }}
+                        @else
+                            <span style="color:#9ca3af;">—</span>
+                        @endif
+                    </td>
+                    @if($viewFilter === 'admitted')
+                    <td style="text-align:center;">
+                        <span class="orders-badge {{ $pendingCount > 0 ? 'has-orders' : 'no-orders' }}">
+                            @if($pendingCount > 0)
+                                {{ $pendingCount }}
+                            @else
+                                <x-heroicon-o-check style="width:12px;height:12px;" />
+                            @endif
+                        </span>
+                    </td>
+                    @endif
+                    <td>
+                        @if($viewFilter === 'admitted')
+                            @if($visit->clerk_admitted_at)
+                                <p class="adm-time">{{ $visit->clerk_admitted_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
+                                <p class="adm-ago">{{ $visit->clerk_admitted_at->diffForHumans() }}</p>
+                            @else
+                                <p class="adm-time">{{ $visit->doctor_admitted_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
+                                <p style="margin-top:2px;">
+                                    <span class="pending-clerk-badge">
+                                        <x-heroicon-o-clock style="width:11px;height:11px;" />
+                                        Pending Clerk
+                                    </span>
+                                </p>
+                            @endif
+                        @elseif($viewFilter === 'discharged')
+                            @if($visit->discharged_at)
+                                <p class="adm-time">{{ $visit->discharged_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
+                                <p class="adm-ago">{{ $visit->discharged_at->diffForHumans() }}</p>
+                            @else
+                                <p style="color:#9ca3af;font-size:.78rem;">—</p>
+                            @endif
+                        @else
+                            <p class="adm-time">{{ $visit->registered_at->timezone('Asia/Manila')->format('M j H:i') }}</p>
+                            <p class="adm-ago">{{ $visit->registered_at->diffForHumans() }}</p>
+                        @endif
+                    </td>
+                    <td wire:click.stop>
+                        <button wire:click="openChart({{ $visit->id }})" type="button" class="btn-open-chart">
+                            Open Chart →
+                        </button>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        <div class="pag-wrap">{{ $this->admittedPatients->links() }}</div>
 
-    @else
-    <div class="empty-state">
-        <div class="empty-icon-wrap">
-            <x-heroicon-o-building-office-2 class="w-7 h-7" />
+        @else
+        <div class="empty-state">
+            <div class="empty-icon-wrap">
+                <x-heroicon-o-building-office-2 class="w-7 h-7" />
+            </div>
+            <p class="empty-title">
+                @if($search || $this->hasActiveFilters) No patients match your search or filters
+                @elseif($viewFilter === 'admitted') No admitted patients
+                @elseif($viewFilter === 'discharged') No discharged patients
+                @else No patients found
+                @endif
+            </p>
+            <p class="empty-sub">
+                @if($search || $this->hasActiveFilters) Try adjusting your filters or clearing them.
+                @elseif($viewFilter === 'admitted') Switch to "Discharged" or "All Patients" to see other patients.
+                @elseif($viewFilter === 'discharged') No patients have been discharged yet.
+                @else No patient visits are recorded yet.
+                @endif
+            </p>
         </div>
-        <p class="empty-title">
-            @if($search || $this->hasActiveFilters) No patients match your search or filters
-            @elseif($viewFilter === 'admitted') No admitted patients
-            @elseif($viewFilter === 'discharged') No discharged patients
-            @else No patients found
-            @endif
-        </p>
-        <p class="empty-sub">
-            @if($search || $this->hasActiveFilters) Try adjusting your filters or clearing them.
-            @elseif($viewFilter === 'admitted') Switch to "Discharged" or "All Patients" to see other patients.
-            @elseif($viewFilter === 'discharged') No patients have been discharged yet.
-            @else No patient visits are recorded yet.
-            @endif
-        </p>
+        @endif
     </div>
-    @endif
-</div>
+
+</div>{{-- end grouped wrapper --}}
 
 <script>
 (function () {
