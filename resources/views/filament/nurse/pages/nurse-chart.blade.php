@@ -1827,11 +1827,6 @@ use App\Helpers\WHOGrowthChart;
                 <span style="font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:9999px;white-space:nowrap;{{ $orderCount > 0 ? 'background:#e0f2fe;color:#0369a1;' : 'background:#f3f4f6;color:#6b7280;' }}">
                     {{ $orderCount > 0 ? $orderCount . ' order' . ($orderCount === 1 ? '' : 's') : 'No orders yet' }}
                 </span>
-                <a href="{{ route('forms.doctors-order', ['visit' => $visit->id]) }}"
-                target="_blank"
-                style="font-size:.72rem;font-weight:700;color:#0369a1;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#e0f2fe;border:1px solid #7dd3fc;padding:3px 10px;border-radius:5px;white-space:nowrap;">
-                    🖨️ Open / Print
-                </a>
             </div>
             <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);">
                 <iframe src="{{ route('forms.doctors-order', ['visit' => $visit->id]) }}"
