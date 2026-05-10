@@ -30,6 +30,8 @@ class User extends Authenticatable implements FilamentUser
         'patient_id',
         'force_password_change',
         'signature',
+        'avatar',
+        'avatar_initials',
     ];
 
     protected $hidden = ['password', 'remember_token'];
