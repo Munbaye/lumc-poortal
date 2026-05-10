@@ -23,7 +23,7 @@
             padding: 14px 20px;
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 12px;
             flex-wrap: wrap;
         }
 
@@ -36,7 +36,6 @@
             font-weight: 800;
             color: #fff;
             letter-spacing: .02em;
-            text-transform: uppercase;
         }
 
         .chart-header-left .patient-name-meta {
@@ -52,18 +51,19 @@
         .chart-header-left .case-no {
             font-family: monospace;
             font-size: .75rem;
-            color: #93c5fd;
+            color: #bfdbfe;
             margin-top: 3px;
         }
 
         .h-info-card {
             display: flex;
             align-items: stretch;
-            background: rgba(255, 255, 255, .12);
-            border: 1px solid rgba(255, 255, 255, .18);
+            background: rgba(255, 255, 255, .18);
+            border: 1px solid rgba(255, 255, 255, .28);
             border-radius: 8px;
             overflow: hidden;
             flex: 1;
+            min-width: 260px;
         }
 
         .h-info-card .pill-cell {
@@ -87,7 +87,7 @@
             font-size: .58rem;
             text-transform: uppercase;
             letter-spacing: .08em;
-            color: #93c5fd;
+            color: #bfdbfe;
             margin-bottom: 4px;
         }
 
@@ -96,6 +96,7 @@
             font-weight: 700;
             color: #fff;
             line-height: 1.3;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, .4);
         }
 
         .header-right {
@@ -113,6 +114,7 @@
             padding: 6px 18px;
             border-radius: 9999px;
             white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .btn-back-header {
@@ -144,18 +146,57 @@
 
         /* ── Tabs ─────────────────────────────────────────────────────────── */
         .chart-tabs {
-            display: flex;
-            justify-content: center;
-            border-bottom: 2px solid #e5e7eb;
-            background: #fff;
-            padding: 0 16px;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
+    display: flex;
+    justify-content: center;
+    border-bottom: 2px solid #e5e7eb;
+    background: #fff;
+    padding: 0 16px;
+}
 
-        .chart-tabs::-webkit-scrollbar {
-            display: none;
-        }
+.dark .chart-tabs {
+    background: #1f2937;
+    border-bottom-color: #374151;
+}
+
+@media (min-width: 769px) {
+    .chart-tabs {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .chart-tabs::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .chart-tabs {
+        justify-content: flex-start;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: #636468 #e5e7eb;
+        padding-bottom: 4px;
+    }
+
+    .chart-tabs::-webkit-scrollbar {
+        display: block;
+        height: 3px;
+    }
+
+    .chart-tabs::-webkit-scrollbar-track {
+        background: #e5e7eb;
+    }
+
+    .chart-tabs::-webkit-scrollbar-thumb {
+        background: #1d4ed8;
+        border-radius: 9999px;
+    }
+
+    .chart-tab {
+        flex-shrink: 0;
+    }
+}
 
         .dark .chart-tabs {
             background: #1f2937;
@@ -2363,7 +2404,7 @@
                     <p class="hx-ban-case">{{ $hv->registered_at->timezone('Asia/Manila')->format('H:i') }} · {{ $hv->registered_at->diffForHumans() }}@if($hvDays !== null) · {{ $hvDays }} day(s) admitted @endif</p>
                 </div>
                 <div style="display:flex;flex-wrap:wrap;gap:7px;align-items:center;">
-                    @if($hvHx?->doctor)<span class="hx-ban-pill">Dr. {{ $hvHx->doctor->name }}</span>@endif
+                    @if($hvHx?->doctor)<span class="hx-ban-pill">{{ Str::startsWith($hvHx->doctor->name, ['Dr.', 'Dr ']) ? $hvHx->doctor->name : 'Dr. ' . $hvHx->doctor->name }}</span>@endif
                     @if($hv->admitted_service ?? $hvHx?->service)<span class="hx-ban-pill">{{ $hv->admitted_service ?? $hvHx->service }}</span>@endif
                     @if($hv->payment_class)<span class="hx-ban-pill">{{ $hv->payment_class }}</span>@endif
                     <span class="hx-ban-pill" style="background:rgba(255,255,255,.3);">{{ ucfirst(str_replace('_', ' ', $hv->status)) }}</span>
@@ -2429,7 +2470,7 @@
             </div>@foreach($hvOrders->groupBy(fn($o) => $o->order_date?->timezone('Asia/Manila')->format('Y-m-d H:i')) as $dateKey => $group)<div style="margin-bottom:18px;">
                 <div class="order-group-header">
                     <p class="order-group-label">{{ \Carbon\Carbon::parse($dateKey)->timezone('Asia/Manila')->format('F j, Y H:i') }}</p>
-                    <div class="order-group-line"></div>@if($group->first()->doctor)<p class="order-group-doc">Dr. {{ $group->first()->doctor->name }}</p>@endif
+                    <div class="order-group-line"></div>@if($group->first()->doctor)<p class="order-group-doc">{{ Str::startsWith($group->first()->doctor->name, ['Dr.', 'Dr ']) ? $group->first()->doctor->name : 'Dr. ' . $group->first()->doctor->name }}</p>@endif
                 </div>@foreach($group as $i => $order)<div class="order-item">
                     <div>
                         <p class="order-num">{{ $i + 1 }}.</p>
@@ -2457,7 +2498,7 @@
 
             @else
             <div class="sec-head">
-                <h2 class="sec-title">Visit History — {{ $patient->full_name }}</h2><span style="font-size:.78rem;color:#6b7280;">{{ $pastVisits->count() }} previous visit(s)</span>
+                <h2 class="sec-title">Visit History</h2><span style="font-size:.78rem;color:#6b7280;">{{ $pastVisits->count() }} previous visit(s)</span>
             </div>
             @if($pastVisits->isEmpty())
             <div class="placeholder-card">
@@ -2467,8 +2508,8 @@
             </div>
             @else
             <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:10px 16px;margin-bottom:14px;font-size:.82rem;color:#1e40af;"><x-heroicon-o-information-circle class="w-4 h-4 inline mr-2" /> Click any row to view the full medical chart for that visit — including all forms, vitals, orders, and lab results.</div>
-            <div class="hx-table-wrap">
-                <table class="hx-table">
+            <div class="hx-table-wrap" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                <table class="hx-table" style="min-width: 900px;">
                     <thead>
                         <tr>
                             <th>Date</th>
@@ -2515,7 +2556,7 @@
                             </td>
                             <td>
                                 @if($pvHx?->doctor?->name)
-                                <p style="font-size:.78rem;color:#374151;font-weight:600;">Dr. {{ $pvHx->doctor->name }}</p>
+                                <p style="font-size:.78rem;color:#374151;font-weight:600;">{{ Str::startsWith($pvHx->doctor->name, ['Dr.', 'Dr ']) ? $pvHx->doctor->name : 'Dr. ' . $pvHx->doctor->name }}</p>
                                 @else
                                 <p style="font-size:.72rem;color:#9ca3af;">—</p>
                                 @endif
@@ -2639,7 +2680,7 @@
                 <div class="order-group-header">
                     <p class="order-group-label">{{ \Carbon\Carbon::parse($dateKey)->timezone('Asia/Manila')->format('F j, Y H:i') }}</p>
                     <div class="order-group-line"></div>
-                    @if($group->first()->doctor)<p class="order-group-doc">Dr. {{ $group->first()->doctor->name }}</p>@endif
+                    @if($group->first()->doctor)<p class="order-group-doc">{{ Str::startsWith($group->first()->doctor->name, ['Dr.', 'Dr ']) ? $group->first()->doctor->name : 'Dr. ' . $group->first()->doctor->name }}</p>@endif
                 </div>
                 @foreach($group as $i => $order)
                 <div class="order-item">
@@ -2725,7 +2766,7 @@
                     <div class="rv-phys-label">Requesting Physician</div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
                         <div><span class="rv-fl">Name</span>
-                            <div class="rv-phys-name">{{ $vlr?->requesting_physician ?? ($vlr?->doctor ? 'Dr. ' . $vlr->doctor->name : '—') }}</div>
+                            <div class="rv-phys-name">{{ $vlr?->requesting_physician ?? ($vlr?->doctor ? (Str::startsWith($vlr->doctor->name, ['Dr.', 'Dr ']) ? $vlr->doctor->name : 'Dr. ' . $vlr->doctor->name) : '—') }}</div>
                         </div>
                         <div style="display:flex;flex-direction:column;justify-content:flex-end;">
                             <div style="border-bottom:1px solid #000;height:28px;"></div>
@@ -2849,7 +2890,7 @@
                     <div class="rv-sec-label">Requesting Physician</div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:end;">
                         <div><span class="rv-fl rv-fl-rad">Name</span>
-                            <div class="rv-val rv-val-rad" style="font-size:11pt;font-weight:bold;">{{ $vrr?->requesting_physician ?? ($vrr?->doctor ? 'Dr. ' . $vrr->doctor->name : '—') }}</div>
+                            <div class="rv-val rv-val-rad" style="font-size:11pt;font-weight:bold;">{{ $vrr?->requesting_physician ?? ($vrr?->doctor ? (Str::startsWith($vrr->doctor->name, ['Dr.', 'Dr ']) ? $vrr->doctor->name : 'Dr. ' . $vrr->doctor->name) : '—') }}</div>
                         </div>
                         <div>
                             <div class="rv-sig-line"></div>
