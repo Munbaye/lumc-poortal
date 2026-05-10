@@ -913,16 +913,8 @@ $staticSlides = [
     </div>
 
     <script>
-        const forceChange = {
-            {
-                request('change_password') ? 'true' : 'false'
-            }
-        };
-        const changeOpen = {
-            {
-                session('change_password_open') ? 'true' : 'false'
-            }
-        };
+        const forceChange = {{ request('change_password') ? 'true' : 'false' }};
+        const changeOpen = {{ session('change_password_open') ? 'true' : 'false' }};
 
         function openLoginModal(c) {
             document.getElementById('loginModal').classList.add('open');
@@ -951,11 +943,7 @@ $staticSlides = [
         document.addEventListener('DOMContentLoaded', () => {
             if (forceChange || changeOpen) {
                 openLoginModal(true);
-            } else if ({
-                    {
-                        $errors - > any() || session('error') ? 'true' : 'false'
-                    }
-                }) {
+            } else if ({{ $errors->any() || session('error') ? 'true' : 'false' }}) {
                 openLoginModal(false);
             }
         });
