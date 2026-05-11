@@ -194,11 +194,10 @@
                 <div style="border-top:1px solid #f3f4f6;padding-top:14px;" class="dark:border-gray-700">
                     <p style="font-size:.71rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;" class="text-gray-500 dark:text-gray-400">Select outcome</p>
                     <div style="display:flex;flex-wrap:wrap;gap:8px;">
-                        @foreach([['Discharged','<x-heroicon-o-home class="w-4 h-4" />','Treated, sent home'],['Referred','<x-heroicon-o-arrow-path class="w-4 h-4" />','Referred elsewhere'],['HAMA','<x-heroicon-o-exclamation-triangle class="w-4 h-4 inline" />','Left against medical advice'],['Expired','<x-heroicon-o-plus class="w-4 h-4" />','Deceased at facility']] as [$val,$icon,$desc])
-                        <button wire:click="$set('outpatientDisposition','{{ $val }}')" type="button"
+                        @foreach([['Discharged','home','Treated, sent home'],['Referred','arrow-path','Referred elsewhere'],['HAMA','exclamation-triangle','Left against medical advice'],['Expired','plus','Deceased at facility']] as [$val,$icon,$desc])                        <button wire:click="$set('outpatientDisposition','{{ $val }}')" type="button"
                             style="padding:10px 18px;border-radius:6px;cursor:pointer;font-weight:600;font-size:.83rem;border:2px solid {{ $outpatientDisposition===$val?'#374151':'#e5e7eb' }};background:{{ $outpatientDisposition===$val?'#111827':'#fff' }};color:{{ $outpatientDisposition===$val?'#fff':'#374151' }};"
                             class="{{ $outpatientDisposition!==$val?'dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300':'' }}">
-                            {{ $icon }} {{ $val }}
+                            <x-dynamic-component :component="'heroicon-o-'.$icon" class="w-4 h-4 inline" /> {{ $val }}
                             <span style="display:block;font-size:.7rem;font-weight:400;opacity:.7;margin-top:1px;">{{ $desc }}</span>
                         </button>
                         @endforeach

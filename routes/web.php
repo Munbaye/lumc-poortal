@@ -9,6 +9,7 @@ use App\Http\Controllers\ResultController;
 use App\Http\Controllers\ClerkFormController;
 use App\Http\Controllers\NurseFormController;
 use App\Http\Controllers\SignatureController;
+use App\Http\Controllers\AvatarController;
 
 // ── PUBLIC LANDING PAGE ────────────────────────────────────────────────────────
 Route::get('/', function () {
@@ -17,7 +18,6 @@ Route::get('/', function () {
 
         $user = Auth::user();
 
-        // Staff panels: redirect them away from the public homepage
         $staffRoutes = [
             'admin' => '/admin',
             'doctor' => '/doctor/patient-queues',
@@ -58,7 +58,6 @@ Route::get('/staff', function () {
     if (Auth::check()) {
         $user = Auth::user();
 
-        // If staff has force_password_change, keep them on /staff so modal can open
         if ($user->panel !== 'patient' && $user->force_password_change) {
             return view('staff-login');
         }
@@ -96,8 +95,6 @@ foreach (['admin', 'doctor', 'nurse', 'clerk', 'tech', 'patient'] as $panel) {
 }
 
 // ── NAMED LOGIN FALLBACK ───────────────────────────────────────────────────────
-// Laravel's AuthenticateSession and other internals look for route('login').
-// We have no separate login page — the login modal lives on the homepage.
 Route::get('/login', function () {
     return redirect('/');
 })->name('login');
@@ -110,9 +107,16 @@ Route::get('/forgot-password', function () {
 Route::middleware(['auth'])->group(function () {
 
     // ── SIGNATURE SAVE ────────────────────────────────────────────────────────
-    // Accepts the panel name so the redirect goes back to the right panel's page.
     Route::post('/signature/save/{panel}', [SignatureController::class, 'save'])
         ->name('signature.save');
+
+    // ── AVATAR / PROFILE SAVE ─────────────────────────────────────────────────
+    Route::post('/avatar/save', [AvatarController::class, 'save'])
+        ->name('avatar.save');
+
+    // ── STAFF CHANGE PASSWORD (from My Account modal) ─────────────────────────
+    Route::post('/account/change-password', [AvatarController::class, 'savePassword'])
+        ->name('account.change.password');
 
     // ── ER Record ─────────────────────────────────────────────────────────────
     Route::get('/forms/er-record/{visit}', [ClerkFormController::class, 'erRecord'])
@@ -146,7 +150,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/results/lab/{labRequest}/upload', [ResultController::class, 'uploadLabResult'])->name('results.lab.upload');
     Route::post('/results/rad/{radRequest}/upload', [ResultController::class, 'uploadRadResult'])->name('results.rad.upload');
 
-    // ── Nursing / Clinical Printable Forms — visit-scoped ─────────────────────
+    // ── Nursing / Clinical Printable Forms ────────────────────────────────────
     Route::get('/forms/vital-sign-monitoring-sheet/{visit}', [NurseFormController::class, 'vitalSignSheet'])
         ->name('forms.vital-sign-monitoring-sheet');
 
@@ -159,22 +163,22 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/forms/medication-records/{visit}', [NurseFormController::class, 'medicationRecords'])
         ->name('forms.medication-records');
 
-    // ── Ballard Score Printable (NUR-018-B) ───────────────────────────────────
+    // ── Ballard Score Printable ───────────────────────────────────────────────
     Route::get('/forms/ballard-score/{visit}', [ChartController::class, 'ballardScore'])
         ->name('forms.ballard-score');
 
     Route::get('/forms/tpr-record/{visit}', [NurseFormController::class, 'tprRecord'])
         ->name('forms.tpr-record');
 
-    // ── Growth Chart Printable (WHO 0–24 months) ──────────────────────────────
+    // ── Growth Chart Printable ────────────────────────────────────────────────
     Route::get('/forms/growth-chart/{visit}', [ChartController::class, 'growthChart'])
         ->name('forms.growth-chart');
 
-    // ── Breastfeeding Observation Job Aid (NUR-044-0) ─────────────────────────
+    // ── Breastfeeding Observation ─────────────────────────────────────────────
     Route::get('/forms/breastfeeding-observation/{visit}', [NurseFormController::class, 'breastfeedingObservation'])
         ->name('forms.breastfeeding-observation');
 
-    // Doctor Discharge Summary — printable standalone page
+    // ── Doctor Discharge Summary ──────────────────────────────────────────────
     Route::get('/forms/discharge-summary/{visit}', [ChartController::class, 'dischargeSummaryPrint'])
         ->name('forms.discharge-summary')
         ->middleware('auth');

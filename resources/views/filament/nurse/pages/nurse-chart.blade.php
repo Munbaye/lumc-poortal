@@ -10,69 +10,313 @@ use App\Helpers\WHOGrowthChart;
    NURSE CHART STYLES
    ══════════════════════════════════════════════════════════════════ */
 
-.chart-page { display:flex; flex-direction:column; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; background:#fff; }
-/* Allow tab bar to scroll horizontally without being clipped */
-.chart-tabs-wrap { overflow-x:auto; overflow-y:visible; }
-.chart-tabs { min-width:0; }
-.dark .chart-page { background:#111827; border-color:#374151; }
-
-.chart-header { background:linear-gradient(135deg,#881337 0%,#f43f5e 100%); padding:16px 24px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
-.chart-header-left { flex:1; min-width:200px; }
-.pt-name-big { font-size:1.1rem; font-weight:800; color:#fff; letter-spacing:.02em; }
-.pt-case-big { font-family:monospace; font-size:.78rem; color:#fda4af; margin-top:2px; }
-.header-pills { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
-.h-pill { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.22); border-radius:6px; padding:5px 14px; text-align:center; }
-.h-pill .pl { font-size:.6rem; text-transform:uppercase; letter-spacing:.06em; color:#fda4af; }
-.h-pill .pv { font-size:.82rem; font-weight:700; color:#fff; }
-.svc-pill { background:#be123c; color:#fff; font-size:.72rem; font-weight:700; padding:4px 14px; border-radius:9999px; }
-.btn-back-hdr { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:#fff; font-size:.78rem; font-weight:600; padding:7px 14px; border-radius:6px; text-decoration:none; flex-shrink:0; cursor:pointer; }
-.btn-back-hdr:hover { background:rgba(255,255,255,.25); }
-
-/* ── Single flat tab bar ────────────────────────────────────────── */
-.chart-tabs-wrap { position:relative; overflow-x:auto; overflow-y:visible; }
+/* ══ Patient Chart Header — Design Tokens ════════════════════ */
+:root {
+  --hdr-rose-50:  #fff1f2;
+  --hdr-rose-100: #ffe4e6;
+  --hdr-rose-400: #fb7185;
+  --hdr-rose-500: #f43f5e;
+  --hdr-rose-600: #e11d48;
+  --hdr-rose-700: #be123c;
+  --hdr-rose-800: #9f1239;
+  --hdr-rose-900: #881337;
+  --hdr-slate-50:  #f8fafc;
+  --hdr-slate-100: #f1f5f9;
+  --hdr-slate-200: #e2e8f0;
+  --hdr-slate-300: #cbd5e1;
+  --hdr-slate-400: #94a3b8;
+  --hdr-slate-500: #64748b;
+  --hdr-slate-600: #475569;
+  --hdr-slate-700: #334155;
+  --hdr-slate-800: #1e293b;
+  --hdr-slate-900: #0f172a;
+  --hdr-amber-100: #fef3c7;
+  --hdr-amber-500: #f59e0b;
+  --hdr-amber-800: #92400e;
+  --hdr-radius-sm:   6px;
+  --hdr-radius:      10px;
+  --hdr-radius-lg:   14px;
+  --hdr-radius-full: 9999px;
+  --hdr-transition: 150ms cubic-bezier(0.4,0,0.2,1);
+}
+.dark {
+  --hdr-slate-200: #374151;
+  --hdr-slate-400: #6b7280;
+  --hdr-slate-500: #9ca3af;
+  --hdr-slate-700: #d1d5db;
+  --hdr-slate-800: #1f2937;
+}
+ 
+/* ── Outer page wrapper ─────────────────────────────────────── */
+.chart-page {
+  display: flex; flex-direction: column;
+  border: 1px solid #e5e7eb; border-radius: 12px;
+  overflow: hidden; background: #fff;
+  box-shadow: 0 4px 20px rgba(159,18,57,.07);
+}
+.dark .chart-page { background: #111827; border-color: #374151; box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+ 
+/* ── Chart header wrapper ───────────────────────────────────── */
+.chart-header { padding: 0; border-bottom: none; background: transparent; }
+ 
+/* ── Hero band ──────────────────────────────────────────────── */
+.chart-hdr-hero {
+  background: linear-gradient(145deg, #9f1239 0%, #be123c 40%, #e11d48 75%, #f43f5e 100%);
+  padding: 20px 24px 30px;
+  position: relative;
+  overflow: hidden;
+}
+.dark .chart-hdr-hero {
+  background: linear-gradient(145deg, #4c0519 0%, #881337 40%, #9f1239 75%, #be123c 100%);
+}
+/* Soft radial light on hero — no animation for medical focus */
+.chart-hdr-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 40%, rgba(255,255,255,.09) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 85% 65%, rgba(255,255,255,.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+ 
+/* ── Top row: name left, buttons right ─────────────────────── */
+.chart-hdr-top-row {
+  display: flex; align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+  position: relative; z-index: 1;
+}
+ 
+/* ── Patient name ───────────────────────────────────────────── */
+.pt-name-big {
+  font-size: clamp(1.1rem, 2.5vw, 1.45rem);
+  font-weight: 800; color: #fff;
+  letter-spacing: -.02em; line-height: 1.2;
+  text-shadow: 0 1px 3px rgba(0,0,0,.18);
+  margin: 0;
+}
+.pt-case-big {
+  font-size: .73rem; color: rgba(255,255,255,.75);
+  margin-top: 7px;
+  display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+  line-height: 1.4;
+}
+ 
+/* ── Service pill ───────────────────────────────────────────── */
+.svc-pill {
+  display: inline-flex; align-items: center;
+  background: rgba(255,255,255,.14);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.25);
+  font-size: .65rem; font-weight: 700;
+  padding: 3px 12px; border-radius: var(--hdr-radius-full);
+  white-space: nowrap; letter-spacing: .03em;
+}
+ 
+/* ── Read-only badge ────────────────────────────────────────── */
+.readonly-badge-hero {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: #fef9c3; color: #92400e;
+  border: 1.5px solid #fde68a;
+  font-size: .62rem; font-weight: 700;
+  padding: 2px 10px; border-radius: var(--hdr-radius-full);
+  white-space: nowrap;
+}
+.readonly-badge-hero::before {
+  content: ''; display: inline-block;
+  width: 5px; height: 5px;
+  background: #f59e0b; border-radius: 50%; flex-shrink: 0;
+}
+ 
+/* ── Header action buttons ──────────────────────────────────── */
+.chart-header-actions {
+  display: flex; gap: 8px; align-items: center;
+  flex-shrink: 0; flex-wrap: wrap;
+}
+.btn-back-hdr {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.11);
+  border: 1.5px solid rgba(255,255,255,.22);
+  color: rgba(255,255,255,.9);
+  font-size: .76rem; font-weight: 600;
+  padding: 8px 15px; border-radius: var(--hdr-radius-sm);
+  text-decoration: none; flex-shrink: 0; cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--hdr-transition), border-color var(--hdr-transition), transform var(--hdr-transition);
+}
+.btn-back-hdr:hover {
+  background: rgba(255,255,255,.21);
+  border-color: rgba(255,255,255,.38);
+  color: #fff; transform: translateY(-1px);
+}
+.btn-back-hdr:active { transform: translateY(0); }
+.btn-back-hdr svg { width: 14px; height: 14px; flex-shrink: 0; opacity: .85; }
+ 
+/* ── Info strip — floats out of hero ────────────────────────── */
+.chart-hdr-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  background: #fff;
+  position: relative; z-index: 2;
+  margin: -14px 22px 8px;
+  border-radius: var(--hdr-radius-lg);
+  border-top: 2px solid rgba(190,18,60,.1);
+  box-shadow:
+    0 2px 4px rgba(0,0,0,.04),
+    0 6px 12px rgba(0,0,0,.05),
+    0 12px 24px rgba(0,0,0,.03);
+  overflow: hidden;
+}
+.dark .chart-hdr-strip {
+  background: #1f2937;
+  border-top: 2px solid rgba(251,113,133,.12);
+  box-shadow: 0 2px 4px rgba(0,0,0,.2), 0 6px 12px rgba(0,0,0,.15);
+}
+/* Rose left accent bar */
+.chart-hdr-strip::before {
+  content: '';
+  position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px;
+  background: linear-gradient(to bottom, #be123c, #fb7185);
+  border-radius: 0 3px 3px 0; opacity: .5;
+}
+.dark .chart-hdr-strip::before { opacity: .4; }
+ 
+/* Info cells */
+.hdr-info-cell {
+  padding: 14px 18px;
+  display: flex; flex-direction: column; justify-content: center; gap: 5px;
+  position: relative; min-height: 64px;
+}
+.hdr-info-cell:first-child { padding-left: 22px; }
+/* Soft vertical divider */
+.hdr-info-cell:not(:last-child)::after {
+  content: '';
+  position: absolute; right: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 1px; height: 48%;
+  background: linear-gradient(to bottom,
+    transparent,
+    var(--hdr-slate-200) 20%,
+    var(--hdr-slate-200) 80%,
+    transparent);
+}
+.hdr-info-cell:last-child::after { display: none; }
+ 
+/* Cell labels */
+.pl {
+  font-size: .59rem; text-transform: uppercase;
+  letter-spacing: .09em; color: var(--hdr-slate-400);
+  font-weight: 700; margin: 0; white-space: nowrap; line-height: 1.2;
+}
+/* Cell values */
+.pv {
+  font-size: .84rem; font-weight: 700;
+  color: var(--hdr-slate-800); line-height: 1.35; margin: 0;
+  word-break: break-word;
+}
+.dark .pv { color: #f3f4f6; }
+ 
+/* NICU badge inside strip */
+.nicu-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: #fef3c7; color: #92400e;
+  border: 1.5px solid #fde68a;
+  padding: 3px 10px; border-radius: var(--hdr-radius-full);
+  font-size: .65rem; font-weight: 700; white-space: nowrap;
+}
+.nicu-badge::before {
+  content: ''; display: inline-block;
+  width: 5px; height: 5px;
+  background: #f59e0b; border-radius: 50%; flex-shrink: 0;
+}
+.dark .nicu-badge { background: rgba(251,191,36,.15); color: #fbbf24; border-color: rgba(251,191,36,.3); }
+ 
+/* ── Tab bar ────────────────────────────────────────────────── */
+.chart-tabs-wrap {
+  position: relative; overflow-x: auto; overflow-y: visible;
+  background: #fff; border-bottom: 1px solid #e5e7eb;
+  /* add top margin so tabs don't collide with floating strip */
+  margin-top: 2px;
+}
+.dark .chart-tabs-wrap { background: #1f2937; border-bottom-color: #374151; }
+.chart-tabs-wrap::-webkit-scrollbar { display: none; }
 .chart-tabs {
-    display:flex; align-items:center; flex-wrap:nowrap;
-    background:#fff; border-bottom:2px solid #e5e7eb;
-    padding:0 16px;
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-    scroll-behavior:smooth;
-    scrollbar-width:thin;
-    scrollbar-color:#d1d5db #f3f4f6;
-    padding-bottom:4px;
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: nowrap; padding: 0 20px;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth; scrollbar-width: none; -ms-overflow-style: none;
 }
-.dark .chart-tabs {
-    scrollbar-color:#374151 #1f2937;
+.chart-tabs::-webkit-scrollbar { display: none; }
+.chart-tab {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 12px 15px; font-size: .78rem; font-weight: 600;
+  color: #6b7280; cursor: pointer; border: none; background: none;
+  border-bottom: 2.5px solid transparent; margin-bottom: -1px;
+  white-space: nowrap; flex-shrink: 0;
+  transition: color var(--hdr-transition), border-color var(--hdr-transition);
 }
-.chart-tabs::-webkit-scrollbar {
-    height:4px;
+.chart-tab:hover { color: #374151; }
+.dark .chart-tab { color: #9ca3af; }
+.dark .chart-tab:hover { color: #e5e7eb; }
+.chart-tab.active { color: #be123c; border-bottom-color: #be123c; font-weight: 700; }
+.dark .chart-tab.active { color: #fb7185; border-bottom-color: #fb7185; }
+.chart-tab svg { width: 14px; height: 14px; flex-shrink: 0; opacity: .78; transition: opacity var(--hdr-transition); }
+.chart-tab:hover svg, .chart-tab.active svg { opacity: 1; }
+/* Keyboard focus */
+.chart-tab:focus-visible { outline: 2px solid #be123c; outline-offset: 2px; }
+ 
+/* ── Tab badges — light fill + tinted border, flips solid on active ── */
+.tab-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: .59rem; font-weight: 800;
+  padding: 1px 6px; border-radius: var(--hdr-radius-full);
+  min-width: 18px; text-align: center; line-height: 1.5;
+  border: 1.5px solid transparent;
+  transition: all var(--hdr-transition);
 }
-.chart-tabs::-webkit-scrollbar-track {
-    background:#f3f4f6;
-    border-radius:9999px;
+/* Rose — pending orders */
+.tab-badge          { background: var(--hdr-rose-50);  color: var(--hdr-rose-700); border-color: var(--hdr-rose-100); }
+.chart-tab.active .tab-badge { background: var(--hdr-rose-700); color: #fff; border-color: var(--hdr-rose-700); }
+/* Green */
+.tab-badge-green    { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+.chart-tab.active .tab-badge-green { background: #15803d; color: #fff; border-color: #15803d; }
+/* Blue */
+.tab-badge-blue     { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.chart-tab.active .tab-badge-blue { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
+/* Teal */
+.tab-badge-teal     { background: #f0fdfa; color: #0f766e; border-color: #99f6e4; }
+.chart-tab.active .tab-badge-teal { background: #0f766e; color: #fff; border-color: #0f766e; }
+/* Purple */
+.tab-badge-purple   { background: #f5f3ff; color: #5b21b6; border-color: #ddd6fe; }
+.chart-tab.active .tab-badge-purple { background: #5b21b6; color: #fff; border-color: #5b21b6; }
+ 
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .chart-hdr-strip { grid-template-columns: repeat(2, 1fr); margin: -12px 14px 6px; }
+  .hdr-info-cell:nth-child(even)::after { display: none; }
+  .hdr-info-cell { padding: 12px 14px; min-height: 54px; }
+  .hdr-info-cell:first-child { padding-left: 18px; }
 }
-.chart-tabs::-webkit-scrollbar-thumb {
-    background:#d1d5db;
-    border-radius:9999px;
+@media (max-width: 600px) {
+  .chart-hdr-hero { padding: 14px 14px 22px; }
+  .chart-hdr-top-row { flex-direction: column; gap: 12px; }
+  .chart-header-actions { width: 100%; }
+  .chart-hdr-strip { grid-template-columns: 1fr 1fr; margin: -10px 10px 4px; border-radius: var(--hdr-radius); }
+  .pt-name-big { font-size: 1.1rem; }
+  .chart-tabs { justify-content: flex-start; padding: 0 12px; }
+  .chart-tab { padding: 10px 11px; font-size: .75rem; }
 }
-.chart-tabs::-webkit-scrollbar-thumb:hover {
-    background:#9ca3af;
+@media (min-width: 1280px) {
+  .chart-hdr-hero { padding: 22px 32px 32px; }
+  .chart-hdr-strip { margin: -14px 28px 10px; }
+  .hdr-info-cell { padding: 16px 22px; }
+  .hdr-info-cell:first-child { padding-left: 26px; }
+  .chart-tabs { padding: 0 32px; }
 }
-.dark .chart-tabs::-webkit-scrollbar-track { background:#1f2937; }
-.dark .chart-tabs::-webkit-scrollbar-thumb { background:#374151; }
-.dark .chart-tabs::-webkit-scrollbar-thumb:hover { background:#4b5563; }
-.dark .chart-tabs { background:#1f2937; border-bottom-color:#374151; }
-.chart-tab { display:inline-flex; align-items:center; gap:6px; padding:10px 13px; font-size:.78rem; font-weight:600; color:#6b7280; cursor:pointer; border:none; background:none; border-bottom:2.5px solid transparent; margin-bottom:-2px; white-space:nowrap; flex-shrink:0; transition:color .15s,border-color .15s; }
-.chart-tab:hover { color:#374151; }
-.dark .chart-tab { color:#9ca3af; }
-.dark .chart-tab:hover { color:#e5e7eb; }
-.chart-tab.active { color:#f43f5e; border-bottom-color:#f43f5e; font-weight:700; }
-.dark .chart-tab.active { color:#fb7185; border-bottom-color:#fb7185; }
-.chart-tab svg { width:14px; height:14px; flex-shrink:0; }
-.tab-badge { background:#ef4444; color:#fff; font-size:.6rem; font-weight:700; padding:1px 5px; border-radius:9999px; min-width:17px; text-align:center; line-height:1.5; }
-.tab-badge-green { background:#059669; }
-.tab-badge-blue  { background:#2563eb; }
-.tab-badge-teal  { background:#0d9488; }
+@media (prefers-reduced-motion: reduce) {
+  .btn-back-hdr, .chart-tab, .tab-badge { transition: none; }
+  .btn-back-hdr:hover { transform: none; }
+}
 
 .chart-content { padding:22px 26px; background:#f9fafb; min-height:480px; }
 .dark .chart-content { background:#111827; }
@@ -119,8 +363,9 @@ use App\Helpers\WHOGrowthChart;
 .dark .mark-all-banner { background:#022c22; border-color:#16a34a; }
 .mark-all-text { font-size:.82rem; color:#15803d; }
 .dark .mark-all-text { color:#4ade80; }
-.btn-mark-all { background:#059669; color:#fff; border:none; border-radius:7px; padding:8px 18px; font-size:.83rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
-.btn-mark-all:hover { background:#047857; }
+.btn-mark-all { background:#059669; color:#fff; border:none; border-radius:8px; padding:9px 20px; font-size:.83rem; font-weight:700; cursor:pointer; display:inline-flex; flex-direction:row; align-items:center; justify-content:center; gap:7px; box-shadow:0 2px 8px rgba(5,150,105,.3); transition:background .15s,box-shadow .15s; white-space:nowrap; }
+.btn-mark-all:hover { background:#047857; box-shadow:0 4px 14px rgba(5,150,105,.4); }
+.btn-mark-all svg { width:16px; height:16px; flex-shrink:0; }
 
 /* ── FDAR Notes ──────────────────────────────────────────────────── */
 .soap-form { background:#fff; border:1.5px solid #f43f5e; border-radius:8px; padding:18px 20px; margin-bottom:20px; }
@@ -497,11 +742,9 @@ use App\Helpers\WHOGrowthChart;
 .ph-desc { font-size:.8rem; color:#9ca3af; margin-bottom:16px; line-height:1.6; }
 
 /* ── MAR (Medication Administration Record) ──────────────────────── */
-.mar-wrap { overflow-x: auto; background:#fff; border:1px solid #e5e7eb; border-radius:10px; }
-.dark .mar-wrap { background:#1f2937; border-color:#374151; }
- 
-.mar-table { border-collapse:collapse; font-size:.78rem; min-width:700px; }
- 
+.mar-wrap { overflow-x: auto; background:#fff; border:1px solid #e5e7eb; border-radius:10px; width:100%; }.dark .mar-wrap { background:#1f2937; border-color:#374151; }
+.mar-table { border-collapse:collapse; font-size:.78rem; min-width:700px; width:100%; } 
+
 /* Sticky medication column */
 .mar-table .col-med {
     position: sticky;
@@ -674,26 +917,59 @@ use App\Helpers\WHOGrowthChart;
 
     {{-- ════ HEADER ════════════════════════════════════════════════ --}}
     <div class="chart-header">
-        <div class="chart-header-left">
-            <p class="pt-name-big">{{ $patient->full_name }}</p>
-            <p class="pt-case-big">{{ $patient->case_no }}</p>
+        <div class="chart-hdr-hero">
+            <div class="chart-hdr-top-row">
+                <div>
+                    <p class="pt-name-big">{{ $patient->full_name }}</p>
+                    <p class="pt-case-big">
+                        <span style="font-family:monospace;opacity:.8;letter-spacing:.02em;">{{ $patient->case_no }}</span>
+                        <span class="svc-pill">{{ $service }}</span>
+                        @if($isReadonly)
+                        <span class="readonly-badge-hero">Past Visit — Read Only</span>
+                        @endif
+                    </p>
+                </div>
+                <div class="chart-header-actions">
+                    <a href="{{ $this->getPatientHistoryUrl() }}" class="btn-back-hdr">
+                        <x-heroicon-o-clock class="w-3.5 h-3.5" />
+                        All Visits
+                    </a>
+                    <button wire:click="goBack" type="button" class="btn-back-hdr">
+                        <x-heroicon-o-arrow-left class="w-3.5 h-3.5" />
+                        Patient List
+                    </button>
+                </div>
+            </div>
         </div>
-        <div class="header-pills">
-            <div class="h-pill"><p class="pl">Age / Sex</p><p class="pv">{{ $patient->age_display }} · {{ $patient->sex }}</p></div>
-            <div class="h-pill"><p class="pl">Admitting Diagnosis</p><p class="pv" style="font-size:.76rem;max-width:200px;white-space:normal;line-height:1.3;">{{ $visit->admitting_diagnosis ?? $history?->diagnosis ?? '—' }}</p></div>
-            <span class="svc-pill">{{ $service }}</span>
-            <div class="h-pill"><p class="pl">Admitted</p><p class="pv">{{ $admittedAt }}</p></div>
-            @if($history?->doctor)<div class="h-pill"><p class="pl">Physician</p><p class="pv">Dr. {{ $history->doctor->name }}</p></div>@endif
-            <a href="{{ $this->getPatientHistoryUrl() }}" class="btn-back-hdr">All Visits →</a>
+ 
+        {{-- Floating info strip --}}
+        <div class="chart-hdr-strip">
+            <div class="hdr-info-cell">
+                <p class="pl">Age / Sex</p>
+                <p class="pv">{{ $patient->age_display }} · {{ $patient->sex }}</p>
+            </div>
+            <div class="hdr-info-cell" style="flex:2;min-width:180px;">
+                <p class="pl">Admitting Diagnosis</p>
+                <p class="pv" style="font-size:.82rem;font-weight:600;color:#374151;">{{ $visit->admitting_diagnosis ?? $history?->diagnosis ?? '—' }}</p>
+            </div>
+            <div class="hdr-info-cell">
+                <p class="pl">Admitted</p>
+                <p class="pv" style="font-family:monospace;font-size:.8rem;">{{ $admittedAt }}</p>
+            </div>
+            @if($history?->doctor)
+            <div class="hdr-info-cell">
+                <p class="pl">Physician</p>
+                <p class="pv" style="font-size:.8rem;">Dr. {{ $history->doctor->name }}</p>
+            </div>
+            @endif
+            @if($visit->visit_type === 'NICU')
+            <div class="hdr-info-cell">
+                <p class="pl">Type</p>
+                <p class="pv"><span class="nicu-badge">NICU</span></p>
+            </div>
+            @endif
         </div>
-        <button wire:click="goBack" type="button" class="btn-back-hdr">← Patient List</button>
     </div>
-
-    @if($isReadonly)
-    <div style="background:#fef9c3;border-bottom:2px solid #f59e0b;padding:10px 24px;display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:600;color:#92400e;">
-        Past Visit — Read Only &nbsp;·&nbsp; <span style="font-weight:400;">This visit is completed. No changes can be made.</span>
-    </div>
-    @endif
 
     {{-- ════ TABS ═══════════════════════════════════════════════════ --}}
     @if(!$isReadonly)
@@ -701,7 +977,14 @@ use App\Helpers\WHOGrowthChart;
     <div class="chart-tabs-wrap">
     <div class="chart-tabs">
 
-        {{-- Doctor's Orders --}}
+        {{-- Patient Forms — 1st position --}}
+        <button wire:click="setTab('forms')" type="button"
+                class="chart-tab {{ $activeTab==='forms' ? 'active':'' }}">
+            <x-heroicon-o-document-text class="w-4 h-4" />
+            Patient Forms
+        </button>
+
+        {{-- Doctor's Orders — 2nd position, default landing tab --}}
         <button wire:click="setTab('orders')" type="button"
                 class="chart-tab {{ $activeTab==='orders' ? 'active':'' }}">
             <x-heroicon-o-clipboard-document-list class="w-4 h-4" />
@@ -715,7 +998,7 @@ use App\Helpers\WHOGrowthChart;
                 class="chart-tab {{ $activeTab==='notes' ? 'active':'' }}">
             <x-heroicon-o-pencil-square class="w-4 h-4" />
             Nurse's Notes
-            @if($allNotes->count() > 0)<span class="tab-badge" style="background:#6366f1;">{{ $allNotes->count() }}</span>@endif
+              @if($allNotes->count() > 0)<span class="tab-badge tab-badge-purple">{{ $allNotes->count() }}</span>@endif
         </button>
 
         {{-- Vital Signs --}}
@@ -750,14 +1033,15 @@ use App\Helpers\WHOGrowthChart;
             Growth Chart
         </button>
         @endif
-
-        {{-- Patient Forms --}}
-        <button wire:click="setTab('forms')" type="button"
-                class="chart-tab {{ $activeTab==='forms' ? 'active':'' }}">
+                {{-- OB Record tab — only for admitted OB patients --}}
+        @if($visit->visit_type === 'OB' && $visit->status === 'admitted')
+        <button wire:click="redirectToObRecord" type="button"
+                class="chart-tab {{ $activeTab==='ob_record' ? 'active' : '' }}">
             <x-heroicon-o-document-text class="w-4 h-4" />
-            Patient Forms
+            OB Record
         </button>
-
+        @endif
+        
         {{-- MAR --}}
         <button wire:click="setTab('mar')" type="button"
                 class="chart-tab {{ $activeTab==='mar' ? 'active':'' }}">
@@ -772,23 +1056,9 @@ use App\Helpers\WHOGrowthChart;
             TPR Record
         </button>
 
-        {{-- I & O --}}
-        <button wire:click="setTab('io')" type="button"
-                class="chart-tab {{ $activeTab==='io' ? 'active':'' }}">
-            <x-heroicon-o-calculator class="w-4 h-4" />
-            I &amp; O
-        </button>
-
-        {{-- Handover --}}
-        <button wire:click="setTab('handover')" type="button"
-                class="chart-tab {{ $activeTab==='handover' ? 'active':'' }}">
-            <x-heroicon-o-arrow-path class="w-4 h-4" />
-            Handover
-        </button>
-
     </div>
-    @endif{{-- !isReadonly --}}
     </div>{{-- /chart-tabs-wrap --}}
+    @endif{{-- !isReadonly --}}
 
     <div class="chart-content">
 
@@ -805,7 +1075,10 @@ use App\Helpers\WHOGrowthChart;
         <div class="mark-all-banner">
             <div class="mark-all-text"><strong>{{ $pendingCnt }} pending order(s)</strong> — click "Mark All as Carried" to carry all at once, or mark each individually below.</div>
             <button wire:click="carryAllOrders" wire:loading.attr="disabled" wire:loading.class="opacity-60" type="button" class="btn-mark-all">
-                <span wire:loading.remove wire:target="carryAllOrders"><x-heroicon-o-check-circle class="w-4 h-4" /> Mark All as Carried</span>
+                <span wire:loading.remove wire:target="carryAllOrders" style="display:inline-flex;align-items:center;gap:7px;">
+                    <x-heroicon-o-check-circle class="w-4 h-4" style="flex-shrink:0;" />
+                    <span>Mark All as Carried</span>
+                </span>
                 <span wire:loading wire:target="carryAllOrders">Marking…</span>
             </button>
         </div>
@@ -819,8 +1092,8 @@ use App\Helpers\WHOGrowthChart;
                 <div class="order-body">
                     <p class="order-text-main {{ $order->isDiscontinued() ? 'struck':'' }}">{{ $order->order_text }}</p>
                     <p class="order-written-meta">Written {{ $order->order_date?->timezone('Asia/Manila')->format('M j, Y H:i') }}</p>
-                    @if($order->isCarried() && $order->completed_at)<p class="order-carry-meta">✓ Carried by {{ $order->completedBy?->name ?? 'Nurse' }} at {{ $order->completed_at->timezone('Asia/Manila')->format('M j, Y H:i') }}</p>@endif
-                    @if($order->isDiscontinued() && $order->completed_at)<p class="order-disc-meta">✕ Discontinued at {{ $order->completed_at->timezone('Asia/Manila')->format('M j, Y H:i') }}</p>@endif
+                    @if($order->isCarried() && $order->completed_at)<p class="order-carry-meta">Carried by {{ $order->completedBy?->name ?? 'Nurse' }} at {{ $order->completed_at->timezone('Asia/Manila')->format('M j, Y H:i') }}</p>@endif
+                    @if($order->isDiscontinued() && $order->completed_at)<p class="order-disc-meta">Discontinued at {{ $order->completed_at->timezone('Asia/Manila')->format('M j, Y H:i') }}</p>@endif
                 </div>
                 <div class="carry-action">
                     <span class="status-badge status-{{ $order->status }}">{{ $order->status_label }}</span>
@@ -828,10 +1101,18 @@ use App\Helpers\WHOGrowthChart;
                         @if($confirmCarryId === $order->id)
                         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;margin-top:2px;">
                             <p style="font-size:.68rem;color:#059669;font-weight:700;">Mark as carried?</p>
-                            <div style="display:flex;gap:5px;"><button wire:click="carryOrder({{ $order->id }})" wire:loading.attr="disabled" type="button" class="btn-carry-confirm"><span wire:loading.remove wire:target="carryOrder({{ $order->id }})">✓ Yes</span><span wire:loading wire:target="carryOrder({{ $order->id }})">…</span></button><button wire:click="$set('confirmCarryId', null)" type="button" class="btn-cancel-sm">No</button></div>
+                             <div style="display:flex;gap:5px;">
+                                <button wire:click="carryOrder({{ $order->id }})" wire:loading.attr="disabled" type="button" class="btn-carry-confirm" style="display:inline-flex;align-items:center;gap:4px;">
+                                    <span wire:loading.remove wire:target="carryOrder({{ $order->id }})"><x-heroicon-o-check class="w-3.5 h-3.5" /> Confirm</span>
+                                    <span wire:loading wire:target="carryOrder({{ $order->id }})">Saving…</span>
+                                </button>
+                                <button wire:click="$set('confirmCarryId', null)" type="button" class="btn-cancel-sm">Cancel</button>
+                            </div>
                         </div>
                         @else
-                        <button wire:click="$set('confirmCarryId', {{ $order->id }})" type="button" class="btn-carry" style="margin-top:2px;">✓ Mark as Carried</button>
+                         <button wire:click="$set('confirmCarryId', {{ $order->id }})" type="button" class="btn-carry" style="margin-top:2px;display:inline-flex;align-items:center;gap:5px;">
+                            <x-heroicon-o-check class="w-3.5 h-3.5" /> Mark as Carried
+                        </button>
                         @endif
                     @endif
                 </div>
@@ -847,7 +1128,11 @@ use App\Helpers\WHOGrowthChart;
             <h2 class="sec-title">Nurse's Notes</h2>
             <button wire:click="toggleAddNote" type="button"
                     class="btn-add-note {{ $addingNote ? 'is-cancel':'' }}">
-                @if($addingNote) ✕ Cancel @else ✏️ Add FDAR Note @endif
+                @if($addingNote)
+                    <x-heroicon-o-x-mark class="w-4 h-4" /> Cancel
+                @else
+                    <x-heroicon-o-pencil-square class="w-4 h-4" /> Add FDAR Note
+                @endif
             </button>
         </div>
  
@@ -2009,24 +2294,30 @@ use App\Helpers\WHOGrowthChart;
             </span>
         </div>
  
-        {{-- ── Date column manager ─────────────────────────────── --}}
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
-            <span style="font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">Date Columns:</span>
-            @foreach($marDates as $d)
-            <span style="display:inline-flex;align-items:center;gap:4px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:.75rem;font-weight:600;color:#374151;font-family:monospace;">
-                {{ \Carbon\Carbon::parse($d)->format('M j') }}
-                <button wire:click="marRemoveDate('{{ $d }}')"
-                        type="button"
-                        style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.7rem;padding:0 2px;line-height:1;"
-                        title="Remove date column">✕</button>
-            </span>
-            @endforeach
-            <div style="display:flex;align-items:center;gap:6px;">
+         {{-- ── Date column manager ─────────────────────────────── --}}
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px 14px;">
+            <span style="font-size:.72rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;">Dates:</span>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1;">
+                @foreach($marDates as $d)
+                <span style="display:inline-flex;align-items:center;gap:4px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;font-size:.75rem;font-weight:600;color:#374151;font-family:monospace;">
+                    {{ \Carbon\Carbon::parse($d)->format('M j') }}
+                    <button wire:click="marRemoveDate('{{ $d }}')"
+                            type="button"
+                            style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.65rem;padding:0 2px;line-height:1;"
+                            title="Remove date column">✕</button>
+                </span>
+                @endforeach
+                @if(empty($marDates))
+                <span style="font-size:.75rem;color:#d1d5db;font-style:italic;">No date columns yet</span>
+                @endif
+            </div>
+            {{-- Add date — pinned to the right --}}
+            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto;">
                 <input type="date"
                        wire:model="marNewDate"
                        style="border:1px solid #d1d5db;border-radius:6px;padding:5px 8px;font-size:.78rem;color:#111827;background:#fff;outline:none;">
                 <button wire:click="marAddDate" type="button"
-                        style="background:#059669;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.78rem;font-weight:700;cursor:pointer;">
+                        style="background:#059669;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;">
                     + Add Date
                 </button>
             </div>
@@ -2041,8 +2332,8 @@ use App\Helpers\WHOGrowthChart;
         @else
  
         {{-- ── MAR Grid ────────────────────────────────────────── --}}
-        <div class="mar-wrap">
-            <table class="mar-table">
+        <div class="mar-wrap" style="width:100%;">
+            <table class="mar-table" style="width:100%;">
                 <thead>
                     <tr>
                         <th class="col-med" style="text-align:left;padding:8px 10px;">Medication</th>
@@ -2445,7 +2736,7 @@ use App\Helpers\WHOGrowthChart;
             @if($tprAddingIo || $tprIoEditId)
             <div class="tpr-io-form" x-data="{ stoolCount: @js($tprIoStool) }">
                 <p style="font-size:.82rem;font-weight:700;color:#065f46;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #bbf7d0;">
-                    {{ $tprIoEditId ? 'Edit Entry' : '➕ New Urine & Stool Entry' }}
+                    {{ $tprIoEditId ? 'Edit Entry' : 'New Urine & Stool Entry' }}
                 </p>
 
                 <div class="tpr-io-form-grid">
@@ -2611,12 +2902,6 @@ use App\Helpers\WHOGrowthChart;
         </div>
 
         {{-- ══ PLACEHOLDER TABS ════════════════════════════════════ --}}
-
-        @elseif($activeTab === 'io')
-        @include('filament.nurse.pages.partials.placeholder', ['icon'=>'','title'=>'Intake & Output Record','desc'=>'Monitor all fluid intake (oral, IV, NG) and output (urine, drain, emesis, stool) with shift and 24-hour totals.','full'=>true])
-
-        @elseif($activeTab === 'handover')
-        @include('filament.nurse.pages.partials.placeholder', ['icon'=>'','title'=>'Nursing Handover / Endorsement','desc'=>'Structured shift-to-shift endorsement using SBAR format for safe patient handover.','full'=>true])
 
         @endif
 

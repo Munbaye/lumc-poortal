@@ -5,18 +5,12 @@ namespace App\Providers\Filament;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use App\Http\Middleware\Filament\StaffAuthenticate;
 use Filament\Navigation\MenuItem;
+use App\Http\Middleware\Filament\StaffAuthenticate;
 use Illuminate\Support\HtmlString;
 
 class TechPanelProvider extends PanelProvider
 {
-    // ── Role-based specialty detection ────────────────────────────────────────
-    // Roles assigned in the users table:
-    //   tech-med  → Medical Technologist (lab requests only)
-    //   tech-rad  → Radiologic Technologist (rad requests only)
-    //   tech-tech → General Tech (sees both queues)
-
     private static function isMed(): bool
     {
         return auth()->user()?->hasRole('tech-med') ?? false;
@@ -27,14 +21,12 @@ class TechPanelProvider extends PanelProvider
         return auth()->user()?->hasRole('tech-rad') ?? false;
     }
 
-    // ── Per-specialty values ──────────────────────────────────────────────────
-
     private static function accentColor(): string
     {
         return match(true) {
-            self::isMed() => '#0f766e', // teal
-            self::isRad() => '#475569', // slate
-            default       => '#ea580c', // orange
+            self::isMed() => '#0f766e',
+            self::isRad() => '#475569',
+            default       => '#ea580c',
         };
     }
 
@@ -47,12 +39,12 @@ class TechPanelProvider extends PanelProvider
         };
     }
 
-    private static function brandName(): string
+    private static function roleLabel(): string
     {
         return match(true) {
-            self::isMed() => 'LUMC — MedTech Portal',
-            self::isRad() => 'LUMC — RadTech Portal',
-            default       => 'LUMC — Tech Portal',
+            self::isMed() => 'MedTech',
+            self::isRad() => 'RadTech',
+            default       => 'Tech',
         };
     }
 
@@ -65,50 +57,61 @@ class TechPanelProvider extends PanelProvider
         };
     }
 
-    // ── Panel definition ──────────────────────────────────────────────────────
-
     public function panel(Panel $panel): Panel
     {
         return $panel
             ->id('tech')
             ->path('tech')
-
             ->colors(fn (): array => self::primaryColor())
-
             ->brandName('')
-
             ->brandLogo(fn () => new HtmlString(
-                '<div style="display:flex;align-items:center;gap:.55rem;">
+                '<div style="display:flex;align-items:center;gap:.625rem;">
                     <img src="' . asset('images/lumc-logo.png') . '"
-                         style="width:30px;height:30px;object-fit:contain;border-radius:50%;
-                                background:rgba(0,0,0,.06);padding:2px;flex-shrink:0;"
-                         alt="LUMC">
-                    <span class="lumc-tech-brand-text"
-                          style="font-weight:800;font-size:.9rem;letter-spacing:.04em;
-                                 white-space:nowrap;text-transform:uppercase;">'
-                . self::brandName() .
-                '</span>
+                         alt="LUMC"
+                         style="height:32px;width:32px;object-fit:contain;flex-shrink:0;
+                                filter:drop-shadow(0 1px 3px rgba(0,0,0,.18));">
+                    <span style="
+                        font-size:.8rem;font-weight:700;letter-spacing:.01em;
+                        white-space:nowrap;line-height:1.1;
+                        display:flex;align-items:center;gap:.45rem;">
+                        <span class="lumc-brand-lumc" style="
+                            font-weight:900;letter-spacing:.04em;
+                            font-size:.85rem;">LUMC</span>
+                        <span style="
+                            opacity:.35;font-weight:300;font-size:1rem;
+                            line-height:1;color:currentColor;">|</span>
+                        <span class="lumc-brand-role">' . self::roleLabel() . '</span>
+                    </span>
                 </div>
                 <style>
-                    .fi-logo .lumc-tech-brand-text { color:' . self::accentColor() . '; }
-                    .dark .fi-logo .lumc-tech-brand-text { color:' . self::accentColorDark() . '; }
+                    .fi-logo .lumc-brand-lumc { color:' . self::accentColor() . '; }
+                    .fi-logo .lumc-brand-role { color:#374151;font-size:.78rem;font-weight:600; }
+                    html.dark .fi-logo .lumc-brand-lumc { color:' . self::accentColorDark() . '; }
+                    html.dark .fi-logo .lumc-brand-role { color:#94a3b8; }
                 </style>'
             ))
             ->brandLogoHeight('auto')
-
             ->sidebarCollapsibleOnDesktop(false)
             ->globalSearch(false)
             ->favicon(asset('images/lumc-logo.png'))
-
             ->userMenuItems([
-                'profile'  => MenuItem::make()->label('My Profile')->icon('heroicon-o-user-circle')->url(fn () => '#'),
-                'settings' => MenuItem::make()->label('Settings')->icon('heroicon-o-cog-6-tooth')->url(fn () => '#'),
+                'profile' => MenuItem::make()
+                    ->label('Edit Profile')
+                    ->icon('heroicon-o-user-circle')
+                    ->url('#account'),
             ])
-
-            ->discoverPages(in: app_path('Filament/Tech/Pages'), for: 'App\\Filament\\Tech\\Pages')
-            ->discoverResources(in: app_path('Filament/Tech/Resources'), for: 'App\\Filament\\Tech\\Resources')
-            ->discoverWidgets(in: app_path('Filament/Tech/Widgets'), for: 'App\\Filament\\Tech\\Widgets')
-
+            ->discoverPages(
+                in: app_path('Filament/Tech/Pages'),
+                for: 'App\\Filament\\Tech\\Pages'
+            )
+            ->discoverResources(
+                in: app_path('Filament/Tech/Resources'),
+                for: 'App\\Filament\\Tech\\Resources'
+            )
+            ->discoverWidgets(
+                in: app_path('Filament/Tech/Widgets'),
+                for: 'App\\Filament\\Tech\\Widgets'
+            )
             ->middleware([
                 \Illuminate\Cookie\Middleware\EncryptCookies::class,
                 \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,

@@ -40,6 +40,13 @@ class ListVisits extends ListRecords
                     $query->where('visit_type', 'NICU')
                         ->whereHas('patient', fn ($q) => $q->where('is_provisional', false))
                 ),
+
+            'ob' => Tab::make('OB')
+                ->icon('heroicon-o-heart')
+                ->modifyQueryUsing(fn (Builder $query) =>
+                    $query->where('visit_type', 'OB')
+                        ->whereHas('patient', fn ($q) => $q->where('is_provisional', false))
+                ),
         ];
     }
 }

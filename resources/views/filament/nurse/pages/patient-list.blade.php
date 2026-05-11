@@ -20,7 +20,8 @@
 }
 
 /* ── Stat cards ────────────────────────────────────────────── */
-.stats-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:13px; margin-bottom:10px; }
+.stats-bar { display:grid; grid-template-columns:repeat(3,1fr); gap:13px; margin-bottom:18px; }
+@media(max-width:768px) { .stats-bar { grid-template-columns:1fr; } }
 .stat-card { border-radius:14px; padding:18px 20px; display:flex; align-items:center; gap:16px; border:1px solid; transition:box-shadow .18s,transform .18s; }
 html:not(.dark) .stat-card { background:#fff; border-color:#e5e7eb; box-shadow:0 1px 4px rgba(0,0,0,.05); }
 html.dark       .stat-card { background:#0f172a; border-color:#1e293b; }
@@ -103,11 +104,11 @@ html:not(.dark) .pt-name { color:#111827; }
 html.dark       .pt-name { color:#f1f5f9; }
 .pt-case { font-family:monospace; font-size:.7rem; color:#9ca3af; margin-top:2px; }
 
-.svc-badge { display:inline-block; padding:2px 9px; border-radius:9999px; font-size:.7rem; font-weight:700; }
+.svc-badge { display:inline-block; padding:2px 9px; border-radius:9999px; font-size:.68rem; font-weight:700; white-space:nowrap; max-width:130px; overflow:hidden; text-overflow:ellipsis; vertical-align:middle; }
 html:not(.dark) .svc-badge { background:#fce7f3; color:#9d174d; }
 html.dark       .svc-badge { background:#4c0519; color:#fda4af; }
 
-.pay-badge { display:inline-block; padding:2px 9px; border-radius:9999px; font-size:.68rem; font-weight:700; }
+.pay-badge { display:inline-block; padding:2px 8px; border-radius:5px; font-size:.65rem; font-weight:700; white-space:nowrap; vertical-align:middle; }
 html:not(.dark) .pay-charity { background:#d1fae5; color:#065f46; }
 html:not(.dark) .pay-private { background:#f3f4f6; color:#374151; }
 html.dark .pay-charity { background:#052e16; color:#6ee7b7; }
@@ -228,7 +229,7 @@ html.dark .af-badge { background:#4c0519; color:#fda4af; border-color:#7f1d1d; }
 .af-clear-all { background:none; border:none; color:#9ca3af; cursor:pointer; font-size:.75rem; font-weight:600; margin-left:2px; }
 html.dark .af-clear-all { color:#475569; }
 
-.pending-clerk-badge { background:#fef3c7; color:#92400e; padding:2px 7px; border-radius:9999px; font-weight:700; font-size:.68rem; display:inline-flex; align-items:center; gap:4px; }
+.pending-clerk-badge { background:#fef3c7; color:#92400e; padding:3px 8px; border-radius:6px; font-weight:700; font-size:.68rem; display:inline-flex; align-items:center; gap:4px; white-space:nowrap; }
 html.dark .pending-clerk-badge { background:#1c1400; color:#fde047; }
 
 @media(max-width:768px) {
@@ -270,16 +271,6 @@ html.dark .pending-clerk-badge { background:#1c1400; color:#fde047; }
             <div class="stat-label">Pending Orders</div>
             <div class="stat-value">{{ $this->totalPendingOrders }}</div>
             <div class="stat-sub">orders awaiting action</div>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon si-blue">
-            <x-heroicon-o-calendar-days class="w-6 h-6" />
-        </div>
-        <div>
-            <div class="stat-label">Shift Date</div>
-            <div class="stat-value" style="font-size:1.3rem;">{{ now()->timezone('Asia/Manila')->format('M j, Y') }}</div>
-            <div class="stat-sub">{{ now()->timezone('Asia/Manila')->format('l') }}</div>
         </div>
     </div>
 </div>
@@ -468,16 +459,18 @@ html.dark .pending-clerk-badge { background:#1c1400; color:#fde047; }
                     </td>
                     <td><span class="status-pill {{ $statusClass }}">{{ $statusLabel }}</span></td>
                     @endif
-                    <td>
+                     <td style="min-width:120px;">
                         @if($visit->admitted_service)
-                            <span class="svc-badge">{{ $visit->admitted_service }}</span>
+                            <span class="svc-badge" title="{{ $visit->admitted_service }}">{{ $visit->admitted_service }}</span>
                         @else
                             <span style="color:#9ca3af;">—</span>
                         @endif
                         @if($visit->payment_class)
-                        <br><span class="pay-badge {{ $visit->payment_class === 'Private' ? 'pay-private' : 'pay-charity' }}" style="margin-top:3px;">
-                            {{ $visit->payment_class }}
-                        </span>
+                        <div style="margin-top:4px;">
+                            <span class="pay-badge {{ $visit->payment_class === 'Private' ? 'pay-private' : 'pay-charity' }}">
+                                {{ $visit->payment_class }}
+                            </span>
+                        </div>
                         @endif
                     </td>
                     <td style="max-width:200px;">
@@ -564,18 +557,5 @@ html.dark .pending-clerk-badge { background:#1c1400; color:#fde047; }
     </div>
 
 </div>{{-- end grouped wrapper --}}
-
-<script>
-(function () {
-    const el = document.getElementById('nurse-clock');
-    if (!el) return;
-    const fmt = () => new Date().toLocaleString('en-PH', {
-        timeZone:'Asia/Manila', weekday:'short', month:'short',
-        day:'numeric', hour:'2-digit', minute:'2-digit', hour12:false
-    }).replace(',', ' ·');
-    el.textContent = fmt();
-    setInterval(() => { el.textContent = fmt(); }, 30000);
-})();
-</script>
 
 </x-filament-panels::page>

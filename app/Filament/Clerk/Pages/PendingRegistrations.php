@@ -15,8 +15,8 @@ class PendingRegistrations extends Page implements HasTable
     use InteractsWithTable;
 
     protected static ?string $navigationIcon  = 'heroicon-o-heart';
-    protected static ?string $navigationLabel = 'NICU Registration';
-    protected static ?string $title           = 'NICU Registration';
+    protected static ?string $navigationLabel = 'Provisional Registrations';
+    protected static ?string $title           = 'Provisional Registrations';
     protected static ?int    $navigationSort  = 3;
     protected static string  $view            = 'filament.clerk.pages.pending-registrations';
 

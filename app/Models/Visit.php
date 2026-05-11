@@ -101,6 +101,11 @@ class Visit extends Model
         return $this->hasMany(NicuBreastfeedingObservation::class)->orderBy('observation_date', 'desc');
     }
 
+    public function obRecord(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ObRecord::class);
+    }
+
     public function dischargeSummary()
     {
         return $this->hasOne(\App\Models\DischargeSummary::class);
