@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ConsentController;
 use App\Http\Controllers\ChartController;
@@ -11,12 +12,14 @@ use App\Http\Controllers\SignatureController;
 
 // ── PUBLIC LANDING PAGE ────────────────────────────────────────────────────────
 Route::get('/', function () {
-    if (auth()->check()) {
-        $user = auth()->user();
+
+    if (Auth::check()) {
+
+        $user = Auth::user();
 
         // Staff panels: redirect them away from the public homepage
         $staffRoutes = [
-            'admin'  => '/admin',
+            'admin' => '/admin',
             'doctor' => '/doctor/patient-queues',
             'nurse'  => '/nurse',
             'clerk'  => '/clerk',
@@ -27,12 +30,12 @@ Route::get('/', function () {
             return redirect($staffRoutes[$user->panel]);
         }
 
-        // Patients with force_password_change: stay on homepage so the modal can open
+        // Patients with force password change
         if ($user->panel === 'patient' && $user->force_password_change) {
             return view('welcome');
         }
 
-        // Patients fully logged in: send to their records
+        // Patients fully logged in
         if ($user->panel === 'patient') {
             return redirect('/patient/my-records');
         }
@@ -52,8 +55,8 @@ Route::post('/patient-change-password', [AuthController::class, 'patientChangePa
 
 // ── STAFF PORTAL ───────────────────────────────────────────────────────────────
 Route::get('/staff', function () {
-    if (auth()->check()) {
-        $user = auth()->user();
+    if (Auth::check()) {
+        $user = Auth::user();
 
         // If staff has force_password_change, keep them on /staff so modal can open
         if ($user->panel !== 'patient' && $user->force_password_change) {

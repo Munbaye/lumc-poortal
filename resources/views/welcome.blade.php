@@ -44,7 +44,7 @@ $staticSlides = [
         }
 
         .hero-gradient {
-            background: linear-gradient(140deg, rgba(8, 20, 65, .96) 0%, rgba(20, 50, 130, .88) 55%, rgba(10, 28, 80, .94) 100%);
+            background: linear-gradient(140deg, rgba(8, 20, 65, .96) 0%, rgba(20, 50, 130, .88) 55%, rgba(8, 20, 65, .94) 100%);
         }
 
         @keyframes fadeUp {
