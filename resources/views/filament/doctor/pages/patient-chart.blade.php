@@ -1,269 +1,278 @@
 <x-filament-panels::page>
 
     <style>
-        /* ── Page wrapper ─────────────────────────────────────────────────── */
+    /* ══ Doctor Chart — Design Tokens (Teal) ════════════════════════════ */
+        :root {
+        --hdr-teal-50:  #f0fdfa;
+        --hdr-teal-100: #ccfbf1;
+        --hdr-teal-400: #2dd4bf;
+        --hdr-teal-500: #14b8a6;
+        --hdr-teal-600: #0d9488;
+        --hdr-teal-700: #0f766e;
+        --hdr-teal-800: #115e59;
+        --hdr-teal-900: #134e4a;
+        --hdr-slate-200: #e2e8f0;
+        --hdr-slate-400: #94a3b8;
+        --hdr-slate-800: #1e293b;
+        --hdr-radius-sm:   6px;
+        --hdr-radius:      10px;
+        --hdr-radius-lg:   14px;
+        --hdr-radius-full: 9999px;
+        --hdr-transition: 150ms cubic-bezier(0.4,0,0.2,1);
+        }
+        .dark {
+        --hdr-slate-200: #374151;
+        --hdr-slate-400: #6b7280;
+        --hdr-slate-800: #1f2937;
+        }
+
+        /* ── Outer page wrapper ─────────────────────────────────────────────── */
         .chart-page {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            overflow: hidden;
-            background: #fff;
+        display: flex; flex-direction: column;
+        border: 1px solid #e5e7eb; border-radius: 12px;
+        overflow: hidden; background: #fff;
+        box-shadow: 0 4px 20px rgba(13,148,136,.07);
+        }
+        .dark .chart-page { background: #111827; border-color: #374151; box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+
+        /* ── Chart header wrapper ───────────────────────────────────────────── */
+        .chart-header { padding: 0; border-bottom: none; background: transparent; }
+
+        /* ── Hero band ──────────────────────────────────────────────────────── */
+        .chart-hdr-hero {
+        background: linear-gradient(145deg, #134e4a 0%, #0f766e 40%, #0d9488 75%, #14b8a6 100%);
+        padding: 20px 24px 30px;
+        position: relative; overflow: hidden;
+        }
+        .dark .chart-hdr-hero {
+        background: linear-gradient(145deg, #042f2e 0%, #134e4a 40%, #0f766e 75%, #0d9488 100%);
+        }
+        .chart-hdr-hero::before {
+        content: '';
+        position: absolute; inset: 0;
+        background:
+            radial-gradient(ellipse 80% 60% at 15% 40%, rgba(255,255,255,.09) 0%, transparent 55%),
+            radial-gradient(ellipse 50% 40% at 85% 65%, rgba(255,255,255,.05) 0%, transparent 50%);
+        pointer-events: none;
         }
 
-        .dark .chart-page {
-            background: #111827;
-            border-color: #374151;
+        /* ── Top row: name left, buttons right ─────────────────────── */
+        .chart-hdr-top-row {
+        display: flex; align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px; flex-wrap: wrap;
+        position: relative; z-index: 1;
         }
 
-        /* ── Patient header ───────────────────────────────────────────────── */
-        .chart-header {
-            background: linear-gradient(135deg, #1a2e4a 0%, #1d3fa0 50%, #1e56cc 100%);
-            padding: 14px 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
+        /* ── Patient name ───────────────────────────────────────────────────── */
+        .pt-name-big {
+        font-size: clamp(1.1rem, 2.5vw, 1.45rem);
+        font-weight: 800; color: #fff;
+        letter-spacing: -.02em; line-height: 1.2;
+        text-shadow: 0 1px 3px rgba(0,0,0,.18); margin: 0;
+        }
+        .pt-case-big {
+        font-size: .73rem; color: rgba(255,255,255,.75);
+        margin-top: 7px;
+        display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+        line-height: 1.4;
+        }
+        .svc-pill {
+        display: inline-flex; align-items: center;
+        background: rgba(255,255,255,.14); color: #fff;
+        border: 1px solid rgba(255,255,255,.25);
+        font-size: .65rem; font-weight: 700;
+        padding: 3px 12px; border-radius: var(--hdr-radius-full);
+        white-space: nowrap; letter-spacing: .03em;
+        }
+        .readonly-badge-hero {
+        display: inline-flex; align-items: center; gap: 4px;
+        background: #fef9c3; color: #92400e;
+        border: 1.5px solid #fde68a;
+        font-size: .62rem; font-weight: 700;
+        padding: 2px 10px; border-radius: var(--hdr-radius-full);
+        white-space: nowrap;
+        }
+        .readonly-badge-hero::before {
+        content: ''; display: inline-block;
+        width: 5px; height: 5px;
+        background: #f59e0b; border-radius: 50%; flex-shrink: 0;
         }
 
-        .chart-header-left {
-            flex-shrink: 0;
+        /* ── Header action buttons ──────────────────────────────────────────── */
+        .chart-header-actions {
+        display: flex; gap: 8px; align-items: center;
+        flex-shrink: 0; flex-wrap: wrap;
+        }
+        .btn-back-hdr {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(255,255,255,.11);
+        border: 1.5px solid rgba(255,255,255,.22);
+        color: rgba(255,255,255,.9);
+        font-size: .76rem; font-weight: 600;
+        padding: 8px 15px; border-radius: var(--hdr-radius-sm);
+        text-decoration: none; flex-shrink: 0; cursor: pointer;
+        white-space: nowrap;
+        transition: background var(--hdr-transition), border-color var(--hdr-transition), transform var(--hdr-transition);
+        }
+        .btn-back-hdr:hover {
+        background: rgba(255,255,255,.21);
+        border-color: rgba(255,255,255,.38);
+        color: #fff; transform: translateY(-1px);
+        }
+        .btn-back-hdr:active { transform: translateY(0); }
+        .btn-back-hdr svg { width: 14px; height: 14px; flex-shrink: 0; opacity: .85; }
+
+        /* ── Info strip — floats out of hero ────────────────────────── */
+        .chart-hdr-strip {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        background: #fff;
+        position: relative; z-index: 2;
+        margin: -14px 22px 8px;
+        border-radius: var(--hdr-radius-lg);
+        border-top: 2px solid rgba(13,148,136,.1);
+        box-shadow:
+            0 2px 4px rgba(0,0,0,.04),
+            0 6px 12px rgba(0,0,0,.05),
+            0 12px 24px rgba(0,0,0,.03);
+        overflow: hidden;
+        }
+        .dark .chart-hdr-strip {
+        background: #1f2937;
+        border-top: 2px solid rgba(45,212,191,.12);
+        box-shadow: 0 2px 4px rgba(0,0,0,.2), 0 6px 12px rgba(0,0,0,.15);
+        }
+        .chart-hdr-strip::before {
+        content: '';
+        position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px;
+        background: linear-gradient(to bottom, #0f766e, #2dd4bf);
+        border-radius: 0 3px 3px 0; opacity: .5;
+        }
+        .dark .chart-hdr-strip::before { opacity: .4; }
+
+        /* Info cells */
+        .hdr-info-cell {
+        padding: 14px 18px;
+        display: flex; flex-direction: column; justify-content: center; gap: 5px;
+        position: relative; min-height: 64px;
+        }
+        .hdr-info-cell:first-child { padding-left: 22px; }
+        .hdr-info-cell:not(:last-child)::after {
+        content: '';
+        position: absolute; right: 0; top: 50%;
+        transform: translateY(-50%);
+        width: 1px; height: 48%;
+        background: linear-gradient(to bottom,
+            transparent,
+            var(--hdr-slate-200) 20%,
+            var(--hdr-slate-200) 80%,
+            transparent);
+        }
+        .hdr-info-cell:last-child::after { display: none; }
+        .pl {
+        font-size: .59rem; text-transform: uppercase;
+        letter-spacing: .09em; color: var(--hdr-slate-400);
+        font-weight: 700; margin: 0; white-space: nowrap; line-height: 1.2;
+        }
+        .pv {
+        font-size: .84rem; font-weight: 700;
+        color: var(--hdr-slate-800); line-height: 1.35; margin: 0;
+        word-break: break-word;
+        }
+        .dark .pv { color: #f3f4f6; }
+
+        /* NICU badge */
+        .nicu-badge {
+        display: inline-flex; align-items: center; gap: 4px;
+        background: #fef3c7; color: #92400e;
+        border: 1.5px solid #fde68a;
+        padding: 3px 10px; border-radius: var(--hdr-radius-full);
+        font-size: .65rem; font-weight: 700; white-space: nowrap;
+        }
+        .nicu-badge::before {
+        content: ''; display: inline-block;
+        width: 5px; height: 5px;
+        background: #f59e0b; border-radius: 50%; flex-shrink: 0;
         }
 
-        .chart-header-left .patient-name {
-            font-size: 1.05rem;
-            font-weight: 800;
-            color: #fff;
-            letter-spacing: .02em;
+        /* ── Tab bar ────────────────────────────────────────────────────────── */
+        .chart-tabs-wrap {
+        position: relative; overflow-x: auto; overflow-y: visible;
+        background: #fff; border-bottom: 1px solid #e5e7eb;
+        margin-top: 2px;
         }
-
-        .chart-header-left .patient-name-meta {
-            font-size: .78rem;
-            font-weight: 700;
-            color: #dbeafe;
-            letter-spacing: .02em;
-            text-transform: uppercase;
-            margin-top: 6px;
-            line-height: 1.15;
-        }
-
-        .chart-header-left .case-no {
-            font-family: monospace;
-            font-size: .75rem;
-            color: #bfdbfe;
-            margin-top: 3px;
-        }
-
-        .h-info-card {
-            display: flex;
-            align-items: stretch;
-            background: rgba(255, 255, 255, .18);
-            border: 1px solid rgba(255, 255, 255, .28);
-            border-radius: 8px;
-            overflow: hidden;
-            flex: 1;
-            min-width: 260px;
-        }
-
-        .h-info-card .pill-cell {
-            flex: 1;
-            padding: 8px 18px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .h-info-card .pill-cell+.pill-cell {
-            border-left: 1px solid rgba(255, 255, 255, .18);
-        }
-
-        .h-info-card .pill-cell.wide {
-            flex: 2;
-        }
-
-        .pill-label {
-            font-size: .58rem;
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            color: #bfdbfe;
-            margin-bottom: 4px;
-        }
-
-        .pill-value {
-            font-size: .82rem;
-            font-weight: 700;
-            color: #fff;
-            line-height: 1.3;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, .4);
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-
-        .h-service-badge {
-            background: #10b981;
-            color: #fff;
-            font-size: .72rem;
-            font-weight: 700;
-            padding: 6px 18px;
-            border-radius: 9999px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .btn-back-header {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(255, 255, 255, .15);
-            border: 1px solid rgba(255, 255, 255, .3);
-            color: #fff;
-            font-size: .78rem;
-            font-weight: 600;
-            padding: 7px 14px;
-            border-radius: 6px;
-            text-decoration: none;
-            white-space: nowrap;
-        }
-
-        .btn-back-header:hover {
-            background: rgba(255, 255, 255, .25);
-        }
-
-        .pending-badge {
-            font-size: .62rem;
-            background: rgba(255, 255, 255, .25);
-            padding: 1px 6px;
-            border-radius: 9999px;
-            margin-left: 4px;
-        }
-
-        /* ── Tabs ─────────────────────────────────────────────────────────── */
+        .dark .chart-tabs-wrap { background: #1f2937; border-bottom-color: #374151; }
+        .chart-tabs-wrap::-webkit-scrollbar { display: none; }
         .chart-tabs {
-    display: flex;
-    justify-content: center;
-    border-bottom: 2px solid #e5e7eb;
-    background: #fff;
-    padding: 0 16px;
-}
-
-.dark .chart-tabs {
-    background: #1f2937;
-    border-bottom-color: #374151;
-}
-
-@media (min-width: 769px) {
-    .chart-tabs {
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-
-    .chart-tabs::-webkit-scrollbar {
-        display: none;
-    }
-}
-
-@media (max-width: 768px) {
-    .chart-tabs {
-        justify-content: flex-start;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: thin;
-        scrollbar-color: #636468 #e5e7eb;
-        padding-bottom: 4px;
-    }
-
-    .chart-tabs::-webkit-scrollbar {
-        display: block;
-        height: 3px;
-    }
-
-    .chart-tabs::-webkit-scrollbar-track {
-        background: #e5e7eb;
-    }
-
-    .chart-tabs::-webkit-scrollbar-thumb {
-        background: #1d4ed8;
-        border-radius: 9999px;
-    }
-
-    .chart-tab {
-        flex-shrink: 0;
-    }
-}
-
-        .dark .chart-tabs {
-            background: #1f2937;
-            border-bottom-color: #374151;
+        display: flex; align-items: center; justify-content: center;
+        flex-wrap: nowrap; padding: 0 20px;
+        overflow-x: auto; -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth; scrollbar-width: none; -ms-overflow-style: none;
         }
-
+        .chart-tabs::-webkit-scrollbar { display: none; }
         .chart-tab {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            padding: 13px 18px;
-            font-size: .83rem;
-            font-weight: 600;
-            color: #6b7280;
-            cursor: pointer;
-            border: none;
-            background: none;
-            border-bottom: 2.5px solid transparent;
-            margin-bottom: -2px;
-            white-space: nowrap;
-            transition: color .15s, border-color .15s;
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 12px 15px; font-size: .78rem; font-weight: 600;
+        color: #6b7280; cursor: pointer; border: none; background: none;
+        border-bottom: 2.5px solid transparent; margin-bottom: -1px;
+        white-space: nowrap; flex-shrink: 0;
+        transition: color var(--hdr-transition), border-color var(--hdr-transition);
         }
+        .chart-tab:hover { color: #374151; }
+        .dark .chart-tab { color: #9ca3af; }
+        .dark .chart-tab:hover { color: #e5e7eb; }
+        .chart-tab.active { color: #0d9488; border-bottom-color: #0d9488; font-weight: 700; }
+        .dark .chart-tab.active { color: #2dd4bf; border-bottom-color: #2dd4bf; }
+        .chart-tab svg { width: 14px; height: 14px; flex-shrink: 0; opacity: .78; transition: opacity var(--hdr-transition); }
+        .chart-tab:hover svg, .chart-tab.active svg { opacity: 1; }
+        .chart-tab:focus-visible { outline: 2px solid #0d9488; outline-offset: 2px; }
 
-        .chart-tab:hover {
-            color: #374151;
-        }
-
-        .dark .chart-tab {
-            color: #9ca3af;
-        }
-
-        .chart-tab.active {
-            color: #1d4ed8;
-            border-bottom-color: #1d4ed8;
-            font-weight: 700;
-        }
-
-        .dark .chart-tab.active {
-            color: #60a5fa;
-            border-bottom-color: #60a5fa;
-        }
-
-        .tab-icon {
-            font-size: .95rem;
-        }
-
+        /* ── Tab badges ── */
         .tab-badge {
-            background: #ef4444;
-            color: #fff;
-            font-size: .62rem;
-            font-weight: 700;
-            padding: 1px 5px;
-            border-radius: 9999px;
-            min-width: 18px;
-            text-align: center;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: .59rem; font-weight: 800;
+        padding: 1px 6px; border-radius: var(--hdr-radius-full);
+        min-width: 18px; text-align: center; line-height: 1.5;
+        border: 1.5px solid transparent;
+        transition: all var(--hdr-transition);
         }
+        /* Teal — default */
+        .tab-badge          { background: var(--hdr-teal-50); color: var(--hdr-teal-700); border-color: var(--hdr-teal-100); }
+        .chart-tab.active .tab-badge { background: var(--hdr-teal-700); color: #fff; border-color: var(--hdr-teal-700); }
+        /* Green */
+        .tab-badge-green    { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+        .chart-tab.active .tab-badge-green { background: #15803d; color: #fff; border-color: #15803d; }
+        /* Blue */
+        .tab-badge-blue     { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+        .chart-tab.active .tab-badge-blue { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
 
-        .tab-badge-warn {
-            background: #f59e0b;
+        /* ── Responsive ─────────────────────────────────────────────────────── */
+        @media (max-width: 900px) {
+        .chart-hdr-strip { grid-template-columns: repeat(2, 1fr); margin: -12px 14px 6px; }
+        .hdr-info-cell:nth-child(even)::after { display: none; }
+        .hdr-info-cell { padding: 12px 14px; min-height: 54px; }
+        .hdr-info-cell:first-child { padding-left: 18px; }
         }
-
-        .tab-badge-green {
-            background: #059669;
+        @media (max-width: 600px) {
+        .chart-hdr-hero { padding: 14px 14px 22px; }
+        .chart-hdr-top-row { flex-direction: column; gap: 12px; }
+        .chart-header-actions { width: 100%; }
+        .chart-hdr-strip { grid-template-columns: 1fr 1fr; margin: -10px 10px 4px; border-radius: var(--hdr-radius); }
+        .pt-name-big { font-size: 1.1rem; }
+        .chart-tabs { justify-content: flex-start; padding: 0 12px; }
+        .chart-tab { padding: 10px 11px; font-size: .75rem; }
         }
-
-        .tab-badge-blue {
-            background: #1d4ed8;
+        @media (min-width: 1280px) {
+        .chart-hdr-hero { padding: 22px 32px 32px; }
+        .chart-hdr-strip { margin: -14px 28px 10px; }
+        .hdr-info-cell { padding: 16px 22px; }
+        .hdr-info-cell:first-child { padding-left: 26px; }
+        .chart-tabs { padding: 0 32px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+        .btn-back-hdr, .chart-tab, .tab-badge { transition: none; }
+        .btn-back-hdr:hover { transform: none; }
         }
 
         /* ── Tab content ─────────────────────────────────────────────────── */
@@ -1755,12 +1764,13 @@
 
         .hx-table {
             width: 100%;
+            min-width: 780px;
             border-collapse: collapse;
-            font-size: .82rem;
+            font-size: .83rem;
         }
 
         .hx-table thead {
-            background: #f3f4f6;
+            background: #f9fafb;
         }
 
         .dark .hx-table thead {
@@ -1768,26 +1778,26 @@
         }
 
         .hx-table th {
-            padding: 9px 12px;
+            padding: 10px 14px;
             text-align: left;
-            font-size: .7rem;
+            font-size: .64rem;
             text-transform: uppercase;
-            letter-spacing: .05em;
-            color: #6b7280;
+            letter-spacing: .07em;
+            color: #9ca3af;
             font-weight: 700;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 2px solid #e5e7eb;
             white-space: nowrap;
         }
 
         .dark .hx-table th {
             border-bottom-color: #374151;
-            color: #9ca3af;
+            color: #6b7280;
         }
 
         .hx-table td {
-            padding: 11px 12px;
+            padding: 11px 14px;
             border-bottom: 1px solid #f3f4f6;
-            vertical-align: middle;
+            vertical-align: top;
         }
 
         .dark .hx-table td {
@@ -1799,17 +1809,28 @@
             border-bottom: none;
         }
 
+        /* Fixed column widths — prevent date from wrapping into 3 lines */
+        .hx-table .col-date   { width: 160px; min-width: 160px; }
+        .hx-table .col-type   { width: 90px;  min-width: 90px; }
+        .hx-table .col-cc     { width: 17%;   min-width: 130px; }
+        .hx-table .col-dx     { width: 17%;   min-width: 130px; }
+        .hx-table .col-dr     { width: 140px; min-width: 120px; }
+        .hx-table .col-status { width: 110px; min-width: 100px; }
+        .hx-table .col-days   { width: 72px;  min-width: 60px; text-align: center; }
+        .hx-table .col-rec    { width: 110px; min-width: 100px; }
+        .hx-table .col-arrow  { width: 32px;  min-width: 32px; text-align: center; }
+
         .hx-row {
             cursor: pointer;
-            transition: background .12s;
+            transition: background .1s;
         }
 
         .hx-row:hover td {
-            background: #eff6ff;
+            background: #f0fdfa;
         }
 
         .dark .hx-row:hover td {
-            background: rgba(29, 78, 216, .08);
+            background: rgba(13, 148, 136, .06);
         }
 
         .hx-badge {
@@ -2082,114 +2103,131 @@
     @endphp
 
     <div class="chart-page">
-
-        {{-- ════ HEADER ════════════════════════════════════════════════ --}}
+{{-- ════ HEADER ════════════════════════════════════════════════ --}}
         <div class="chart-header">
-            <div class="chart-header-left">
-                @php
-                $isTemporary = (bool) ($patient->is_provisional ?? false) || (bool) ($visit?->isProvisionalNicu() ?? false);
-
-                if ($isTemporary) {
-                [$patientNameMain, $patientNameMeta] = array_pad(explode(' - ', $patient->full_name ?? '', 2), 2, null);
-                $patientNameMain = trim((string) $patientNameMain);
-                $patientNameMeta = $patientNameMeta !== null ? trim((string) $patientNameMeta) : null;
-                } else {
-                $patientNameMain = $patient->full_name ?? '';
-                $patientNameMeta = null;
-                }
-                @endphp
-
-                <p class="patient-name">{{ $patientNameMain }}</p>
-                @if($isTemporary && $patientNameMeta)
-                <p class="patient-name-meta">{{ $patientNameMeta }}</p>
-                @endif
-                <p class="case-no">{{ $patient->case_no }}</p>
+            <div class="chart-hdr-hero">
+                <div class="chart-hdr-top-row">
+                    <div>
+                        @php
+                        $isTemporary = (bool) ($patient->is_provisional ?? false) || (bool) ($visit?->isProvisionalNicu() ?? false);
+                        if ($isTemporary) {
+                            [$patientNameMain, $patientNameMeta] = array_pad(explode(' - ', $patient->full_name ?? '', 2), 2, null);
+                            $patientNameMain = trim((string) $patientNameMain);
+                            $patientNameMeta = $patientNameMeta !== null ? trim((string) $patientNameMeta) : null;
+                        } else {
+                            $patientNameMain = $patient->full_name ?? '';
+                            $patientNameMeta = null;
+                        }
+                        @endphp
+                        <p class="pt-name-big">{{ $patientNameMain }}</p>
+                        @if($isTemporary && $patientNameMeta)
+                        <p style="font-size:.78rem;font-weight:700;color:rgba(255,255,255,.8);margin-top:4px;text-transform:uppercase;letter-spacing:.04em;">{{ $patientNameMeta }}</p>
+                        @endif
+                        <p class="pt-case-big">
+                            <span style="font-family:monospace;opacity:.8;letter-spacing:.02em;">{{ $patient->case_no }}</span>
+                            <span class="svc-pill">{{ $service }}</span>
+                            @if($this->isReadonly)
+                            <span class="readonly-badge-hero">Discharged — Read Only</span>
+                            @endif
+                        </p>
+                    </div>
+                    <div class="chart-header-actions">
+                        @if ($visit->status === 'admitted' && !$this->isReadonly)
+                        <a href="{{ \App\Filament\Doctor\Pages\DischargeSummaryPage::getUrl(['visitId' => $visit->id]) }}"
+                            class="btn-back-hdr"
+                            style="background:rgba(5,150,105,.25);border-color:rgba(5,150,105,.45);">
+                            <x-heroicon-o-clipboard-document-list class="w-3.5 h-3.5" />
+                            Discharge Patient
+                        </a>
+                        @elseif($visit->status === 'discharged' && $visit->dischargeSummary)
+                        <a href="{{ \App\Filament\Doctor\Pages\DischargeSummaryPage::getUrl(['visitId' => $visit->id]) }}"
+                            class="btn-back-hdr">
+                            <x-heroicon-o-clipboard-document-list class="w-3.5 h-3.5" />
+                            View Summary
+                        </a>
+                        @endif
+                        <a href="{{ \App\Filament\Doctor\Resources\AdmittedPatientsResource::getUrl('index') }}" class="btn-back-hdr">
+                            <x-heroicon-o-arrow-left class="w-3.5 h-3.5" />
+                            Patient List
+                        </a>
+                    </div>
+                </div>
             </div>
 
-            <div class="h-info-card">
-                <div class="pill-cell">
-                    <p class="pill-label">Age / Sex</p>
-                    <p class="pill-value">{{ $patient->age_display }} · {{ $patient->sex }}</p>
+            {{-- Floating info strip --}}
+            <div class="chart-hdr-strip">
+                <div class="hdr-info-cell">
+                    <p class="pl">Age / Sex</p>
+                    <p class="pv">{{ $patient->age_display }} · {{ $patient->sex }}</p>
                 </div>
-                <div class="pill-cell wide">
-                    <p class="pill-label">Admitting Diagnosis</p>
-                    <p class="pill-value">{{ $visit->admitting_diagnosis ?? $history?->diagnosis ?? '—' }}</p>
+                <div class="hdr-info-cell" style="flex:2;min-width:180px;">
+                    <p class="pl">Admitting Diagnosis</p>
+                    <p class="pv" style="font-size:.82rem;font-weight:600;color:#374151;">{{ $visit->admitting_diagnosis ?? $history?->diagnosis ?? '—' }}</p>
                 </div>
-                <div class="pill-cell">
-                    <p class="pill-label">Admitted</p>
-                    <p class="pill-value">
+                <div class="hdr-info-cell">
+                    <p class="pl">Admitted</p>
+                    <p class="pv" style="font-family:monospace;font-size:.8rem;">
                         @if($visit->clerk_admitted_at)
                         {{ $visit->clerk_admitted_at->timezone('Asia/Manila')->format('M j, Y H:i') }}
                         @elseif($visit->doctor_admitted_at)
                         {{ $visit->doctor_admitted_at->timezone('Asia/Manila')->format('M j, Y H:i') }}
-                        <span class="pending-badge"><x-heroicon-o-clock class="w-3 h-3 inline mr-1" />Pending Clerk</span>
+                        <span style="display:inline-flex;align-items:center;gap:3px;font-size:.6rem;background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:9999px;font-weight:700;margin-top:3px;">Pending Clerk</span>
                         @else
                         —
                         @endif
                     </p>
                 </div>
+                @if($history?->doctor)
+                <div class="hdr-info-cell">
+                    <p class="pl">Physician</p>
+                    <p class="pv" style="font-size:.8rem;">{{ Str::startsWith($history->doctor->name, ['Dr.','Dr ']) ? $history->doctor->name : 'Dr. '.$history->doctor->name }}</p>
+                </div>
+                @endif
+                @if($visit->visit_type === 'NICU')
+                <div class="hdr-info-cell">
+                    <p class="pl">Type</p>
+                    <p class="pv"><span class="nicu-badge">NICU</span></p>
+                </div>
+                @endif
             </div>
-
-            <span class="h-service-badge">{{ $service }}</span>
-
-            {{-- ── Discharge / View Summary button in header ── --}}
-            @if ($visit->status === 'admitted' && !$this->isReadonly)
-            <a href="{{ \App\Filament\Doctor\Pages\DischargeSummaryPage::getUrl(['visitId' => $visit->id]) }}"
-                style="
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 6px;
-                        background: linear-gradient(135deg, #059669, #047857);
-                        color: #fff;
-                        font-size: 0.75rem;
-                        font-weight: 700;
-                        padding: 8px 16px;
-                        border-radius: 8px;
-                        text-decoration: none;
-                        box-shadow: 0 2px 8px rgba(5,150,105,.35);
-                        white-space: nowrap;
-                        flex-shrink: 0;
-                        ">
-                <x-heroicon-o-clipboard-document-list class="w-4 h-4" /> Discharge Patient
-            </a>
-            @elseif($visit->status === 'discharged' && $visit->dischargeSummary)
-            <a href="{{ \App\Filament\Doctor\Pages\DischargeSummaryPage::getUrl(['visitId' => $visit->id]) }}"
-                style="
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                background: rgba(255,255,255,.15);
-                border: 1px solid rgba(255,255,255,.3);
-                color: #fff;
-                font-size: 0.74rem;
-                font-weight: 600;
-                padding: 7px 14px;
-                border-radius: 7px;
-                text-decoration: none;
-                white-space: nowrap;
-                flex-shrink: 0;
-                ">
-                <x-heroicon-o-clipboard-document-list class="w-4 h-4" /> View Discharge Summary
-            </a>
-            @endif
         </div>
 
         {{-- ════ TABS ═══════════════════════════════════════════════════ --}}
+        <div class="chart-tabs-wrap">
         <div class="chart-tabs">
-            <button wire:click="setTab('profile')" class="chart-tab {{ $activeTab==='profile' ? 'active':'' }}"><x-heroicon-o-document-text class="w-4 h-4" /> Patient Forms</button>
-            <button wire:click="setTab('history')" class="chart-tab {{ $activeTab==='history' ? 'active':'' }}"><x-heroicon-o-clock class="w-4 h-4" /> Visit History @if($pastCount > 0)<span class="tab-badge tab-badge-blue">{{ $pastCount }}</span>@endif</button>
-            <button wire:click="setTab('orders')" class="chart-tab {{ $activeTab==='orders' ? 'active':'' }}"><x-heroicon-o-clipboard-document-list class="w-4 h-4" /> Doctor's Orders @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif</button>
-            <button wire:click="setTab('results')" class="chart-tab {{ $activeTab==='results' ? 'active':'' }}"><x-heroicon-o-beaker class="w-4 h-4" /> Lab / Radiology @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif</button>
-
+            <button wire:click="setTab('profile')" type="button"
+                    class="chart-tab {{ $activeTab==='profile' ? 'active':'' }}">
+                <x-heroicon-o-document-text class="w-4 h-4" />
+                Patient Forms
+            </button>
+            <button wire:click="setTab('orders')" type="button"
+                    class="chart-tab {{ $activeTab==='orders' ? 'active':'' }}">
+                <x-heroicon-o-clipboard-document-list class="w-4 h-4" />
+                Doctor's Orders
+                @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>@endif
+            </button>
+            <button wire:click="setTab('history')" type="button"
+                    class="chart-tab {{ $activeTab==='history' ? 'active':'' }}">
+                <x-heroicon-o-clock class="w-4 h-4" />
+                Visit History
+                @if($pastCount > 0)<span class="tab-badge tab-badge-blue">{{ $pastCount }}</span>@endif
+            </button>
+            <button wire:click="setTab('results')" type="button"
+                    class="chart-tab {{ $activeTab==='results' ? 'active':'' }}">
+                <x-heroicon-o-beaker class="w-4 h-4" />
+                Lab / Radiology
+                @if($totalResults > 0)<span class="tab-badge tab-badge-green">{{ $totalResults }}</span>@endif
+            </button>
             @if($this->isNicu)
-            <button wire:click="setTab('ballard')" class="chart-tab {{ $activeTab==='ballard' ? 'active':'' }}">
-                <x-heroicon-o-document-chart-bar class="w-4 h-4" /> Ballard Score
-                @if($this->hasBallardScore)
-                <span class="tab-badge tab-badge-green">&#10003;</span>
-                @endif
+            <button wire:click="setTab('ballard')" type="button"
+                    class="chart-tab {{ $activeTab==='ballard' ? 'active':'' }}">
+                <x-heroicon-o-document-chart-bar class="w-4 h-4" />
+                Ballard Score
+                @if($this->hasBallardScore)<span class="tab-badge tab-badge-green">✓</span>@endif
             </button>
             @endif
         </div>
+        </div>{{-- /chart-tabs-wrap --}}
 
         <div class="chart-content">
 
@@ -2512,27 +2550,26 @@
                 <table class="hx-table" style="min-width: 900px;">
                     <thead>
                         <tr>
-                            <th>Date</th>
-                            <th>Type</th>
-                            <th>Chief Complaint</th>
-                            <th>Admitting / Final Dx</th>
-                            <th>Physician</th>
-                            <th>Outcome</th>
-                            <th>Days</th>
-                            <th>Records</th>
-                            <th></th>
+                            <th class="col-date">Date</th>
+                            <th class="col-type">Type</th>
+                            <th class="col-cc">Chief Complaint</th>
+                            <th class="col-dx">Admitting / Final Dx</th>
+                            <th class="col-dr">Physician</th>
+                            <th class="col-status">Outcome</th>
+                            <th class="col-days">Days</th>
+                            <th class="col-rec">Records</th>
+                            <th class="col-arrow"></th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($pastVisits as $pv)
                         @php
                         $pvHx = $pv->medicalHistory;
-                        $pvDays = ($pv->clerk_admitted_at && $pv->discharged_at) ? $pv->clerk_admitted_at->diffInDays($pv->discharged_at) : null;
-                        $pvDx = $pv->admitting_diagnosis ?? $pvHx?->diagnosis ?? null;
+                        $pvDays = ($pv->clerk_admitted_at && $pv->discharged_at) ? $pv->clerk_admitted_at->diff($pv->discharged_at)->days : null;                        $pvDx = $pv->admitting_diagnosis ?? $pvHx?->diagnosis ?? null;
                         $pvBadge = match ($pv->status) { 'admitted' => 'hx-badge-admitted', 'discharged' => 'hx-badge-discharged', 'referred' => 'hx-badge-referred', 'assessed' => 'hx-badge-assessed', 'registered' => 'hx-badge-registered', default => 'hx-badge-discharged'};
                         @endphp
                         <tr class="hx-row" wire:click="viewHistoryVisit({{ $pv->id }})" wire:key="hxv-{{ $pv->id }}">
-                            <td>
+                            <td class="col-date">
                                 <p class="hx-date">{{ $pv->registered_at->timezone('Asia/Manila')->format('M j, Y') }}</p>
                                 <p class="hx-ago">{{ $pv->registered_at->timezone('Asia/Manila')->format('H:i') }} · {{ $pv->registered_at->diffForHumans() }}</p>
                             </td>
@@ -2567,11 +2604,12 @@
                                 <p style="font-size:.68rem;color:#9ca3af;margin-top:3px;">{{ $pv->payment_class }}</p>
                                 @endif
                             </td>
-                            <td style="text-align:center;">
+                            <td style="text-align:center;white-space:nowrap;width:72px;min-width:60px;">
                                 @if($pvDays !== null)
-                                <span style="font-size:.85rem;font-weight:700;color:#374151;">{{ $pvDays }}</span>
+                                    <span style="font-size:.92rem;font-weight:800;color:#374151;">{{ (int)$pvDays }}</span>
+                                    <span style="font-size:.64rem;color:#9ca3af;display:block;margin-top:1px;">day{{ (int)$pvDays !== 1 ? 's' : '' }}</span>
                                 @else
-                                <span style="font-size:.75rem;color:#9ca3af;">—</span>
+                                    <span style="color:#d1d5db;font-size:.8rem;">—</span>
                                 @endif
                             </td>
                             <td>
@@ -3137,4 +3175,36 @@
     </div>
     @endif
 
+<script>
+(function () {
+    function initChartTabScroll() {
+        const wrap = document.querySelector('.chart-tabs-wrap');
+        const bar  = document.querySelector('.chart-tabs');
+        if (!wrap || !bar) return;
+        const active = bar.querySelector('.chart-tab.active');
+        if (active) {
+            bar.scrollLeft = active.offsetLeft - (bar.clientWidth / 2) + (active.offsetWidth / 2);
+        }
+        function updateFades() {
+            wrap.classList.toggle('scrolled', bar.scrollLeft > 4);
+            wrap.classList.toggle('at-end', bar.scrollLeft + bar.clientWidth >= bar.scrollWidth - 4);
+        }
+        bar.addEventListener('scroll', updateFades, { passive: true });
+        window.addEventListener('resize', updateFades);
+        updateFades();
+        document.addEventListener('livewire:updated', function () {
+            setTimeout(function () {
+                const a = bar.querySelector('.chart-tab.active');
+                if (a) bar.scrollTo({ left: a.offsetLeft - (bar.clientWidth / 2) + (a.offsetWidth / 2), behavior: 'smooth' });
+                updateFades();
+            }, 60);
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initChartTabScroll);
+    } else {
+        initChartTabScroll();
+    }
+})();
+</script>
 </x-filament-panels::page>

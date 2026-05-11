@@ -130,14 +130,14 @@
 
         .vt-table {
             width: 100%;
-            min-width: 720px;
+            min-width: 780px;
             border-collapse: collapse;
-            font-size: .855rem;
+            font-size: .83rem;
         }
 
         .vt-table thead tr {
             background: #f9fafb;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 2px solid #e5e7eb;
         }
 
         .dark .vt-table thead tr {
@@ -146,29 +146,29 @@
         }
 
         .vt-table th {
-            padding: 10px 12px;
+            padding: 10px 14px;
             text-align: left;
-            font-size: .68rem;
+            font-size: .64rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: .06em;
-            color: #6b7280;
+            letter-spacing: .07em;
+            color: #9ca3af;
             white-space: nowrap;
         }
 
         .vt-table td {
-            padding: 12px 12px;
+            padding: 11px 14px;
             border-bottom: 1px solid #f3f4f6;
-            vertical-align: middle;
+            vertical-align: top;
         }
 
         .dark .vt-table td {
-            border-bottom-color: #374151;
+            border-bottom-color: #1f2937;
         }
 
         .vt-table tbody tr {
             cursor: pointer;
-            transition: background .12s;
+            transition: background .1s;
         }
 
         .vt-table tbody tr:hover td {
@@ -183,52 +183,16 @@
             border-bottom: none;
         }
 
-        .col-date {
-            width: 110px;
-            min-width: 110px;
-        }
-
-        .col-type {
-            width: 80px;
-            min-width: 80px;
-        }
-
-        .col-cc {
-            width: 160px;
-            min-width: 140px;
-        }
-
-        .col-dx {
-            width: 160px;
-            min-width: 140px;
-        }
-
-        .col-dr {
-            width: 130px;
-            min-width: 110px;
-        }
-
-        .col-status {
-            width: 100px;
-            min-width: 90px;
-        }
-
-        .col-days {
-            width: 70px;
-            min-width: 60px;
-            text-align: center;
-        }
-
-        .col-records {
-            width: 100px;
-            min-width: 90px;
-        }
-
-        .col-arrow {
-            width: 28px;
-            min-width: 28px;
-            text-align: center;
-        }
+        /* Column widths — fixed so nothing wraps unexpectedly */
+        .col-date    { width: 130px; min-width: 130px; }
+        .col-type    { width: 90px;  min-width: 90px; }
+        .col-cc      { width: 18%;   min-width: 140px; }
+        .col-dx      { width: 18%;   min-width: 140px; }
+        .col-dr      { width: 140px; min-width: 120px; }
+        .col-status  { width: 110px; min-width: 100px; }
+        .col-days    { width: 72px;  min-width: 60px; text-align: center; }
+        .col-records { width: 110px; min-width: 100px; }
+        .col-arrow   { width: 32px;  min-width: 32px; text-align: center; }
 
         .type-badge {
             display: inline-flex;
@@ -511,11 +475,11 @@
                                 $dx = $visit->admitting_diagnosis ?? $hvHx?->diagnosis ?? null;
                                 $days = null;
                                 if ($visit->clerk_admitted_at && $visit->discharged_at) {
-                                    $days = (int) $visit->clerk_admitted_at->diffInDays($visit->discharged_at);
+                                    $days = $visit->clerk_admitted_at->diff($visit->discharged_at)->days;
                                 }
                                 $isCurrent = $visit->status === 'admitted' && !$visit->discharged_at;
                                 $daysSoFar = ($isCurrent && $visit->clerk_admitted_at)
-                                    ? (int) $visit->clerk_admitted_at->diffInDays(now())
+                                    ? $visit->clerk_admitted_at->diff(now())->days
                                     : null;
                                 $statusClass = match ($visit->status) {
                                     'admitted' => 'status-admitted',
@@ -535,7 +499,7 @@
 
                                 <td class="col-date">
                                     <p class="visit-date">{{ $visit->registered_at->timezone('Asia/Manila')->format('M j, Y') }}</p>
-                                    <p class="visit-ago">{{ $visit->registered_at->timezone('Asia/Manila')->format('H:i') }}</p>
+                                    <p class="visit-ago">{{ $visit->registered_at->timezone('Asia/Manila')->format('H:i') }} · {{ $visit->registered_at->diffForHumans() }}</p>
                                 </td>
 
                                 <td class="col-type">
@@ -580,16 +544,15 @@
                                     <span class="status-badge {{ $statusClass }}">{{ $statusLabel }}</span>
                                 </td>
 
-                                <td class="col-days" style="text-align:center;">
+                                <td class="col-days" style="text-align:center;white-space:nowrap;">
                                     @if($days !== null)
-                                        <span style="font-weight:700;color:#374151;">{{ $days }}</span>
-                                        <span
-                                            style="font-size:.67rem;color:#9ca3af;display:block;">day{{ $days !== 1 ? 's' : '' }}</span>
+                                        <span style="font-size:.92rem;font-weight:800;color:#374151;">{{ $days }}</span>
+                                        <span style="font-size:.64rem;color:#9ca3af;display:block;margin-top:1px;">day{{ $days !== 1 ? 's' : '' }}</span>
                                     @elseif($daysSoFar !== null)
-                                        <span style="font-weight:700;color:#059669;">{{ $daysSoFar }}</span>
-                                        <span style="font-size:.62rem;color:#9ca3af;display:block;">so far</span>
+                                        <span style="font-size:.92rem;font-weight:800;color:#059669;">{{ $daysSoFar }}</span>
+                                        <span style="font-size:.64rem;color:#9ca3af;display:block;margin-top:1px;">so far</span>
                                     @else
-                                        <span style="color:#9ca3af;font-size:.75rem;">—</span>
+                                        <span style="color:#d1d5db;font-size:.8rem;">—</span>
                                     @endif
                                 </td>
 

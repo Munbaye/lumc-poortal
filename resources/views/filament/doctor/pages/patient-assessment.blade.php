@@ -2,39 +2,45 @@
     <div style="max-width:900px;">
         @if($visit)
 
-        {{-- Patient bar --}}
-        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px 18px;
-            margin-bottom:20px;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start;"
-            class="dark:bg-gray-900 dark:border-gray-700">
-            <div>
-                <p style="font-size:.67rem;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:2px;">Case No</p>
-                <p style="font-family:monospace;font-weight:700;font-size:.93rem;" class="text-gray-900 dark:text-white">{{ $visit->patient->case_no }}</p>
+        {{-- Patient hero bar --}}
+        <div style="
+            background: linear-gradient(145deg, #134e4a 0%, #0f766e 40%, #0d9488 75%, #14b8a6 100%);
+            border-radius: 12px; padding: 18px 22px 26px;
+            position: relative; overflow: hidden; margin-bottom: 4px;">
+            <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 15% 40%, rgba(255,255,255,.08) 0%, transparent 55%);pointer-events:none;"></div>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;position:relative;z-index:1;">
+                <div>
+                    <p style="font-size:clamp(1rem,2.2vw,1.3rem);font-weight:800;color:#fff;letter-spacing:-.02em;text-shadow:0 1px 3px rgba(0,0,0,.2);">{{ $visit->patient->full_name }}</p>
+                    <p style="font-size:.73rem;color:rgba(255,255,255,.75);margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <span style="font-family:monospace;opacity:.85;">{{ $visit->patient->case_no }}</span>
+                        <span style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);font-size:.65rem;font-weight:700;padding:2px 10px;border-radius:9999px;">{{ $visit->patient->age_display }} · {{ $visit->patient->sex }}</span>
+                        <span style="background:{{ $visit->visit_type==='ER' ? 'rgba(220,38,38,.35)' : 'rgba(255,255,255,.14)' }};border:1px solid rgba(255,255,255,.25);font-size:.65rem;font-weight:700;padding:2px 10px;border-radius:9999px;">{{ $visit->visit_type }}</span>
+                    </p>
+                </div>
+                <div>
+                    <p style="font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.65);margin-bottom:4px;">Chief Complaint</p>
+                    <p style="font-size:.85rem;font-weight:700;color:#fff;max-width:260px;line-height:1.4;">{{ $visit->chief_complaint }}</p>
+                </div>
             </div>
-            <div style="flex:1;min-width:180px;">
-                <p style="font-size:.67rem;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:2px;">Patient</p>
-                <p style="font-weight:700;" class="text-gray-900 dark:text-white">{{ $visit->patient->full_name }}</p>
+        </div>
+        {{-- Floating patient detail strip --}}
+        <div style="
+            background:#fff;border-radius:10px;margin:-12px 18px 16px;
+            border-top:2px solid rgba(13,148,136,.1);
+            box-shadow:0 2px 4px rgba(0,0,0,.04),0 6px 12px rgba(0,0,0,.05);
+            overflow:hidden;position:relative;z-index:2;display:flex;flex-wrap:wrap;"
+            class="dark:bg-gray-900">
+            <div style="flex:1;min-width:120px;padding:12px 16px 12px 22px;position:relative;">
+                <p style="font-size:.59rem;text-transform:uppercase;letter-spacing:.09em;color:#94a3b8;font-weight:700;">Case No</p>
+                <p style="font-family:monospace;font-weight:700;font-size:.9rem;color:#1e293b;margin-top:3px;" class="dark:text-white">{{ $visit->patient->case_no }}</p>
             </div>
-            <div>
-                <p style="font-size:.67rem;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:2px;">Age / Sex</p>
-                <p style="font-weight:600;" class="text-gray-700 dark:text-gray-300">{{ $visit->patient->age_display }} / {{ $visit->patient->sex }}</p>
+            <div style="flex:1;min-width:120px;padding:12px 16px;border-left:1px solid #e5e7eb;" class="dark:border-gray-700">
+                <p style="font-size:.59rem;text-transform:uppercase;letter-spacing:.09em;color:#94a3b8;font-weight:700;">Entry Type</p>
+                <p style="font-weight:700;font-size:.85rem;color:#1e293b;margin-top:3px;" class="dark:text-white">{{ $visit->visit_type }}</p>
             </div>
-            <div>
-                <p style="font-size:.67rem;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:2px;">Entry</p>
-                <span class="ca-header-pill" style="{{ $visit->visit_type==='ER' ? 'background:rgba(220,38,38,.3);' : '' }}">
-                    <span style="display:inline-flex;align-items:center;gap:6px;">
-                        @if($visit->visit_type==='ER')
-                        <x-filament::icon icon="heroicon-o-bolt" class="w-4 h-4 text-red-100" />
-                        <span>ER</span>
-                        @else
-                        <x-filament::icon icon="heroicon-o-clipboard-document-list" class="w-4 h-4 text-blue-100" />
-                        <span>OPD</span>
-                        @endif
-                    </span>
-                </span>
-            </div>
-            <div style="max-width:260px;">
-                <p style="font-size:.67rem;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:2px;">Chief Complaint</p>
-                <p style="font-weight:600;" class="text-gray-700 dark:text-gray-300">{{ $visit->chief_complaint }}</p>
+            <div style="flex:1;min-width:120px;padding:12px 16px;border-left:1px solid #e5e7eb;" class="dark:border-gray-700">
+                <p style="font-size:.59rem;text-transform:uppercase;letter-spacing:.09em;color:#94a3b8;font-weight:700;">Age / Sex</p>
+                <p style="font-weight:700;font-size:.85rem;color:#1e293b;margin-top:3px;" class="dark:text-white">{{ $visit->patient->age_display }} / {{ $visit->patient->sex }}</p>
             </div>
         </div>
 
