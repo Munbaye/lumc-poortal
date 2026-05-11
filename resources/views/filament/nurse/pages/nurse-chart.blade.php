@@ -1033,7 +1033,21 @@ use App\Helpers\WHOGrowthChart;
             Growth Chart
         </button>
         @endif
+        {{-- Patient Forms — 1st position --}}
+        <button wire:click="setTab('forms')" type="button"
+                class="chart-tab {{ $activeTab==='forms' ? 'active':'' }}">
+            <x-heroicon-o-document-text class="w-4 h-4" />
+            Patient Forms
+        </button>
 
+        {{-- Doctor's Orders — 2nd position, default landing tab --}}
+        <button wire:click="setTab('orders')" type="button"
+                class="chart-tab {{ $activeTab==='orders' ? 'active':'' }}">
+            <x-heroicon-o-clipboard-document-list class="w-4 h-4" />
+            Doctor's Orders
+            @if($pendingCnt > 0)<span class="tab-badge">{{ $pendingCnt }}</span>
+            @elseif($allOrders->count() > 0)<span class="tab-badge tab-badge-green">✓</span>@endif
+        </button>
         {{-- MAR --}}
         <button wire:click="setTab('mar')" type="button"
                 class="chart-tab {{ $activeTab==='mar' ? 'active':'' }}">
