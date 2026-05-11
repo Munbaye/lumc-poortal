@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('assigned_doctor_id')->nullable()->constrained('users')->nullOnDelete();
 
             // ── Updated visit_type to include NICU ────────────────────────────
-            $table->enum('visit_type', ['OPD', 'ER', 'NICU'])->default('OPD');
+            $table->enum('visit_type', ['OPD', 'ER', 'NICU', 'OB'])->default('OPD');
             $table->text('chief_complaint');
 
             // ── Workflow status (updated for NICU provisional) ────────────────

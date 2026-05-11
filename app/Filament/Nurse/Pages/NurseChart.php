@@ -918,6 +918,11 @@ class NurseChart extends Page
 
     public function goBack(): void { $this->redirect(PatientList::getUrl()); }
 
+    public function redirectToObRecord(): void
+    {
+        $this->redirect(\App\Filament\Nurse\Pages\NurseObRecord::getUrl(['visitId' => $this->visitId]));
+    }
+
     // Add to the getBreastfeedingObservations property
     public function getBreastfeedingObservationsProperty()
     {
