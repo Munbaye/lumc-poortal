@@ -1057,8 +1057,8 @@ use App\Helpers\WHOGrowthChart;
         </button>
 
     </div>
-    @endif{{-- !isReadonly --}}
     </div>{{-- /chart-tabs-wrap --}}
+    @endif{{-- !isReadonly --}}
 
     <div class="chart-content">
 
