@@ -751,6 +751,15 @@ use App\Helpers\WHOGrowthChart;
         </button>
         @endif
 
+        {{-- OB Record tab — only for admitted OB patients --}}
+        @if($visit->visit_type === 'OB' && $visit->status === 'admitted')
+        <button wire:click="redirectToObRecord" type="button"
+                class="chart-tab {{ $activeTab==='ob_record' ? 'active' : '' }}">
+            <x-heroicon-o-document-text class="w-4 h-4" />
+            OB Record
+        </button>
+        @endif
+        
         {{-- Patient Forms --}}
         <button wire:click="setTab('forms')" type="button"
                 class="chart-tab {{ $activeTab==='forms' ? 'active':'' }}">

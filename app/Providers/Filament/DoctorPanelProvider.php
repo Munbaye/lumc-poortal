@@ -9,10 +9,12 @@ use Filament\Navigation\MenuItem;
 use App\Filament\Doctor\Resources\PatientQueueResource;
 use App\Filament\Doctor\Resources\AdmittedPatientsResource;
 use App\Filament\Doctor\Resources\NicuBabyResource;
+use App\Filament\Doctor\Resources\ObPatientResource;
 use App\Filament\Doctor\Pages\PatientAssessment;
 use App\Filament\Doctor\Pages\PatientChart;
 use App\Filament\Doctor\Pages\PatientHistory;
 use App\Filament\Doctor\Pages\NicuAssessment;
+use App\Filament\Doctor\Pages\ObAssessment;
 use App\Filament\Doctor\Pages\BallardScore;
 use App\Filament\Doctor\Pages\DischargeSummaryPage;
 use App\Filament\Doctor\Pages\MySignature;
@@ -66,12 +68,14 @@ class DoctorPanelProvider extends PanelProvider
                 PatientQueueResource::class,
                 AdmittedPatientsResource::class,
                 NicuBabyResource::class,
+                ObPatientResource::class,
             ])
             ->pages([
                 PatientAssessment::class,
                 PatientChart::class,
                 PatientHistory::class,
                 NicuAssessment::class,
+                ObAssessment::class,
                 BallardScore::class,
                 DischargeSummaryPage::class,
                 MySignature::class,

@@ -24,6 +24,7 @@ class PendingAdmissions extends Page
             ->whereNotNull('doctor_admitted_at')
             ->whereNull('clerk_admitted_at')
             ->where('visit_type', '!=', 'NICU')
+            ->whereHas('patient', fn ($q) => $q->where('is_provisional', false))
             ->whereDate('registered_at', '>=', now()->subDays(30))
             ->orderBy('doctor_admitted_at', 'asc')
             ->get();
@@ -35,6 +36,7 @@ class PendingAdmissions extends Page
             $count = Visit::whereNotNull('doctor_admitted_at')
                 ->whereNull('clerk_admitted_at')
                 ->where('visit_type', '!=', 'NICU')
+                ->whereHas('patient', fn ($q) => $q->where('is_provisional', false))
                 ->whereDate('registered_at', '>=', now()->subDays(30))
                 ->count();
             return $count > 0 ? (string) $count : null;
