@@ -10,6 +10,7 @@ class PatientList extends Page
 {
     use WithPagination;
 
+    protected static ?string $navigationGroup = 'Patient Management';
     protected static ?string $navigationIcon  = 'heroicon-o-clipboard-document-list';
     protected static ?string $navigationLabel = 'Patient List';
     protected static ?string $title           = 'Patient List';

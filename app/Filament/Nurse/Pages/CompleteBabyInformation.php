@@ -14,7 +14,7 @@ class CompleteBabyInformation extends Page
     protected static string $view = 'filament.nurse.pages.complete-baby-information';
     protected static ?string $title = 'Complete Baby Information';
     protected static ?string $navigationGroup = 'NICU Care';
-    protected static ?int $navigationSort = 2;
+    protected static ?int    $navigationSort  = 2;
     
     public static function shouldRegisterNavigation(): bool
     {

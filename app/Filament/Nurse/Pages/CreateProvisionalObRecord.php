@@ -18,7 +18,7 @@ class CreateProvisionalObRecord extends Page
     protected static ?string $title           = 'OB - New Patient Arrival';
     protected static ?string $navigationLabel = 'OB - New Patient Arrival';
     protected static ?string $navigationGroup = 'OB Care';
-    protected static ?int    $navigationSort  = 2;
+    protected static ?int    $navigationSort  = 1;
 
     public static function shouldRegisterNavigation(): bool
     {
@@ -169,7 +169,7 @@ class CreateProvisionalObRecord extends Page
             $vital->patient_id = $patient->id;
             $vital->recorded_by = auth()->id();
             $vital->nurse_name = auth()->user()->name;
-            $vital->taken_at = now();
+            $vital->taken_at = \Carbon\Carbon::now();
             $vital->height_cm = $this->formData['height_cm'] ?: null;
             $vital->weight_kg = $this->formData['weight_kg'] ?: null;
             $vital->temperature = $this->formData['temperature'] ?: null;

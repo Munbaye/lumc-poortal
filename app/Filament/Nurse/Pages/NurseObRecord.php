@@ -25,7 +25,8 @@ class NurseObRecord extends Page
     protected static ?string $navigationIcon         = 'heroicon-o-document-text';
     protected static string  $view                   = 'filament.nurse.pages.nurse-ob-record';
     protected static ?string $title                  = 'OB Record';
-    protected static ?string $navigationGroup        = 'OB Care';
+    protected static ?int    $navigationSort  = 2;
+    protected static ?string $navigationGroup = 'OB Care';
     protected static bool    $shouldRegisterNavigation = false;
 
     #[Url]
@@ -182,11 +183,11 @@ class NurseObRecord extends Page
         $this->pastMedicalHistory = $rec->past_medical_history;
         $this->familyHistory      = $rec->family_history;
 
-        $this->lmp            = $rec->lmp?->format('Y-m-d');
-        $this->pmp            = $rec->pmp?->format('Y-m-d');
-        $this->edc            = $rec->edc?->format('Y-m-d');
+        $this->lmp            = $rec->lmp ? \Carbon\Carbon::parse($rec->lmp)->format('Y-m-d') : null;
+        $this->pmp            = $rec->pmp ? \Carbon\Carbon::parse($rec->pmp)->format('Y-m-d') : null;
+        $this->edc            = $rec->edc ? \Carbon\Carbon::parse($rec->edc)->format('Y-m-d') : null;
         $this->aog            = $rec->aog;
-        $this->quickeningDate = $rec->quickening_date?->format('Y-m-d');
+        $this->quickeningDate = $rec->quickening_date ? \Carbon\Carbon::parse($rec->quickening_date)->format('Y-m-d') : null;
 
         $this->morningSickness  = $rec->morning_sickness;
         $this->abnormalSymptoms = $rec->abnormal_symptoms ?? [];
@@ -215,7 +216,7 @@ class NurseObRecord extends Page
                     'gravida_order'      => $p->gravida_order,
                     'aog_term'           => $p->aog_term ?? '',
                     'manner_of_delivery' => $p->manner_of_delivery ?? '',
-                    'delivery_date'      => $p->delivery_date?->format('Y-m-d') ?? '',
+                    'delivery_date'      => $p->delivery_date ? \Carbon\Carbon::parse($p->delivery_date)->format('Y-m-d') : '',
                     'gender'             => $p->gender ?? '',
                     'weight_grams'       => $p->weight_grams,
                     'complications'      => $p->complications ?? '',
@@ -361,7 +362,7 @@ class NurseObRecord extends Page
             }
 
             // ── Activity log ──────────────────────────────────────────────────
-            if (class_exists(\App\Models\ActivityLog::class)) {
+            if (class_exists(ActivityLog::class)) {
                 ActivityLog::record(
                     action:       'ob_record_saved',
                     category:     ActivityLog::CAT_CLINICAL,

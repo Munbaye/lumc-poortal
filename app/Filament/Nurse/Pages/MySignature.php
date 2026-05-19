@@ -11,7 +11,8 @@ class MySignature extends BaseSignaturePage
     protected string $accentLight = 'rgba(190,18,60,.08)';
     protected string $accentMid   = 'rgba(190,18,60,.28)';
 
+    protected static ?string $navigationGroup = 'Settings';
     protected static ?string $navigationIcon  = 'heroicon-o-pencil-square';
     protected static ?string $navigationLabel = 'My Signature';
-    protected static ?int    $navigationSort  = 99;
+    protected static ?int    $navigationSort  = 1;
 }

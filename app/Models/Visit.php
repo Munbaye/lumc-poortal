@@ -26,25 +26,38 @@ class Visit extends Model
         'discharged_at',
         'doctor_admitted_at',
         'clerk_admitted_at',
-        
+
         // ── NEW NICU FIELDS ───────────────────────────────────────────────────
         'is_provisionally_registered',
         'referring_facility',
         'admission_type',
+
+        // ── ER TRIAGE FIELDS ──────────────────────────────────────────────────
+        'triage_nurse_id',
+        'triage_at',
+        'triage_category',
+        'consciousness',
+        'breathing',
+        'mobility',
+        'complaint_duration',
+        'triage_nurse_name',
+        'triage_notes',
     ];
 
     protected $casts = [
-        'registered_at'      => 'datetime',
-        'discharged_at'      => 'datetime',
-        'doctor_admitted_at' => 'datetime',
-        'clerk_admitted_at'  => 'datetime',
-        'medico_legal'       => 'boolean',
+        'registered_at'               => 'datetime',
+        'discharged_at'               => 'datetime',
+        'doctor_admitted_at'          => 'datetime',
+        'clerk_admitted_at'           => 'datetime',
+        'triage_at'                   => 'datetime',
+        'medico_legal'                => 'boolean',
         'is_provisionally_registered' => 'boolean',
     ];
 
     public function patient()          { return $this->belongsTo(Patient::class); }
     public function clerk()            { return $this->belongsTo(User::class, 'clerk_id'); }
     public function assignedDoctor()   { return $this->belongsTo(User::class, 'assigned_doctor_id'); }
+    public function triageNurse()      { return $this->belongsTo(User::class, 'triage_nurse_id'); }
     public function vitals()           { return $this->hasMany(Vital::class); }
     public function latestVitals()     { return $this->hasOne(Vital::class)->latestOfMany('taken_at'); }
     public function medicalHistory()   { return $this->hasOne(MedicalHistory::class); }
@@ -56,7 +69,7 @@ class Visit extends Model
     public function consentRecord()    { return $this->hasOne(ConsentRecord::class); }
     public function labRequests()      { return $this->hasMany(LabRequest::class); }
     public function radiologyRequests(){ return $this->hasMany(RadiologyRequest::class); }
-    
+
     // ── NICU Relationships ────────────────────────────────────────────────────
     public function nicuAdmission()    { return $this->hasOne(NicuAdmission::class); }
 
@@ -72,7 +85,7 @@ class Visit extends Model
         }
         return true;
     }
-    
+
     /**
      * Check if this is a provisional NICU visit
      */

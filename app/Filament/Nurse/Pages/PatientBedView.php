@@ -9,11 +9,12 @@ use Filament\Pages\Page;
 
 class PatientBedView extends Page
 {
+    protected static ?string $navigationGroup = 'Patient Management';
     protected static ?string $navigationIcon  = 'heroicon-o-map';
     protected static ?string $navigationLabel = 'Ward & Bed View';
     protected static ?string $title           = 'Ward & Bed View';
     protected static string  $view            = 'filament.nurse.pages.patient-bed-view';
-    protected static ?int    $navigationSort  = 5;
+    protected static ?int    $navigationSort  = 2;
 
     public string $wardFilter           = '';
     public string $classificationFilter = '';

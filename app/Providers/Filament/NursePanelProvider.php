@@ -3,14 +3,12 @@
 namespace App\Providers\Filament;
 
 use Filament\Panel;
+use Filament\Navigation\NavigationGroup;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Navigation\MenuItem;
 use App\Http\Middleware\Filament\StaffAuthenticate;
 use Illuminate\Support\HtmlString;
-use App\Filament\Nurse\Pages\CreateProvisionalRecord;
-use App\Filament\Nurse\Pages\CompleteBabyInformation;
-use App\Filament\Nurse\Pages\BreastfeedingObservation;
 
 class NursePanelProvider extends PanelProvider
 {
@@ -60,6 +58,13 @@ class NursePanelProvider extends PanelProvider
                 in: app_path('Filament/Nurse/Pages'),
                 for: 'App\\Filament\\Nurse\\Pages'
             )
+            ->navigationGroups([
+                NavigationGroup::make('Emergency')->collapsible(false),
+                NavigationGroup::make('Patient Management')->collapsible(false),
+                NavigationGroup::make('OB Care')->collapsible(false),
+                NavigationGroup::make('NICU Care')->collapsible(false),
+                NavigationGroup::make('Settings')->collapsible(false),
+            ])
             ->discoverResources(
                 in: app_path('Filament/Nurse/Resources'),
                 for: 'App\\Filament\\Nurse\\Resources'

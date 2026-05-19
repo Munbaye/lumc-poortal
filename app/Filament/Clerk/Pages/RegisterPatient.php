@@ -32,6 +32,10 @@ class RegisterPatient extends Page
     public bool  $showCreateForm    = false;
     public bool  $confirmNoMatch    = false;
 
+    // ── ER Triage pre-fill ────────────────────────────────────────────────────
+    // When coming from ErTriageQueue, this is set via URL query param
+    public ?int $triageVisitId = null;
+
     // ── Credentials modal ────────────────────────────────────────────────────
     public bool    $showCredentialsModal = false;
     public ?string $credUsername         = null;
@@ -72,6 +76,38 @@ class RegisterPatient extends Page
     {
         if (auth()->user()->hasRole('clerk-er')) {
             $this->formData['registration_type'] = 'ER';
+        }
+
+        // Pre-fill from nurse ER triage — skip search, go straight to form
+        if ($this->triageVisitId) {
+            $triageVisit = Visit::with('patient')->find($this->triageVisitId);
+
+            if ($triageVisit && $triageVisit->visit_type === 'ER') {
+                $this->formData['registration_type'] = 'ER';
+                $this->formData['chief_complaint']   = $triageVisit->chief_complaint ?? '';
+                $p = $triageVisit->patient;
+
+                if ($p) {
+                    // Pre-fill what the nurse already collected
+                    $this->selectedPatientId = $p->id;
+                    $this->formData['family_name']    = $p->family_name  ?? '';
+                    $this->formData['first_name']     = $p->first_name   ?? '';
+                    $this->formData['middle_name']    = $p->middle_name  ?? '';
+                    $this->formData['sex']            = $p->sex          ?? null;
+                    $this->formData['contact_number'] = $p->contact_number ?? '';
+                    $this->formData['has_incomplete_info'] = (bool) ($p->has_incomplete_info ?? true);
+
+                    if ($p->birthday) {
+                        $this->formData['birthday'] = \Carbon\Carbon::parse($p->birthday)->format('Y-m-d');
+                        $this->formData['age']      = (int) \Carbon\Carbon::parse($p->birthday)->diffInYears(now());
+                    } elseif ($p->age) {
+                        $this->formData['age'] = $p->age;
+                    }
+                }
+
+                // Skip search — go straight to the registration form
+                $this->showCreateForm = true;
+            }
         }
     }
 
@@ -386,6 +422,32 @@ class RegisterPatient extends Page
             Notification::make()
                 ->title('Patient registered! Case No: ' . $patient->case_no)
                 ->success()->send();
+
+            // Notify all active nurses if this came from ER triage
+            if ($this->triageVisitId || ($this->formData['registration_type'] ?? '') === 'ER') {
+                $nurses = \App\Models\User::where('is_active', true)
+                    ->whereHas('roles', fn($q) => $q->where('name', 'nurse'))
+                    ->get();
+
+                foreach ($nurses as $nurse) {
+                    \Filament\Notifications\Notification::make()
+                        ->title('Patient registered — assign doctor')
+                        ->body(
+                            $patient->full_name . ' (' . $patient->case_no . ') ' .
+                            'has been registered. Please assign a doctor in ER Triage → Assign Doctor tab.'
+                        )
+                        ->icon('heroicon-o-user-plus')
+                        ->iconColor('success')
+                        ->actions([
+                            \Filament\Notifications\Actions\Action::make('assign')
+                                ->label('Assign Doctor')
+                                ->url('/nurse/er-triage')
+                                ->markAsRead(),
+                        ])
+                        ->sendToDatabase($nurse);
+                }
+            }
+
             $this->redirect($redirectUrl);
         }
     }
@@ -400,6 +462,23 @@ class RegisterPatient extends Page
 
     private function createVisit(Patient $patient): Visit
     {
+        // If coming from nurse ER triage — update existing visit, don't create duplicate
+        if ($this->triageVisitId) {
+            $existing = Visit::find($this->triageVisitId);
+            if ($existing && in_array($existing->status, ['triage', 'registered'])) {
+                $existing->update([
+                    'patient_id'      => $patient->id,
+                    'clerk_id'        => auth()->id(),
+                    'visit_type'      => 'ER',
+                    'chief_complaint' => $this->formData['chief_complaint'],
+                    'status'          => 'registered',
+                    'registered_at'   => now(),
+                ]);
+                return $existing->fresh();
+            }
+        }
+
+        // Standard new visit creation
         return Visit::create([
             'patient_id'      => $patient->id,
             'clerk_id'        => auth()->id(),

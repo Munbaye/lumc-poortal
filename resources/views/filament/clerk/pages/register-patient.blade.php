@@ -42,6 +42,57 @@
     </div>
     @endif
 
+    {{-- ══ ER TRIAGE SUMMARY (shown when coming from nurse triage) ══ --}}
+    @if($triageVisitId)
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:14px 18px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+            <x-heroicon-o-check-circle class="w-5 h-5 text-green-600" style="flex-shrink:0;"/>
+            <div>
+                <div style="font-size:.85rem;font-weight:700;color:#15803d;">From Nurse Triage — Info Pre-filled</div>
+                <div style="font-size:.72rem;color:#6b7280;">Fields collected by nurse are pre-filled. Complete the missing info below and click Register.</div>
+            </div>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+            @if($formData['family_name'])
+            <div>
+                <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:2px;">Patient name</div>
+                <div style="font-size:.85rem;font-weight:700;color:#111827;">
+                    {{ strtoupper($formData['family_name']) }}, {{ $formData['first_name'] }}
+                    {{ $formData['middle_name'] ? $formData['middle_name'] : '' }}
+                </div>
+            </div>
+            @endif
+            @if($formData['sex'])
+            <div>
+                <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:2px;">Sex</div>
+                <div style="font-size:.85rem;font-weight:600;color:#111827;">{{ $formData['sex'] }}</div>
+            </div>
+            @endif
+            @if($formData['age'] || $formData['birthday'])
+            <div>
+                <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:2px;">Age</div>
+                <div style="font-size:.85rem;font-weight:600;color:#111827;">
+                    {{ $formData['age'] ? $formData['age'] . ' y/o' : '' }}
+                    {{ $formData['birthday'] ? '(' . \Carbon\Carbon::parse($formData['birthday'])->format('M d, Y') . ')' : '' }}
+                </div>
+            </div>
+            @endif
+            @if($formData['chief_complaint'])
+            <div>
+                <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:2px;">Chief complaint</div>
+                <div style="font-size:.85rem;font-weight:600;color:#111827;">{{ $formData['chief_complaint'] }}</div>
+            </div>
+            @endif
+        </div>
+        <div style="margin-top:10px;padding:7px 10px;background:#fef3c7;border-radius:6px;font-size:.73rem;color:#92400e;">
+            <strong>Still needed:</strong> Full address · Civil status · Payment class
+            @if(!$formData['family_name'] || $formData['family_name'] === 'Doe')
+            · <strong>Real patient name</strong> (currently: {{ $formData['first_name'] }} {{ $formData['family_name'] }})
+            @endif
+        </div>
+    </div>
+    @endif
+
     {{-- ══ LUMC HEADER ══ --}}
     <div style="background:linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 100%);border:1px solid #1e40af;border-radius:12px;margin-bottom:24px;overflow:hidden;">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;">
@@ -395,6 +446,16 @@
         {{-- Entry Point --}}
         <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:20px;">
             <label class="lumc-label">Entry Point <span class="lumc-required">*</span></label>
+            @if($triageVisitId)
+            {{-- Coming from ER triage — locked to ER, cannot be changed --}}
+            <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+                <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:6px 14px;display:flex;align-items:center;gap:8px;">
+                    <x-heroicon-o-heart class="w-4 h-4 text-red-600"/>
+                    <span style="font-weight:700;color:#dc2626;font-size:.88rem;">ER (Emergency Room)</span>
+                    <span style="font-size:.7rem;color:#9ca3af;">— forwarded from nurse triage</span>
+                </div>
+            </div>
+            @else
             <div style="display:flex;gap:24px;margin-top:4px;">
                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
                     <input type="radio" wire:model.live="formData.registration_type" value="OPD" style="accent-color:#1d4ed8;width:16px;height:16px;">
@@ -405,6 +466,7 @@
                     <span style="font-weight:600;color:#dc2626;">ER (Emergency Room)</span>
                 </label>
             </div>
+            @endif
         </div>
 
         <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin:0 0 12px;">Required Information</p>
